@@ -1,0 +1,55 @@
+Package: damidBind
+Type: Package
+Title: Differential Binding and Expression Analysis for DamID-seq Data
+Version: 0.99.0
+Authors@R: 
+    person("Owen", "Marshall", email = "owen.marshall@utas.edu.au", 
+           role = c("aut", "cre"))
+Description: Identifies differentially-bound loci and/or differentially-expressed genes 
+    from DamID-seq datasets. Provides flexible quantification, visualisation 
+    (IGV visualisation, volcano plots and Venn plots), and statistical enrichment 
+    utilities, built around a limma/NOIseq framework and standard Bioconductor classes.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+biocViews: DifferentialBinding, DifferentialExpression, Epigenetics, Visualization, Sequencing, Software
+Depends: R (>= 4.0.0)
+Imports: 
+    ggplot2,
+    ggrepel,
+    dplyr,
+    tibble,
+    stringr,
+    tools,
+    rlang,
+    BiocParallel,
+    AnnotationHub,
+    DBI,
+    ensembldb,
+    GenomeInfoDb,
+    IRanges,
+    GenomicRanges,
+    S4Vectors,
+    rtracklayer,
+    limma,
+    NOISeq,
+    BioVenn,
+    clusterProfiler,
+    forcats,
+    scales,
+    methods,
+    igvShiny,
+    shiny,
+    DT
+Suggests:
+    testthat,
+    knitr,
+    htmltools,
+    rmarkdown,
+    BiocStyle,
+    qpdf,
+    org.Dm.eg.db
+RoxygenNote: 7.3.2
+VignetteBuilder: knitr
+URL: https://github.com/marshall-lab/damidBind
+BugReports: https://github.com/marshall-lab/damidBind/issues

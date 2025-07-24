@@ -1,0 +1,16 @@
+/Meta/
+# History files
+.Rhistory
+.Rapp.history
+# Session data
+.RData
+.Ruserdata
+# RStudio project user-specific files
+.Rproj.user/
+# Package build files
+*.tar.gz
+*.Rcheck/
+# OS generated files
+.DS_Store
+Thumbs.db
+/doc/
