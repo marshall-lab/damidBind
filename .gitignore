@@ -7,6 +7,7 @@
 .Ruserdata
 # RStudio project user-specific files
 .Rproj.user/
+damidBind.Rproj
 # Package build files
 *.tar.gz
 *.Rcheck/
