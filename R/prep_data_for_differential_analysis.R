@@ -3,7 +3,7 @@
 #' Internal function to extract and prepare data, identify conditions, and set up
 #' factors for downstream differential analysis (limma or NOISeq).
 #'
-#' @param data_list List. Output from load_data.peaks or load_data.genes.
+#' @param data_list List. Output from load_data_peaks or load_data_genes.
 #' @param cond Vector (character). Two strings, each uniquely identifying one
 #'   of the two conditions to compare. The order matters; cond[1] will be the
 #'   first condition, cond[2] the second.
@@ -26,7 +26,7 @@
 prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NULL) {
 
   if (!is.list(data_list)) {
-    stop("'data_list' must be the full output of load_data.peaks or load_data.genes.")
+    stop("'data_list' must be the full output of load_data_peaks or load_data_genes.")
   }
 
   occupancy_df <- data_list$occupancy

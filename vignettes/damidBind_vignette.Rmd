@@ -47,8 +47,8 @@ Using `damidBind`, in seven easy steps:
 ```{r quickstart, eval=FALSE, echo=TRUE}
 ## Example code only, not run:
 
-# Load up the data (use load_data.genes() for RNA Polymerase occupancy data)
-input <- load_data.peaks(
+# Load up the data (use load_data_genes() for RNA Polymerase occupancy data)
+input <- load_data_peaks(
   binding_profiles_path = "path/to/binding_profile_bedgraphs",
   peaks_path = "path/to/peak_gffs_or_beds"
 ) # add quantile_norm = T if appropriate
@@ -156,18 +156,18 @@ print(files)
 
 And then we can use `damidBind` on the data. First, we load up the data. There are two potential commands that can be used for data loading, depending on the data being analysed:
 
-`load_data.peaks()`
+`load_data_peaks()`
 
 :   Used to load binding data with associated peaks files (e.g. transcription factor binding, CATaDa accessibility)
 
-`load_data.genes()`
+`load_data_genes()`
 
 :   Used to load RNA Polymerase occupancy DamID data (as a proxy for gene expression, as per [@Southall2013,@Marshall2015]). For these data, no peak files are required (as occupancy is calculated over the gene bodies).
 
-In this case, we're dealing with the binding of the transcription factor Bsh, so we'll use the `load_data.peaks()`. As this is the same transcription factor being profiled in two different cell types, and we'd expect the binding distribution to be similar, we'll use quantile normalisation on the datasets.
+In this case, we're dealing with the binding of the transcription factor Bsh, so we'll use the `load_data_peaks()`. As this is the same transcription factor being profiled in two different cell types, and we'd expect the binding distribution to be similar, we'll use quantile normalisation on the datasets.
 
 ```{r load_data}
-input.bsh = load_data.peaks(
+input.bsh = load_data_peaks(
   binding_profiles_path = data_dir,
   peaks_path = data_dir, 
   quantile_norm = T
@@ -188,7 +188,7 @@ Again, there are two different analysis options depending on the data type:
 
 :   Analyses CATaDa data (Dam-only chromatin accessibility data) present as Counts Per Million reads (CPM) or raw counts. Only CATaDa data (generated via e.g. `damidseq_pipeline --catada`) should be used with this function.  Given the counts nature of these data, `r Biocpkg("NOISeq")` is used as the analysis backend.
 
-The input from `load_data.peaks()` or `load_data.genes()` feeds directly into these functions.
+The input from `load_data_peaks()` or `load_data_genes()` feeds directly into these functions.
 
 Here, we're not dealing with CATaDa data, so we'll use `differential_binding()` to find the significant, differentially-bound loci between the two conditions:
 

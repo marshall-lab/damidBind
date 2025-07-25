@@ -104,13 +104,13 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' @examples
 #' \dontrun{
 #' # Using file paths:
-#' res <- load_data.peaks(
+#' res <- load_data_peaks(
 #'   binding_profiles_path = "data/binding/",
 #'   peaks_path = "data/peaks/",
 #'   organism = "drosophila melanogaster")
 #'
 #' # Using GRanges lists:
-#' res <- load_data.peaks(
+#' res <- load_data_peaks(
 #'   binding_profiles = list(
 #'     cond1_n1 = gr1,
 #'     cond1_n2 = gr2,
@@ -125,7 +125,7 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' }
 #'
 #' @export
-load_data.peaks <- function(
+load_data_peaks <- function(
     binding_profiles_path = NULL,
     peaks_path = NULL,
     binding_profiles = NULL,
@@ -222,12 +222,12 @@ load_data.peaks <- function(
 #' @examples
 #' \dontrun{
 #' # Using file paths:
-#' res <- load_data.genes(
+#' res <- load_data_genes(
 #'   binding_profiles_path = "data/rnapol/",
 #'   organism = "drosophila melanogaster")
 #'
 #' # Using GRanges list:
-#' res <- load_data.genes(
+#' res <- load_data_genes(
 #'   binding_profiles = list(
 #'     cond1_n1 = gr1,
 #'     cond1_n2 = gr2,
@@ -237,7 +237,7 @@ load_data.peaks <- function(
 #' }
 #'
 #' @export
-load_data.genes <- function(
+load_data_genes <- function(
     binding_profiles_path = NULL,
     binding_profiles = NULL,
     quantile_norm = FALSE,

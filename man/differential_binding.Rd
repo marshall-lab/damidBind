@@ -7,7 +7,7 @@
 differential_binding(data_list, cond, cond_names = NULL, fdr = 0.05)
 }
 \arguments{
-\item{data_list}{List. Output from load_data.peaks or load_data.genes.}
+\item{data_list}{List. Output from load_data_peaks or load_data_genes.}
 
 \item{cond}{Vector (character). Two strings identifying the two conditions to compare.
 The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.}
@@ -28,6 +28,6 @@ A `DamIDResults` object containing the results. Access slots using
 }
 \description{
 Setup and differential analysis for occupancy/binding experiments
-using limma. Accepts output from `load_data.peaks` or `load_data.genes`,
+using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
 prepares experiment matrix, fits linear models, and returns DE loci.
 }

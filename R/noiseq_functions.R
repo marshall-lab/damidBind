@@ -1,10 +1,10 @@
 #' Differential Accessibility Analysis for CATaDa (NOISeq based)
 #'
 #' Setup and differential analysis for CATaDa chromatin accessibility experiments using NOISeq.
-#' Accepts output from load_data.peaks, prepares count matrix,
+#' Accepts output from load_data_peaks, prepares count matrix,
 #' performs NOISeq analysis, and returns differentially-accessible loci.
 #'
-#' @param data_list List. Output from load_data.peaks.
+#' @param data_list List. Output from load_data_peaks.
 #' @param cond Vector (character). Two strings identifying the two conditions to compare.
 #'   The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.
 #' @param cond_names Vector (character, optional). Custom display names for

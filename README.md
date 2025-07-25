@@ -15,8 +15,8 @@ Using `damidBind`, in seven easy steps:
 ```
 ## Example code only, not run:
 
-# Load up the data (use load_data.genes() for RNA Polymerase occupancy data)
-input <- load_data.peaks(
+# Load up the data (use load_data_genes() for RNA Polymerase occupancy data)
+input <- load_data_peaks(
   binding_profiles_path = "path/to/binding_profile_bedgraphs",
   peaks_path = "path/to/peak_gffs_or_beds"
 ) # add quantile_norm = T if appropriate

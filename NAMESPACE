@@ -33,8 +33,8 @@ importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack, 
 importFrom(shiny, fluidPage, h4, hr, mainPanel, observeEvent, p, runApp, shinyApp, sidebarLayout, sidebarPanel, titlePanel)
 
 
-export(load_data.peaks)
-export(load_data.genes)
+export(load_data_peaks)
+export(load_data_genes)
 export(build_dataframes)
 export(get_ensdb_genes)
 export(gene_occupancy)

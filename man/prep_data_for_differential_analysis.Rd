@@ -7,7 +7,7 @@
 prep_data_for_differential_analysis(data_list, cond, cond_names = NULL)
 }
 \arguments{
-\item{data_list}{List. Output from load_data.peaks or load_data.genes.}
+\item{data_list}{List. Output from load_data_peaks or load_data_genes.}
 
 \item{cond}{Vector (character). Two strings, each uniquely identifying one
 of the two conditions to compare. The order matters; cond[1] will be the

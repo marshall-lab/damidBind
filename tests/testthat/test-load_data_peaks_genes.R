@@ -9,15 +9,15 @@ source(test_path("_test_helper.R"))
 # Mock get_ensdb_genes for all load_* tests
 local_mocked_bindings(get_ensdb_genes = make_dummy_ensdb_genes)
 
-context("Data Loading: load_data.peaks")
+context("Data Loading: load_data_peaks")
 
-test_that("load_data.peaks loads and processes extdata files correctly", {
+test_that("load_data_peaks loads and processes extdata files correctly", {
   data_dir = system.file("extdata", package = "damidBind")
   binding_profiles_path <- data_dir
   peaks_path <- data_dir
 
   # Call the function
-  dl <- load_data.peaks(
+  dl <- load_data_peaks(
     binding_profiles_path = binding_profiles_path,
     peaks_path = peaks_path,
     quantile_norm = FALSE, # Test without quantile normalization first
@@ -70,13 +70,13 @@ test_that("load_data.peaks loads and processes extdata files correctly", {
   expect_true(any(dl$occupancy$gene_ids != ""))
 })
 
-test_that("load_data.peaks works with quantile_norm = TRUE", {
+test_that("load_data_peaks works with quantile_norm = TRUE", {
   # temp_extdata_dir <- copy_extdata_to_temp()
   data_dir = system.file("extdata", package = "damidBind")
   binding_profiles_path <- data_dir
   peaks_path <- data_dir
 
-  dl_qnorm <- load_data.peaks(
+  dl_qnorm <- load_data_peaks(
     binding_profiles_path = binding_profiles_path,
     peaks_path = peaks_path,
     quantile_norm = TRUE,
@@ -107,25 +107,25 @@ test_that("load_data.peaks works with quantile_norm = TRUE", {
   # unlink(temp_extdata_dir, recursive = TRUE)
 })
 
-test_that("load_data.peaks throws error if no binding files found", {
+test_that("load_data_peaks throws error if no binding files found", {
   temp_dir <- tempdir()
-  expect_error(load_data.peaks(binding_profiles_path = file.path(temp_dir, "*.nonexistent"),
+  expect_error(load_data_peaks(binding_profiles_path = file.path(temp_dir, "*.nonexistent"),
                                peaks_path = file.path(temp_dir, "*.nonexistent"),
                                ensdb_genes = make_dummy_ensdb_genes()$genes),
                "No binding profile files")
 })
 
-context("Data Loading: load_data.genes")
+context("Data Loading: load_data_genes")
 
-# This test will now use the Bsh TF binding data for load_data.genes
-test_that("load_data.genes loads and processes Bsh extdata (log2 ratio) files correctly", {
+# This test will now use the Bsh TF binding data for load_data_genes
+test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files correctly", {
   data_dir = system.file("extdata", package = "damidBind")
   binding_profiles_path <- data_dir
 
   # Use a dummy ensdb_genes, which would be the reference for transcripts
   dummy_ensdb <- make_dummy_ensdb_genes()$genes
 
-  dl <- load_data.genes(
+  dl <- load_data_genes(
     binding_profiles_path = binding_profiles_path,
     ensdb_genes = dummy_ensdb,
     quantile_norm = FALSE,
@@ -164,11 +164,11 @@ test_that("load_data.genes loads and processes Bsh extdata (log2 ratio) files co
   expect_equal(dl$test_category, "expressed")
 })
 
-test_that("load_data.genes works with quantile_norm = TRUE", {
+test_that("load_data_genes works with quantile_norm = TRUE", {
   data_dir = system.file("extdata", package = "damidBind")
   binding_profiles_path <- data_dir
 
-  dl_qnorm <- load_data.genes(
+  dl_qnorm <- load_data_genes(
     binding_profiles_path = binding_profiles_path,
     ensdb_genes = make_dummy_ensdb_genes()$genes,
     quantile_norm = TRUE,

@@ -1,10 +1,10 @@
 #' Differential Binding/Expression Analysis (limma)
 #'
 #' Setup and differential analysis for occupancy/binding experiments
-#' using limma. Accepts output from `load_data.peaks` or `load_data.genes`,
+#' using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
 #' prepares experiment matrix, fits linear models, and returns DE loci.
 #'
-#' @param data_list List. Output from load_data.peaks or load_data.genes.
+#' @param data_list List. Output from load_data_peaks or load_data_genes.
 #' @param cond Vector (character). Two strings identifying the two conditions to compare.
 #'   The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.
 #' @param cond_names Vector (character, optional). Custom display names for
