@@ -15,7 +15,7 @@ Description:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-biocViews: DifferentialBinding, DifferentialExpression, Epigenetics, Visualization, Sequencing, Software
+biocViews: DifferentialBinding, GeneExpression, Epigenetics, Visualization, Sequencing, Software
 Depends: R (>= 4.0.0)
 Imports: 
     ggplot2,
@@ -50,7 +50,6 @@ Suggests:
     htmltools,
     rmarkdown,
     BiocStyle,
-    qpdf,
     org.Dm.eg.db
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
