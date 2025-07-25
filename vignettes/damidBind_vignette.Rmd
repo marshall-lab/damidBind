@@ -42,7 +42,7 @@ Although extensive customisation options are available if required, much of the 
 
 # Quick start guide
 
-Using `damidBind`, in seven easy steps:
+Using `damidBind`, in eight easy steps:
 
 ```{r quickstart, eval=FALSE, echo=TRUE}
 ## Example code only, not run:
@@ -91,11 +91,11 @@ my_custom_function(input.diff@analysis)
 
 ## Sample input data (provided within the package)
 
-`damidBind` provides a simple, truncated dataset with the package for immediate testing. Owing to package space, this sample dataset uses only *Drosophila melanogaster* Chr2L binding, and should not be used for any actual analysis.
+`damidBind` provides a simple, truncated dataset with the package for immediate testing. Owing to package space, this sample dataset uses only *Drosophila melanogaster* chromosome 2L binding, and should not be used for any actual analysis.
 
 ## Sample input data (provided online through a Zenodo repository)
 
-Three previously-published sample datasets have been deposited in Zenodo and are made available for exploring the features and capabilities of `damidBind`:
+Three previously-published sample datasets will be deposited in Zenodo and made available for exploring the features and capabilities of `damidBind`:
 
 -   Bsh transcription factor binding in L4 and L5 neurons of the *Drosophila* lamina [@Xu2024]
 -   CATaDa chromatin accessibility data in L4 and L5 neurons [@Xu2024]
@@ -206,7 +206,9 @@ The use of `cond_names` here is optional, and provides display names for the con
 
 Note that when run, `differential_binding` (or `differential_accessibility`) will list the replicates found under each condition. The package attempts to ensure that condition search overlaps are avoided, but please check that all replicates have been correctly assigned.
 
-The function output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis was worked correctly, and does not imply any special value to the listed genes beyond that. The function returns a `DamIDResults` object. 
+The functions' output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis was worked correctly, and does not imply any special value to the listed genes beyond that. 
+
+Both `differential_binding()` and `differential_accessibility()` return a `DamIDResults` S4 object, that forms the basis of downstream analysis.  Printing the object will provide a simple summary of the analysis results.
 
 ```{r show_object}
 # See a summary of the results object

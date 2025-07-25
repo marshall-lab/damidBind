@@ -3,12 +3,15 @@ Type: Package
 Title: Differential Binding and Expression Analysis for DamID-seq Data
 Version: 0.99.0
 Authors@R: 
-    person("Owen", "Marshall", email = "owen.marshall@utas.edu.au", 
-           role = c("aut", "cre"))
-Description: Identifies differentially-bound loci and/or differentially-expressed genes 
+    person("Owen", "Marshall", 
+    email = "owen.marshall@utas.edu.au", 
+    role = c("aut", "cre"), 
+    comment = c(ORCID = "0000-0003-1605-3871"))
+Description: 
+    Identifies differentially-bound loci and/or differentially-expressed genes 
     from DamID-seq datasets. Provides flexible quantification, visualisation 
-    (IGV visualisation, volcano plots and Venn plots), and statistical enrichment 
-    utilities, built around a limma/NOIseq framework and standard Bioconductor classes.
+    (IGV visualisation, volcano, GSEA and Venn plots), built around 
+    a limma/NOIseq framework and standard Bioconductor classes.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
