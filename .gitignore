@@ -14,3 +14,4 @@ damidBind.Rproj
 # OS generated files
 .DS_Store
 Thumbs.db
+/doc
