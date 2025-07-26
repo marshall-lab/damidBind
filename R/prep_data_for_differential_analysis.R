@@ -24,7 +24,6 @@
 #' @importFrom stats setNames
 #' @keywords internal
 prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NULL) {
-
   if (!is.list(data_list)) {
     stop("'data_list' must be the full output of load_data_peaks or load_data_genes.")
   }
@@ -54,8 +53,10 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
   # Check for overlapping samples (a sample matching both conditions)
   if (any(cond1_matches & cond2_matches)) {
     overlapping_samples <- all_sample_cols[cond1_matches & cond2_matches]
-    stop(sprintf("Conditions '%s' and '%s' overlap in sample names. The following samples belong to both: %s. Please ensure `cond` values uniquely identify samples.",
-      cond[1], cond[2], paste(overlapping_samples, collapse = ", ")))
+    stop(sprintf(
+      "Conditions '%s' and '%s' overlap in sample names. The following samples belong to both: %s. Please ensure `cond` values uniquely identify samples.",
+      cond[1], cond[2], paste(overlapping_samples, collapse = ", ")
+    ))
   }
 
   # Check for unassigned samples (samples matching neither condition)
@@ -71,8 +72,10 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
   sel_cols <- c(samples_cond1, samples_cond2)
 
   if (length(sel_cols) < 2) {
-    stop(sprintf("Fewer than two sample columns matched for conditions '%s' and '%s'. Please check your 'cond' values against sample names. Found %d matched samples.",
-      cond[1], cond[2], length(sel_cols)))
+    stop(sprintf(
+      "Fewer than two sample columns matched for conditions '%s' and '%s'. Please check your 'cond' values against sample names. Found %d matched samples.",
+      cond[1], cond[2], length(sel_cols)
+    ))
   }
 
   # Prepare the matrix for analysis

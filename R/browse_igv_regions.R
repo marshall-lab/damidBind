@@ -22,14 +22,14 @@ browse_igv_regions <- function(
     use_genome = NULL,
     padding_width = 20000,
     host = "localhost",
-    port = NULL
-    ) {
+    port = NULL) {
   stopifnot(is(diff_results, "DamIDResults"))
 
   required <- c("igvShiny", "shiny", "DT")
   for (pkg in required) {
-    if (!requireNamespace(pkg, quietly = TRUE))
+    if (!requireNamespace(pkg, quietly = TRUE)) {
       stop(sprintf("Package '%s' is required for browse_igv_regions().\n  Install with: BiocManager::install('%s')", pkg, pkg), call. = FALSE)
+    }
   }
 
   preptbl <- function(tbl) {
@@ -47,7 +47,10 @@ browse_igv_regions <- function(
   peaks_incl <- FALSE
   if ("pr" %in% names(diff_results@data)) {
     peaks <- diff_results@data$pr
-    peaks_bed <- peaks %>% as.data.frame() %>% select(c("seqnames", "start", "end")) %>% rename(chr = seqnames)
+    peaks_bed <- peaks %>%
+      as.data.frame() %>%
+      select(c("seqnames", "start", "end")) %>%
+      rename(chr = seqnames)
     peaks_incl <- TRUE
   }
 
@@ -103,8 +106,12 @@ browse_igv_regions <- function(
   }
 
   # Get min/maxes of logFC
-  bp_min <- binding_profiles_data[, use_samples] %>% min() %>% floor()
-  bp_max <- binding_profiles_data[, use_samples] %>% max() %>% ceiling()
+  bp_min <- binding_profiles_data[, use_samples] %>%
+    min() %>%
+    floor()
+  bp_max <- binding_profiles_data[, use_samples] %>%
+    max() %>%
+    ceiling()
   enrich_max <- ceiling(max(abs(region_tab$logFC)))
 
   # Build Shiny app
@@ -199,7 +206,8 @@ browse_igv_regions <- function(
             message(paste0(" - Added 'Enriched (", cond2_display_name, ")' regions track"))
           }
         },
-        once = TRUE)
+        once = TRUE
+      )
 
       # Region datatable for display
       output$region_table <- renderDT({

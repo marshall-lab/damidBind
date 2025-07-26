@@ -22,8 +22,7 @@ differential_binding <- function(
     data_list,
     cond,
     cond_names = NULL,
-    fdr = 0.05
-    ) {
+    fdr = 0.05) {
   # Prep data for analysis
   prep_results <- prep_data_for_differential_analysis(
     data_list = data_list,
@@ -89,12 +88,12 @@ differential_binding <- function(
   occupancy_df <- data_list$occupancy
   if ("gene_names" %in% colnames(occupancy_df) && "gene_ids" %in% colnames(occupancy_df)) {
     gene_names_annot <- occupancy_df[rownames(result_table), "gene_names"]
-    gene_ids_annot   <- occupancy_df[rownames(result_table), "gene_ids"]
+    gene_ids_annot <- occupancy_df[rownames(result_table), "gene_ids"]
     result_table[, "gene_names"] <- gene_names_annot
-    result_table[, "gene_ids"]   <- gene_ids_annot
+    result_table[, "gene_ids"] <- gene_ids_annot
   } else {
     result_table[, "gene_names"] <- NA_character_
-    result_table[, "gene_ids"]   <- NA_character_
+    result_table[, "gene_ids"] <- NA_character_
   }
 
   result_table$minuslogp <- -log10(result_table$adj.P.Val) # Adjusted P values

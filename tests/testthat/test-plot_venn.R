@@ -12,7 +12,7 @@ make_dummy_diff_results_for_venn <- function() {
   )
 
   upCond1 <- analysis_table[c("Locus1", "Locus4"), ] # Sig for Cond1
-  upCond2 <- analysis_table[c("Locus2"), ]           # Sig for Cond2 (note, not Locus5)
+  upCond2 <- analysis_table[c("Locus2"), ] # Sig for Cond2 (note, not Locus5)
 
   new("DamIDResults",
     upCond1 = upCond1,

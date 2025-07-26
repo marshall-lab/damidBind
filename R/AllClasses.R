@@ -28,7 +28,8 @@ setClass("DamIDResults",
 #' @rdname DamIDResults-class
 #' @param object A `DamIDResults` object.
 #' @export
-setMethod("show", "DamIDResults",
+setMethod(
+  "show", "DamIDResults",
   function(object) {
     cat("An object of class 'DamIDResults'\n")
     cond_display <- names(object@cond)

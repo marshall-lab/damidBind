@@ -24,13 +24,13 @@ plot_venn <- function(
     filename = NULL,
     font = "sans",
     format = c("pdf", "svg"),
-    region_colours = c("#FFA500", "#2288DD", "#CCCCCC")
-    ) {
+    region_colours = c("#FFA500", "#2288DD", "#CCCCCC")) {
   # Argument and field checks
   stopifnot(is(diff_results, "DamIDResults"))
 
-  if (is.null(set_labels))
+  if (is.null(set_labels)) {
     set_labels <- names(diff_results@cond)
+  }
 
   upCond1 <- rownames(diff_results@upCond1)
   upCond2 <- rownames(diff_results@upCond2)
@@ -41,8 +41,9 @@ plot_venn <- function(
   all_ids <- all_ids[!is.na(all_ids) & nchar(all_ids) > 0]
 
   # Check minimum viable dataset
-  if (length(all_ids) < 2)
+  if (length(all_ids) < 2) {
     stop("Not enough loci for Venn diagram (need at least 2 in 'all').")
+  }
 
   # Non-significant set
   nonsig <- setdiff(all_ids, union(upCond1, upCond2))

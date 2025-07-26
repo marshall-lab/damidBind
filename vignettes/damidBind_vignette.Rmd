@@ -342,7 +342,7 @@ DT::datatable(
   head(diff.bsh@analysis, n = 20),
   options = list(
     pageLength = 10, # Number of rows to show per page
-    scrollX = TRUE   # Enable horizontal scrolling for wide tables
+    scrollX = TRUE # Enable horizontal scrolling for wide tables
   )
 ) %>% DT::formatRound(columns = c(1:8, 11), digits = 2)
 ```

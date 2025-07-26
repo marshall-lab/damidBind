@@ -9,7 +9,7 @@ make_dummy_ensdb_genes <- function(...) {
     seqnames = Rle("2L", 7),
     ranges = IRanges(
       start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-      end =   c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+      end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
     ),
     strand = Rle(strand(c("+", "-", "+", "+", "-", "-", "+"))),
     gene_id = c("FBgn0000001", "FBgn0000002", "FBgn0000003", "FBgn0000004", "FBgn0000005", "FBgn0000006", "FBgn0000007"),
@@ -61,7 +61,8 @@ create_mock_ensdb_object <- function() {
 
 
 setClass("MockHubResult",
-  slots = c(data = "DataFrame"))
+  slots = c(data = "DataFrame")
+)
 setMethod("length", "MockHubResult", function(x) {
   nrow(x@data)
 })

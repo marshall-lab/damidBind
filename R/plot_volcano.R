@@ -32,8 +32,10 @@ check_list_input <- function(default_list, config_input) {
   } else if (is.null(config_input) || isFALSE(config_input) || identical(config_input, 0)) {
     return(NULL)
   } else {
-    message("Input value was ", dQuote(as.character(config_input)),
-      ", which is not a list. Using default settings for this option.")
+    message(
+      "Input value was ", dQuote(as.character(config_input)),
+      ", which is not a list. Using default settings for this option."
+    )
     return(default_list)
   }
 }
@@ -103,8 +105,7 @@ plot_volcano <- function(
     label_config = list(),
     highlight = NULL,
     highlight_config = list(),
-    save = NULL
-    ) {
+    save = NULL) {
   stopifnot(is(diff_results, "DamIDResults"))
 
   analysis_table <- diff_results@analysis
@@ -176,20 +177,26 @@ plot_volcano <- function(
 
   # Helper functions
   clean_names <- function(x, clean, clean_extra = NULL) {
-    if (is.null(x)) return(character(0))
+    if (is.null(x)) {
+      return(character(0))
+    }
     regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
     x[!grepl(regex, x, ignore.case = FALSE)]
   }
 
   indices_to_clean <- function(x, clean, clean_extra = NULL) {
-    if (is.null(x)) return(integer(0))
+    if (is.null(x)) {
+      return(integer(0))
+    }
     regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
     regex <- gsub("\\|\\|", "|", x = regex) # Clean up potential double pipes
     grep(regex, x, ignore.case = FALSE)
   }
 
   find_element_indices <- function(labels, elements) {
-    if (is.null(elements) || length(elements) == 0) return(integer())
+    if (is.null(elements) || length(elements) == 0) {
+      return(integer())
+    }
     # Escape special regex characters in the element names to prevent unintended regex patterns
     escaped_elements <- gsub("([[:punct:]])", "\\\\\\1", elements)
     patt <- paste(escaped_elements, collapse = "|")
@@ -266,8 +273,8 @@ plot_volcano <- function(
         highlight_layers[[i]] <- geom_point(
           data = layer_df,
           aes(x = logFC, y = .data[[plot_config$ystat]], colour = highlight_group_name),
-          alpha  = highlight_config$alpha,
-          size   = highlight_config$size
+          alpha = highlight_config$alpha,
+          size = highlight_config$size
         )
 
         if (isTRUE(highlight_config$label)) {
@@ -307,16 +314,16 @@ plot_volcano <- function(
     geom_point(
       data = subset(plot_df, !sig),
       colour = plot_config$nonsig_colour,
-      alpha   = plot_config$nonsig_alpha,
-      size   = plot_config$nonsig_size,
-      shape  = 16
+      alpha = plot_config$nonsig_alpha,
+      size = plot_config$nonsig_size,
+      shape = 16
     ) +
     geom_point(
       data = subset(plot_df, sig),
       colour = plot_config$sig_colour,
-      alpha  = plot_config$sig_alpha,
-      size   = plot_config$sig_size,
-      shape  = 16
+      alpha = plot_config$sig_alpha,
+      size = plot_config$sig_size,
+      shape = 16
     ) +
     labs(
       title = plot_config$title,
@@ -419,7 +426,8 @@ plot_volcano <- function(
       },
       error = function(e) {
         message("An error occurred while saving the plot file(s): ", e$message)
-      })
+      }
+    )
   } else {
     # Only print the plot if not saving to a file
     print(p)

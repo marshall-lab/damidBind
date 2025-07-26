@@ -1,7 +1,7 @@
 library(testthat)
 library(damidBind)
 library(GenomicRanges) # For GRanges object checks
-library(S4Vectors)     # For Rle if needed in comparisons
+library(S4Vectors) # For Rle if needed in comparisons
 
 # Source helper functio
 source(test_path("_test_helper.R"))
@@ -31,11 +31,13 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
   # Check binding_profiles_data
   expect_s3_class(dl$binding_profiles_data, "data.frame")
   expect_true(nrow(dl$binding_profiles_data) > 0)
-  expect_true(all(c("chr", "start", "end",
+  expect_true(all(c(
+    "chr", "start", "end",
     "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
-    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm") %in%
+    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm"
+  ) %in%
     colnames(dl$binding_profiles_data)))
 
   # Check peaks (list of GRanges)
@@ -51,12 +53,14 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
   # Check occupancy data frame
   expect_s3_class(dl$occupancy, "data.frame")
   expect_true(nrow(dl$occupancy) > 0)
-  expect_true(all(c("name", "nfrags",
+  expect_true(all(c(
+    "name", "nfrags",
     "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm",
-    "gene_names", "gene_ids") %in%
+    "gene_names", "gene_ids"
+  ) %in%
     colnames(dl$occupancy)))
   expect_true(all(rownames(dl$occupancy) == dl$occupancy$name))
 
@@ -83,11 +87,13 @@ test_that("load_data_peaks works with quantile_norm = TRUE", {
     BPPARAM = BiocParallel::SerialParam()
   )
 
-  expect_true(all(c("chr", "start", "end",
+  expect_true(all(c(
+    "chr", "start", "end",
     "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm_qnorm",
     "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm_qnorm",
     "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm",
-    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm") %in%
+    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm"
+  ) %in%
     colnames(dl_qnorm$binding_profiles_data)))
 
   # Check that values are indeed normalized (e.g., all means are similar)
@@ -109,10 +115,14 @@ test_that("load_data_peaks works with quantile_norm = TRUE", {
 
 test_that("load_data_peaks throws error if no binding files found", {
   temp_dir <- tempdir()
-  expect_error(load_data_peaks(binding_profiles_path = file.path(temp_dir, "*.nonexistent"),
-    peaks_path = file.path(temp_dir, "*.nonexistent"),
-    ensdb_genes = make_dummy_ensdb_genes()$genes),
-  "No binding profile files")
+  expect_error(
+    load_data_peaks(
+      binding_profiles_path = file.path(temp_dir, "*.nonexistent"),
+      peaks_path = file.path(temp_dir, "*.nonexistent"),
+      ensdb_genes = make_dummy_ensdb_genes()$genes
+    ),
+    "No binding profile files"
+  )
 })
 
 context("Data Loading: load_data_genes")
@@ -139,22 +149,26 @@ test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files co
   # Check binding_profiles_data
   expect_s3_class(dl$binding_profiles_data, "data.frame")
   expect_true(nrow(dl$binding_profiles_data) > 0)
-  expect_true(all(c("chr", "start", "end",
+  expect_true(all(c(
+    "chr", "start", "end",
     "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
-    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm") %in%
+    "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm"
+  ) %in%
     colnames(dl$binding_profiles_data)))
 
   # Check occupancy
   expect_s3_class(dl$occupancy, "data.frame")
   expect_true(nrow(dl$occupancy) > 0)
-  expect_true(all(c("name", "nfrags",
+  expect_true(all(c(
+    "name", "nfrags",
     "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
     "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm",
-    "gene_names", "gene_ids") %in% colnames(dl$occupancy)))
+    "gene_names", "gene_ids"
+  ) %in% colnames(dl$occupancy)))
 
   # Verify some expected values from the occupancy dataframe, e.g., that gene names were joined
   expect_true(any(grepl("gene", dl$occupancy$gene_names, ignore.case = TRUE)))
@@ -184,5 +198,4 @@ test_that("load_data_genes works with quantile_norm = TRUE", {
   expect_true(sd(col_means) < 0.5)
   sample_medians <- apply(signal_cols_qnorm, 2, median)
   expect_true(sd(sample_medians) < 0.5)
-
 })

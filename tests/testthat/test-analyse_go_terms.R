@@ -1,7 +1,7 @@
 library(testthat)
 library(damidBind)
 library(clusterProfiler) # Required for mocking its functions
-library(ggplot2)       # Required for mocking ggsave
+library(ggplot2) # Required for mocking ggsave
 
 context("GO Enrichment Analysis: analyse_go_enrichment")
 
@@ -18,7 +18,7 @@ make_dummy_diff_results_for_go <- function() {
   )
 
   upCond1 <- analysis_table[c("Locus1", "Locus4"), ] # Significant for Cond1
-  upCond2 <- analysis_table[c("Locus2"), ]           # Significant for Cond2
+  upCond2 <- analysis_table[c("Locus2"), ] # Significant for Cond2
 
   new("DamIDResults",
     upCond1 = upCond1,
@@ -68,7 +68,9 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
       subset(mock_bitr_map, FLYBASE %in% geneID)
     },
     enrichGO = function(gene, OrgDb, universe, keyType, ont, pAdjustMethod, maxGSSize, minGSSize, pvalueCutoff, qvalueCutoff, readable) {
-      if (length(gene) == 0 || length(universe) == 0) return(NULL) # Simulate no enrichment
+      if (length(gene) == 0 || length(universe) == 0) {
+        return(NULL)
+      } # Simulate no enrichment
       mock_enrich_go_result
     }
   )
@@ -122,7 +124,6 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
   )
   expect_s4_class(res_all$enrich_go_object, "enrichResult")
   expect_equal(res_all$enrich_go_object@gene, c("SYM1", "SYM2", "SYM4")) # Check the genes passed to enrichGO
-
 })
 
 
@@ -138,8 +139,10 @@ test_that("analyse_go_enrichment handles cases with no significant genes", {
     .package = "clusterProfiler"
   )
 
-  expect_message(res <- analyse_go_enrichment(diff_res_no_sig, org_db = dummy_org_db),
-    "No significant genes found for direction 'cond1'") # First message
+  expect_message(
+    res <- analyse_go_enrichment(diff_res_no_sig, org_db = dummy_org_db),
+    "No significant genes found for direction 'cond1'"
+  ) # First message
   expect_null(res)
 })
 

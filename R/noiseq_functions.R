@@ -25,8 +25,7 @@ differential_accessibility <- function(
     cond,
     cond_names = NULL,
     norm = "n",
-    q = 0.8
-    ) {
+    q = 0.8) {
   # Prep data for analysis
   prep_results <- prep_data_for_differential_analysis(
     data_list = data_list,
@@ -56,7 +55,8 @@ differential_accessibility <- function(
         replicates = "biological"
       )
     },
-    file = NULL)
+    file = NULL
+  )
 
   noiseq_df <- as.data.frame(noiseq_res@results[[1]])
 
@@ -78,15 +78,15 @@ differential_accessibility <- function(
   if ("gene_names" %in% colnames(occupancy_df) && "gene_ids" %in% colnames(occupancy_df)) {
     idx <- match(rownames(noiseq_df), rownames(occupancy_df))
     noiseq_df$gene_names <- occupancy_df$gene_names[idx]
-    noiseq_df$gene_ids   <- occupancy_df$gene_ids[idx]
+    noiseq_df$gene_ids <- occupancy_df$gene_ids[idx]
   } else {
     noiseq_df$gene_names <- NA_character_
-    noiseq_df$gene_ids   <- NA_character_
+    noiseq_df$gene_ids <- NA_character_
   }
 
   # Identify significant DE loci using degenes
-  sig_up_res    <- degenes(noiseq_res, q = q, M = "up")
-  sig_down_res  <- degenes(noiseq_res, q = q, M = "down")
+  sig_up_res <- degenes(noiseq_res, q = q, M = "up")
+  sig_down_res <- degenes(noiseq_res, q = q, M = "down")
 
   upCond1 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_up_res), , drop = FALSE]
   upCond2 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_down_res), , drop = FALSE]

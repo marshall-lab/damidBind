@@ -13,8 +13,7 @@ gene_occupancy <- function(
     binding_data,
     ensdb_genes = get_ensdb_genes()$genes,
     buffer = 0,
-    BPPARAM = BiocParallel::bpparam()
-    ) {
+    BPPARAM = BiocParallel::bpparam()) {
   if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as returned by build_dataframes().")
   if (!is(ensdb_genes, "GRanges")) stop("'ensdb_genes' must be a GRanges object.")
   if (is.null(mcols(ensdb_genes)$gene_name)) stop("ensdb_genes must have a metadata column 'gene_name' with gene names.")
@@ -63,7 +62,9 @@ gene_occupancy <- function(
   # For parallel aggregation
   calc_occupancy <- function(i) {
     gene_hits <- subjectHits(overlaps)[queryHits(overlaps) == i]
-    if (length(gene_hits) == 0) return(rep(NA, length(sample_cols) + 4))
+    if (length(gene_hits) == 0) {
+      return(rep(NA, length(sample_cols) + 4))
+    }
 
     # Get covered fragment intervals and intersect size with gene
     gene_range <- ranges(gene_gr)[i]
@@ -119,8 +120,7 @@ gr_occupancy <- function(
     binding_data,
     regions,
     buffer = 0,
-    BPPARAM = BiocParallel::bpparam()
-    ) {
+    BPPARAM = BiocParallel::bpparam()) {
   if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as from build_dataframes().")
   if (!is(regions, "GRanges")) stop("'regions' must be a GRanges object.")
 
@@ -152,7 +152,9 @@ gr_occupancy <- function(
 
   calc_occupancy <- function(i) {
     region_hits <- subjectHits(overlaps)[queryHits(overlaps) == i]
-    if (length(region_hits) == 0) return(rep(NA, length(sample_cols) + 2))
+    if (length(region_hits) == 0) {
+      return(rep(NA, length(sample_cols) + 2))
+    }
 
     region_range <- ranges(regions)[i]
     frag_starts <- binding_data$start[region_hits]

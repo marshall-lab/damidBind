@@ -61,8 +61,7 @@ analyse_go_enrichment <- function(
     save = NULL,
     save_results_path = NULL,
     maxGSSize = 1000,
-    minGSSize = 10
-    ) {
+    minGSSize = 10) {
   # Input validation
   stopifnot(is(diff_results, "DamIDResults"))
 
@@ -142,7 +141,8 @@ analyse_go_enrichment <- function(
     },
     error = function(e) {
       stop("Failed to map Flybase IDs to symbols using bitr: ", e$message)
-    })
+    }
+  )
 
   # Get symbols corresponding to the query FBgnIDs
   query_symbols_all <- gene_universe_map$SYMBOL[match(gene_list_fbgnid, gene_universe_map$FLYBASE)]
@@ -213,21 +213,27 @@ analyse_go_enrichment <- function(
 
   max_x_value <- max(plot_df$GeneRatio, na.rm = TRUE)
 
-  dplot <- ggplot(plot_df,
-    aes(GeneRatio, fct_reorder(Description, GeneRatio))) +
+  dplot <- ggplot(
+    plot_df,
+    aes(GeneRatio, fct_reorder(Description, GeneRatio))
+  ) +
     geom_segment(aes(xend = 0, yend = Description)) +
     geom_point(aes(color = p.adjust, size = Count)) +
-    scale_color_gradientn(colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+    scale_color_gradientn(
+      colours = c("#f7ca64", "#46bac2", "#7e62a3"),
       name = bquote(italic(p)[adj]),
       trans = "log2",
       guide = guide_colorbar(reverse = TRUE, order = 1),
       labels = scientific_format(digits = 1)
     ) +
-    scale_size_continuous(range = c(1, 10),
+    scale_size_continuous(
+      range = c(1, 10),
       labels = number_format(accuracy = 1),
-      breaks = c((min(ego.df$Count) + 1),
+      breaks = c(
+        (min(ego.df$Count) + 1),
         round(mean(c(min(ego.df$Count), max(ego.df$Count)))),
-        max(ego.df$Count))
+        max(ego.df$Count)
+      )
     ) +
     labs(x = "Gene Ratio", y = NULL, title = plot_title) + # Use labs for clarity
     theme_bw(14) +
@@ -259,7 +265,8 @@ analyse_go_enrichment <- function(
       },
       error = function(e) {
         warning("Failed to save GO results table to CSV: ", e$message)
-      })
+      }
+    )
   }
 
   # Plot saving
@@ -287,7 +294,8 @@ analyse_go_enrichment <- function(
       },
       error = function(e) {
         message("An error occurred while saving the GO dot plot: ", e$message)
-      })
+      }
+    )
   } else {
     # Only print the plot if not saving to a file
     print(dplot)
@@ -339,7 +347,9 @@ analyze_go_enrichment <- analyse_go_enrichment
 # Internal helper function (not exported)
 # This function helps filter out gene symbols that are typically not useful for GO enrichment
 clean_gene_symbols <- function(x, clean_regex = "snoRNA|snRNA|tRNA", clean_extra = NULL) {
-  if (is.null(x) || length(x) == 0) return(character(0))
+  if (is.null(x) || length(x) == 0) {
+    return(character(0))
+  }
   if (!is.null(clean_extra)) {
     clean_regex <- paste(clean_regex, clean_extra, sep = "|")
   }

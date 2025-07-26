@@ -41,8 +41,7 @@ get_ensdb_genes <- function(
     genome_build = NULL,
     ensembl_version = NULL,
     exclude_biotypes = c("transposable_element", "pseudogene"),
-    include_gene_metadata = c("gene_id", "gene_name")
-    ) {
+    include_gene_metadata = c("gene_id", "gene_name")) {
   message("Finding genome versions ...")
 
   ah <- AnnotationHub()
@@ -61,8 +60,10 @@ get_ensdb_genes <- function(
   if (!is.null(genome_build)) {
     matched_genomes <- tolower(meta_df$genome) == tolower(genome_build)
     if (!any(matched_genomes)) {
-      stop(sprintf("No EnsDb found for organism '%s' with genome build '%s'. Available builds are: %s",
-        organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")))
+      stop(sprintf(
+        "No EnsDb found for organism '%s' with genome build '%s'. Available builds are: %s",
+        organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")
+      ))
     }
     filtered_query_res <- query_res[matched_genomes]
   } else {
@@ -79,8 +80,10 @@ get_ensdb_genes <- function(
     if (ensembl_version %in% ens_versions) {
       index <- which(ens_versions == ensembl_version)
     } else {
-      stop(sprintf("Version '%s' is not available. Available builds are: %s",
-        ensembl_version, paste(ens_versions, collapse = ", ")))
+      stop(sprintf(
+        "Version '%s' is not available. Available builds are: %s",
+        ensembl_version, paste(ens_versions, collapse = ", ")
+      ))
     }
   } else {
     index <- which.max(ens_versions)

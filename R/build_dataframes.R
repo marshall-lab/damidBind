@@ -107,7 +107,8 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' res <- load_data_peaks(
 #'   binding_profiles_path = "data/binding/",
 #'   peaks_path = "data/peaks/",
-#'   organism = "drosophila melanogaster")
+#'   organism = "drosophila melanogaster"
+#' )
 #'
 #' # Using GRanges lists:
 #' res <- load_data_peaks(
@@ -115,13 +116,16 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'     cond1_n1 = gr1,
 #'     cond1_n2 = gr2,
 #'     cond2_n1 = gr3,
-#'     cond2_n2 = gr4),
+#'     cond2_n2 = gr4
+#'   ),
 #'   peaks = list(
 #'     cond1_n1 = peaks_gr1,
 #'     cond1_n2 = peaks_gr2,
 #'     cond2_n1 = peaks_gr3,
-#'     cond2_n2 = peaks_gr4),
-#'   organism = "drosophila melanogaster")
+#'     cond2_n2 = peaks_gr4
+#'   ),
+#'   organism = "drosophila melanogaster"
+#' )
 #' }
 #'
 #' @export
@@ -133,9 +137,7 @@ load_data_peaks <- function(
     quantile_norm = FALSE,
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
-    BPPARAM = BiocParallel::bpparam()
-    ) {
-
+    BPPARAM = BiocParallel::bpparam()) {
   if (is.null(ensdb_genes)) {
     ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
   }
@@ -224,7 +226,8 @@ load_data_peaks <- function(
 #' # Using file paths:
 #' res <- load_data_genes(
 #'   binding_profiles_path = "data/rnapol/",
-#'   organism = "drosophila melanogaster")
+#'   organism = "drosophila melanogaster"
+#' )
 #'
 #' # Using GRanges list:
 #' res <- load_data_genes(
@@ -232,8 +235,10 @@ load_data_peaks <- function(
 #'     cond1_n1 = gr1,
 #'     cond1_n2 = gr2,
 #'     cond2_n1 = gr3,
-#'     cond2_n2 = gr4),
-#'   organism = "drosophila melanogaster")
+#'     cond2_n2 = gr4
+#'   ),
+#'   organism = "drosophila melanogaster"
+#' )
 #' }
 #'
 #' @export
@@ -243,8 +248,7 @@ load_data_genes <- function(
     quantile_norm = FALSE,
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
-    BPPARAM = BiocParallel::bpparam()
-    ) {
+    BPPARAM = BiocParallel::bpparam()) {
   if (is.null(ensdb_genes)) {
     ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
   }
@@ -394,7 +398,8 @@ import_peaks <- function(path) {
     },
     error = function(e) {
       stop("Failed to read peaks file: ", path, "\\n", e$message)
-    })
+    }
+  )
 }
 
 #' Import a bedGraph file as a data.frame (chr, start, end, value)
@@ -409,7 +414,8 @@ import_bedgraph_as_df <- function(path, colname = "score") {
     },
     error = function(e) {
       stop("Failed to read bedGraph file: ", path, "\\n", e$message)
-    })
+    }
+  )
   df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]
   names(df) <- c("chr", "start", "end", colname)
   df

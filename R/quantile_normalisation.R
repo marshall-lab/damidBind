@@ -36,26 +36,33 @@
 #' @export
 quantile_normalisation <- function(x) {
   # Argument checks
-  if (!is.matrix(x))
+  if (!is.matrix(x)) {
     stop("Input 'x' must be a matrix.")
+  }
 
-  if (!is.numeric(x))
+  if (!is.numeric(x)) {
     stop("Input 'x' must be a numeric matrix.")
+  }
 
   # Check for missing or non-finite values
-  if (anyNA(x))
+  if (anyNA(x)) {
     stop("Input 'x' contains missing values (NA). Please remove or impute them before normalisation.")
+  }
 
-  if (any(!is.finite(x)))
+  if (any(!is.finite(x))) {
     stop("Input 'x' contains non-finite values (Inf or NaN). Please remove or replace them before normalisation.")
+  }
 
   n_row <- nrow(x)
   n_col <- ncol(x)
 
-  if (n_row == 0L || n_col == 0L)
+  if (n_row == 0L || n_col == 0L) {
     stop("Input 'x' must have at least one row and one column.")
+  }
 
-  if (n_row == 1L) return(x)
+  if (n_row == 1L) {
+    return(x)
+  }
 
   # Compute quantile means
   sorted_cols <- apply(x, 2, sort, method = "quick")
@@ -73,8 +80,9 @@ quantile_normalisation <- function(x) {
 
     values <- quantile_means[idx1]
     w <- frac > 0.4
-    if (any(w))
+    if (any(w)) {
       values[w] <- 0.5 * (quantile_means[idx1[w]] + quantile_means[idx2[w]])
+    }
 
     x_norm[, j] <- values
   }
