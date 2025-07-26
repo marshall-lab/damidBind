@@ -28,13 +28,18 @@
 #' metadata fields are retained in the genes output.
 #'
 #' @examples
-#' \dontrun{
-#' result <- get_ensdb_genes("drosophila melanogaster", ensembl_version = 110)
+#' \donttest{
+#' # This example requires an internet connection and will download data.
+#' # It is wrapped in \donttest{} so it is not run by automated checks.
+#' dm_genes <- get_ensdb_genes(
+#'   organism_keyword = "drosophila melanogaster",
+#'   ensembl_version = 110
+#' )
+#'
+#' # View the fetched genes GRanges object
+#' dm_genes$genes
 #' }
 #'
-#' @import AnnotationHub
-#' @import ensembldb
-#' @importFrom GenomeInfoDb genome
 #' @export
 get_ensdb_genes <- function(
     organism_keyword = "drosophila melanogaster",

@@ -19,6 +19,35 @@
 #'   \item{analysis}{data.frame of full results for all tested regions}
 #'   \item{cond}{A named character vector mapping display names to internal condition names}
 #'   \item{data}{The original `data_list` input}
+#'
+#' @examples
+#' # NOTE: This example uses mock counts data, as the package's sample
+#' # data is in log2-ratio format.
+#'
+#' # Create a mock data_list with plausible count data
+#' mock_occupancy_counts <- data.frame(
+#'    name = c("peak1", "peak2", "peak3"),
+#'    gene_names = c("GeneA", "GeneB", "GeneC"),
+#'    gene_ids = c("ID_A", "ID_B", "ID_C"),
+#'    GroupA_rep1 = c(100, 20, 50), GroupA_rep2 = c(110, 25, 45),
+#'    GroupB_rep1 = c(10, 200, 55), GroupB_rep2 = c(15, 220, 60),
+#'    row.names = c("peak1", "peak2", "peak3")
+#' )
+#'
+#' mock_data_list <- list(
+#'    occupancy = mock_occupancy_counts,
+#'    test_category = "accessible"
+#' )
+#'
+#' # Run differential accessibility analysis
+#' diff_access_results <- differential_accessibility(
+#'    mock_data_list,
+#'    cond = c("GroupA", "GroupB")
+#' )
+#'
+#' # View the results summary
+#' diff_access_results
+#'
 #' @export
 differential_accessibility <- function(
     data_list,
@@ -45,6 +74,9 @@ differential_accessibility <- function(
   # Prepare NOISeq input
   noiseq_data <- readData(data = mat, factors = factors)
 
+  # Using capture.output() to remove the automatic warning to user NOIseqBIO with biological replicates
+  # NOIseqBIO uses assumptions relevant to RNAseq data, which are not appropriate
+  # for CATaDa, so should not be used here.  The usage below is correct for CATaDa data.
   capture.output(
     {
       noiseq_res <- noiseq(

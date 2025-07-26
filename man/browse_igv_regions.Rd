@@ -32,10 +32,48 @@ browse_igv_regions(
 \item{port}{Port for connection (if NULL (default) the port is assigned by Shiny)}
 }
 \value{
-(Invisibly) launches a Shiny app in the user's browser.
+Invisibly returns the Shiny app object created by `shinyApp()`.
 }
 \description{
 Launches a Shiny app with an embedded IGV browser and an interactive table listing
 differentially-bound regions (from `differential_binding()` or `differential_acccessibility()` results).
 Clicking on a region in the table will pan IGV to that locus. Sample coverage and region tracks are loaded as quantitative/annotation tracks.
+}
+\examples{
+\donttest{
+# This example launches an interactive Shiny app and is not run by
+# automated checks. It requires an internet connection for IGV.
+
+# ---- Helper function to create a sample DamIDResults object ----
+.generate_example_results <- function() {
+  mock_genes_gr <- GenomicRanges::GRanges(
+    seqnames = S4Vectors::Rle("2L", 7),
+    ranges = IRanges::IRanges(
+      start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+      end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+    ),
+    gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+    gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+  )
+  data_dir <- system.file("extdata", package = "damidBind")
+  loaded_data <- load_data_peaks(
+    binding_profiles_path = data_dir,
+    peaks_path = data_dir,
+    ensdb_genes = mock_genes_gr,
+    quantile_norm = TRUE
+  )
+  diff_results <- differential_binding(
+     loaded_data,
+     cond = c("L4", "L5"),
+     cond_names = c("L4 Neurons", "L5 Neurons")
+  )
+  return(diff_results)
+}
+diff_results <- .generate_example_results()
+# ---- End of helper section ----
+
+# Launch the interactive browser (requires network access; uncomment to run)
+# browse_igv_regions(diff_results)
+}
+
 }

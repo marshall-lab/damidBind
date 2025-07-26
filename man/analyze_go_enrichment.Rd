@@ -62,3 +62,54 @@ enrichment results table will be saved to this CSV file.}
 This is a direct alias for `analyse_go_enrichment()`; it is provided for users who prefer US English spelling.
 See `?analyse_go_enrichment` for documentation.
 }
+\examples{
+# This example requires the 'org.Dm.eg.db' package
+if (requireNamespace("org.Dm.eg.db", quietly = TRUE)) {
+
+  # ---- Helper function to create a sample DamIDResults object ----
+  .generate_example_results <- function() {
+    # Define a mock gene object. Note: Real, mappable FlyBase IDs are
+    # used for the 'gene_id' column to ensure the example runs.
+    mock_genes_gr <- GenomicRanges::GRanges(
+      seqnames = S4Vectors::Rle("2L", 7),
+      ranges = IRanges::IRanges(
+        start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+        end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+      ),
+      gene_id = c("FBgn0034439", "FBgn0031267", "FBgn0051138", "FBgn0031265",
+                  "FBgn0004655", "FBgn0000251", "FBgn0000252"),
+      gene_name = c("ap", "dpr1", "side", "dpr2", "eg", "bi", "br")
+    )
+    data_dir <- system.file("extdata", package = "damidBind")
+    loaded_data <- load_data_peaks(
+      binding_profiles_path = data_dir,
+      peaks_path = data_dir,
+      ensdb_genes = mock_genes_gr,
+      quantile_norm = TRUE
+    )
+    diff_results <- differential_binding(
+       loaded_data,
+       cond = c("L4", "L5"),
+       cond_names = c("L4 Neurons", "L5 Neurons")
+    )
+    return(diff_results)
+  }
+  diff_results <- .generate_example_results()
+  # ---- End of helper section ----
+
+  # Run GO Enrichment for genes enriched in the first condition ("L4")
+  # Note: with tiny sample data, this may not find significant terms.
+  go_results <- analyse_go_enrichment(
+    diff_results,
+    direction = "L4",
+    org_db = org.Dm.eg.db::org.Dm.eg.db
+  )
+
+  # Print the results table if any enrichment was found
+  if (!is.null(go_results)) {
+    print(go_results$results_table)
+  }
+}
+
+
+}

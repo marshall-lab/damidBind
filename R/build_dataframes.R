@@ -7,7 +7,7 @@
 #' @param binding_profiles_path Character vector. Path(s) to directories or file globs.
 #' @param binding_profiles List of GRanges objects.
 #' @return A dataframe containing the merged binding profiles.
-#' @keywords internal
+#' @noRd
 process_binding_profiles <- function(binding_profiles_path = NULL, binding_profiles = NULL) {
   # Validate that one and only one input type is provided
   if (is.null(binding_profiles_path) && is.null(binding_profiles)) {
@@ -47,7 +47,7 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
 #' @param binding_profiles_data The data.frame of binding profiles.
 #' @param quantile_norm Logical. If TRUE, normalisation is applied.
 #' @return A data.frame, which is quantile-normalised if requested.
-#' @keywords internal
+#' @noRd
 apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
   if (isTRUE(quantile_norm)) {
     message("Applying quantile normalisation")
@@ -101,32 +101,35 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'   \item{occupancy}{data.frame: Binding values summarised over reduced peaks, with overlap annotations.}
 #'   \item{test_category}{Character scalar; will be "bound".}
 #'
+#'
 #' @examples
-#' \dontrun{
-#' # Using file paths:
-#' res <- load_data_peaks(
-#'   binding_profiles_path = "data/binding/",
-#'   peaks_path = "data/peaks/",
-#'   organism = "drosophila melanogaster"
+#' # Create a mock GRanges object for gene annotation
+#' # This object, based on the package's unit tests, avoids network access
+#' # and includes a very long gene to ensure overlaps with sample data.
+#' mock_genes_gr <- GenomicRanges::GRanges(
+#'   seqnames = S4Vectors::Rle("2L", 7),
+#'   ranges = IRanges::IRanges(
+#'     start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'     end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'   ),
+#'   strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+#'   gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+#'   gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
 #' )
 #'
-#' # Using GRanges lists:
-#' res <- load_data_peaks(
-#'   binding_profiles = list(
-#'     cond1_n1 = gr1,
-#'     cond1_n2 = gr2,
-#'     cond2_n1 = gr3,
-#'     cond2_n2 = gr4
-#'   ),
-#'   peaks = list(
-#'     cond1_n1 = peaks_gr1,
-#'     cond1_n2 = peaks_gr2,
-#'     cond2_n1 = peaks_gr3,
-#'     cond2_n2 = peaks_gr4
-#'   ),
-#'   organism = "drosophila melanogaster"
+#' # Get path to sample data files included with the package
+#' data_dir <- system.file("extdata", package = "damidBind")
+#'
+#' # Run loading function using sample files and mock gene annotations
+#' loaded_data <- load_data_peaks(
+#'   binding_profiles_path = data_dir,
+#'   peaks_path = data_dir,
+#'   ensdb_genes = mock_genes_gr,
+#'   quantile_norm = TRUE
 #' )
-#' }
+#'
+#' # View the structure of the output
+#' str(loaded_data, max.level = 1)
 #'
 #' @export
 load_data_peaks <- function(
@@ -222,24 +225,33 @@ load_data_peaks <- function(
 #'   \item{test_category}{Character scalar; will be "expressed".}
 #'
 #' @examples
-#' \dontrun{
-#' # Using file paths:
-#' res <- load_data_genes(
-#'   binding_profiles_path = "data/rnapol/",
-#'   organism = "drosophila melanogaster"
+#' # Create a mock GRanges object for gene annotations
+#' # This object, based on the package's unit tests, avoids network access
+#' # and includes a very long gene to ensure overlaps with sample data.
+#' mock_genes_gr <- GenomicRanges::GRanges(
+#'   seqnames = S4Vectors::Rle("2L", 7),
+#'   ranges = IRanges::IRanges(
+#'     start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'     end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'   ),
+#'   strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+#'   gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+#'   gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
 #' )
 #'
-#' # Using GRanges list:
-#' res <- load_data_genes(
-#'   binding_profiles = list(
-#'     cond1_n1 = gr1,
-#'     cond1_n2 = gr2,
-#'     cond2_n1 = gr3,
-#'     cond2_n2 = gr4
-#'   ),
-#'   organism = "drosophila melanogaster"
+#' # Get path to sample data files included with the package
+#' data_dir <- system.file("extdata", package = "damidBind")
+#'
+#' # Run loading function using sample files and mock gene annotations
+#' # This calculates occupancy over genes instead of peaks.
+#' loaded_data_genes <- load_data_genes(
+#'   binding_profiles_path = data_dir,
+#'   ensdb_genes = mock_genes_gr,
+#'   quantile_norm = FALSE
 #' )
-#' }
+#'
+#' # View the head of the occupancy table
+#' head(loaded_data_genes$occupancy)
 #'
 #' @export
 load_data_genes <- function(
@@ -275,7 +287,7 @@ load_data_genes <- function(
 #' Each file must be in bedGraph format: chr, start, end, value.
 #' @param bedgraphs Character vector of file paths.
 #' @return data.frame with merged intervals and all sample columns.
-#' @keywords internal
+#' @noRd
 build_dataframes <- function(bedgraphs) {
   message("Building binding profile dataframe from input files ...")
   if (length(bedgraphs) < 1) stop("No bedGraph files supplied.")
@@ -315,7 +327,7 @@ build_dataframes <- function(bedgraphs) {
 #'
 #' @param gr_list Named list of GRanges objects with binding signal in numeric metadata column.
 #' @return data.frame with merged intervals and columns: chr, start, end, sample columns.
-#' @keywords internal
+#' @noRd
 build_dataframes_from_granges <- function(gr_list) {
   if (length(gr_list) == 0) stop("Empty GRanges list supplied to build_dataframes_from_granges.")
 
@@ -362,7 +374,7 @@ build_dataframes_from_granges <- function(gr_list) {
 #' @param paths Character vector of directories or patterns (e.g., "/mypath/sample*").
 #' @param pattern Optional regex for file extensions (e.g., "\\.gff$").  Case is ignored.
 #' @return Character vector of file paths.
-#' @keywords internal
+#' @noRd
 locate_files <- function(paths, pattern = NULL) {
   files <- character()
   for (p in paths) {
@@ -390,7 +402,7 @@ locate_files <- function(paths, pattern = NULL) {
 #' Import a GFF file as a GRanges object
 #' @param path File path (GFF/GTF)
 #' @return GRanges
-#' @keywords internal
+#' @noRd
 import_peaks <- function(path) {
   tryCatch(
     {
@@ -406,7 +418,7 @@ import_peaks <- function(path) {
 #' @param path File path (bedGraph)
 #' @param colname Name of the value column (usually sample name).
 #' @return data.frame
-#' @keywords internal
+#' @noRd
 import_bedgraph_as_df <- function(path, colname = "score") {
   gr <- tryCatch(
     {

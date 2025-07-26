@@ -99,7 +99,14 @@ quantile_normalisation <- function(x) {
 #' See \code{?quantile_normalisation} for documentation.
 #'
 #' @param x A numeric matrix; rows are features (e.g., genes), columns are samples/arrays.
+#' @return A numeric matrix of the same dimensions as \code{x}, quantile normalised.
 #'
 #' @aliases quantile_normalization
+#'
+#' #' @examples
+#' set.seed(1)
+#' x <- matrix(rnorm(9), nrow = 3)
+#' quantile_normalisation(x)
+#'
 #' @export
 quantile_normalization <- quantile_normalisation

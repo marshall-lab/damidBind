@@ -2,12 +2,25 @@
 % Please edit documentation in R/quantile_normalisation.R
 \name{quantile_normalization}
 \alias{quantile_normalization}
+\alias{#'}
+\alias{@examples}
+\alias{set.seed(1)}
+\alias{x}
+\alias{<-}
+\alias{matrix(rnorm(9),}
+\alias{nrow}
+\alias{=}
+\alias{3)}
+\alias{quantile_normalisation(x)}
 \title{Quantile Normalization (US spelling alias)}
 \usage{
 quantile_normalization(x)
 }
 \arguments{
 \item{x}{A numeric matrix; rows are features (e.g., genes), columns are samples/arrays.}
+}
+\value{
+A numeric matrix of the same dimensions as \code{x}, quantile normalised.
 }
 \description{
 This is a direct alias for \code{quantile_normalisation()}; it is provided for users who prefer US English spelling.

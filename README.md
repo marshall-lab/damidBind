@@ -66,5 +66,5 @@ browse_igv_regions(input.diff)
 
 # Apply additional functions on the differential binding results
 # Use the '@' accessor to obtain data slots from the S4 object
-my_custom_function(input.diff@analysis)
+my_custom_function(analysisTable(input.diff))
 ```

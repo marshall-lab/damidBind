@@ -8,13 +8,10 @@ Authors@R:
     role = c("aut", "cre"), 
     comment = c(ORCID = "0000-0003-1605-3871"))
 Description: 
-    Identifies differentially-bound loci and/or differentially-expressed genes 
-    from DamID-seq datasets. Provides flexible quantification, visualisation 
-    (IGV visualisation, volcano, GSEA and Venn plots), built around 
-    a limma/NOIseq framework and standard Bioconductor classes.
+    The damidBind package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either limma (for conventional log2 ratio DamID binding data) or NOIseq (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots via ClusterProfiler and proportional Venn diagrams via BioVenn for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by Shiny and igvShiny) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.
 License: GPL-3
 Encoding: UTF-8
-biocViews: DifferentialExpression, GeneExpression, Epigenetics, Visualization, Sequencing, Software
+biocViews: DifferentialExpression, GeneExpression, Transcription, Epigenetics, Visualization, Sequencing, Software
 Depends: R (>= 4.4.0)
 Imports: 
     ggplot2,

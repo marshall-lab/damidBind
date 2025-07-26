@@ -7,11 +7,25 @@
 reduce_regions(peaks)
 }
 \arguments{
-\item{peaks}{List of GRanges objects (e.g., from multiple samples)}
+\item{peaks}{A list of GRanges objects.}
 }
 \value{
-GRanges: Reduced (union) regions.
+A GRanges object containing the reduced (union) regions, with a
+  `name` metadata column in the format "chr:start-end".
 }
 \description{
-Reduce a list of GRanges to unique, non-overlapping regions
+Takes a list of GRanges objects (e.g., peak sets from multiple samples),
+combines them, and merges any overlapping or adjacent regions into a single,
+minimal set of genomic intervals.
+}
+\examples{
+# Create a list of GRanges objects with overlapping regions
+gr1 <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100, 200), width = 50))
+gr2 <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(120, 300), width = 50))
+gr_list <- list(gr1,gr2)
+
+# Reduce the list to a single set of non-overlapping regions
+reduced <- reduce_regions(gr_list)
+print(reduced)
+# The result combines overlapping regions [100-149] and [120-169] into [100-169].
 }

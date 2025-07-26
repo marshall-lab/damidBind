@@ -12,17 +12,53 @@ gene_occupancy(
 )
 }
 \arguments{
-\item{binding_data}{A data.frame as returned by build_dataframes(): Must have columns 'chr', 'start', 'end', and then sample columns.}
+\item{binding_data}{A data.frame as produced by `build_dataframes()`. It must
+contain columns 'chr', 'start', 'end', and then one numeric column per sample.}
 
-\item{ensdb_genes}{A GRanges object of gene annotations.  Retrieved by `get_ensdb_genes` by default, but a custom GRanges object of genes can be provided.  Must contain metadata columns 'gene_name' and 'gene_id'.}
+\item{ensdb_genes}{A GRanges object of gene annotations. A custom GRanges
+object can be provided, but it must contain metadata columns 'gene_name'
+and 'gene_id'. If not provided, it is retrieved via `get_ensdb_genes`.}
 
-\item{buffer}{Integer. Optional number of bases to extend gene boundaries both upstream and downstream.}
+\item{buffer}{Integer. Number of bases to extend gene boundaries on both sides
+before calculating overlaps. Default is 0.}
 
-\item{BPPARAM}{A BiocParallel parameter object. Default: BiocParallel::bpparam(). On Windows, will use serial for safety.}
+\item{BPPARAM}{A BiocParallel parameter object for parallel computation.
+Default: `BiocParallel::bpparam()`.}
 }
 \value{
-data.frame: rows = genes, columns = one per sample, plus annotation columns (gene name, nfrags, etc.)
+A data.frame where rows are genes and columns include one per sample
+  (containing the weighted mean occupancy), plus annotation columns such as
+  gene name, number of overlapping fragments ('nfrags'), and gene ID.
 }
 \description{
-For each gene, averages log2 scores of all overlapping fragments (weighted by coverage).
+For each gene in the provided annotation, this function calculates the average
+log2 score by taking a weighted mean of all overlapping fragments from the
+binding data. The weighting is based on the width of the overlap between
+each fragment and the gene body.
+}
+\examples{
+# 1. Create a GRanges object for gene annotations
+genes_gr <- GenomicRanges::GRanges(
+  "chrY",
+  IRanges::IRanges(c(1000, 3000), width = 500),
+  gene_name = c("gene1", "gene2"),
+  gene_id = c("ID1", "ID2")
+)
+
+# 2. Create mock binding data
+binding_df <- data.frame(
+  chr = "chrY",
+  start = c(950, 1200, 3100),
+  end = c(1050, 1300, 3200),
+  sampleA = c(1.5, 2.0, 0.5),
+  sampleB = c(1.8, 2.2, 0.4)
+)
+
+# 3. Calculate average gene occupancy
+# Use BiocParallel::SerialParam() for deterministic execution in examples
+if (requireNamespace("BiocParallel", quietly = TRUE)) {
+  gene_occ <- gene_occupancy(binding_df, genes_gr,
+                             BPPARAM = BiocParallel::SerialParam())
+  print(gene_occ)
+}
 }

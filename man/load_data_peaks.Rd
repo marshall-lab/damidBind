@@ -58,26 +58,32 @@ metadata column representing the binding signal, and all GRanges should be suppl
 as a named list, with element names used as sample names.
 }
 \examples{
-\dontrun{
-# Using file paths:
-res <- load_data_peaks(
-  binding_profiles_path = "data/binding/",
-  peaks_path = "data/peaks/",
-  organism = "drosophila melanogaster")
+# Create a mock GRanges object for gene annotation
+# This object, based on the package's unit tests, avoids network access
+# and includes a very long gene to ensure overlaps with sample data.
+mock_genes_gr <- GenomicRanges::GRanges(
+  seqnames = S4Vectors::Rle("2L", 7),
+  ranges = IRanges::IRanges(
+    start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+    end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+  ),
+  strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+  gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+  gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+)
 
-# Using GRanges lists:
-res <- load_data_peaks(
-  binding_profiles = list(
-    cond1_n1 = gr1,
-    cond1_n2 = gr2,
-    cond2_n1 = gr3,
-    cond2_n2 = gr4),
-  peaks = list(
-    cond1_n1 = peaks_gr1,
-    cond1_n2 = peaks_gr2,
-    cond2_n1 = peaks_gr3,
-    cond2_n2 = peaks_gr4),
-  organism = "drosophila melanogaster")
-}
+# Get path to sample data files included with the package
+data_dir <- system.file("extdata", package = "damidBind")
+
+# Run loading function using sample files and mock gene annotations
+loaded_data <- load_data_peaks(
+  binding_profiles_path = data_dir,
+  peaks_path = data_dir,
+  ensdb_genes = mock_genes_gr,
+  quantile_norm = TRUE
+)
+
+# View the structure of the output
+str(loaded_data, max.level = 1)
 
 }

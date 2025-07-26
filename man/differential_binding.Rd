@@ -31,3 +31,39 @@ Setup and differential analysis for occupancy/binding experiments
 using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
 prepares experiment matrix, fits linear models, and returns DE loci.
 }
+\examples{
+# Create a mock GRanges object for gene annotations
+# This object, based on the package's unit tests, avoids network access.
+mock_genes_gr <- GenomicRanges::GRanges(
+  seqnames = S4Vectors::Rle("2L", 7),
+  ranges = IRanges::IRanges(
+    start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+    end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+  ),
+  strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+  gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+  gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+)
+
+# Get path to sample data files included with the package
+data_dir <- system.file("extdata", package = "damidBind")
+
+# Load data
+loaded_data <- load_data_peaks(
+  binding_profiles_path = data_dir,
+  peaks_path = data_dir,
+  ensdb_genes = mock_genes_gr,
+  quantile_norm = TRUE
+)
+
+# Run differential binding analysis
+diff_results <- differential_binding(
+   loaded_data,
+   cond = c("L4", "L5"),
+   cond_names = c("L4 Neurons", "L5 Neurons")
+)
+
+# View the results summary
+diff_results
+
+}

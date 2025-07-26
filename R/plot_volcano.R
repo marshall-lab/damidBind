@@ -25,7 +25,7 @@
 #'
 #' @return A `list` (the merged configuration or `default_list` if `config_input`
 #'   was a non-list invalid type) or `NULL` (if `config_input` was `NULL`, `FALSE`, or `0`).
-#' @keywords internal
+#' @noRd
 check_list_input <- function(default_list, config_input) {
   if (is.list(config_input)) {
     return(modifyList(default_list, config_input))
@@ -96,8 +96,48 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{height} (numeric): Height of the plot in inches. Default is 4.
 #'   }
 #'
-#' @return A `ggplot` object, invisibly. If `save` is specified, the plot is
-#'   also saved to the specified file(s).
+#' @return A `ggplot` object, invisibly.
+#'
+#' @examples
+#' # ---- Helper function to create a sample DamIDResults object ----
+#' .generate_example_results <- function() {
+#'   mock_genes_gr <- GenomicRanges::GRanges(
+#'     seqnames = S4Vectors::Rle("2L", 7),
+#'     ranges = IRanges::IRanges(
+#'       start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'       end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'     ),
+#'     gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+#'     gene_name = c("ap", "dpr1", "side", "mav", "geneE", "geneF", "LargeTestGene")
+#'   )
+#'   data_dir <- system.file("extdata", package = "damidBind")
+#'   loaded_data <- load_data_peaks(
+#'     binding_profiles_path = data_dir,
+#'     peaks_path = data_dir,
+#'     ensdb_genes = mock_genes_gr,
+#'     quantile_norm = TRUE
+#'   )
+#'   diff_results <- differential_binding(
+#'      loaded_data,
+#'      cond = c("L4", "L5"),
+#'      cond_names = c("L4 Neurons", "L5 Neurons")
+#'   )
+#'   return(diff_results)
+#' }
+#' diff_results <- .generate_example_results()
+#' # ---- End of helper section ----
+#'
+#' # Generate a default volcano plot
+#' plot_volcano(diff_results)
+#'
+#' # Generate a plot with a highlighted gene group, but no other labels
+#' L4_genes_to_highlight <- c("ap", "dpr1", "side", "mav")
+#' plot_volcano(
+#'   diff_results,
+#'   label_config = NULL,
+#'   highlight = list("Key L4 Genes" = L4_genes_to_highlight)
+#' )
+#'
 #' @export
 plot_volcano <- function(
     diff_results,
@@ -305,7 +345,7 @@ plot_volcano <- function(
       plot_config$ylab <- if (plot_config$ystat == "minuslogp") "-log(p)" else plot_config$ystat
     }
   } else {
-    stop(paste("ystat ('", plot_config$ystat, "') is not a valid column in plot data. Valid columns are: ", paste(names(plot_df), collapse = ", ")))
+    stop(sprintf("ystat ('%s') is not a valid column in plot data. Valid columns are: %s", plot_config$ystat, paste(names(plot_df), collapse = ", ") ))
   }
 
   # Volcano plot construction
@@ -388,7 +428,7 @@ plot_volcano <- function(
         label_config$names_clean_extra
       )
       if (length(indices_to_remove) > 0) { # Explicitly use length
-        label_df_general <- label_df_general[seq_len(nrow(label_df_general))[-indices_to_remove], , drop = FALSE] # More robust removal
+        label_df_general <- label_df_general[seq_len(nrow(label_df_general))[-indices_to_remove], , drop = FALSE]
       }
     }
 
@@ -428,9 +468,7 @@ plot_volcano <- function(
         message("An error occurred while saving the plot file(s): ", e$message)
       }
     )
-  } else {
-    # Only print the plot if not saving to a file
-    print(p)
   }
+
   invisible(p)
 }

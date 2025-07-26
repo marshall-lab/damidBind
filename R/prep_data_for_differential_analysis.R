@@ -22,7 +22,7 @@
 #'   }
 #' @importFrom stringr str_detect
 #' @importFrom stats setNames
-#' @keywords internal
+#' @noRd
 prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NULL) {
   if (!is.list(data_list)) {
     stop("'data_list' must be the full output of load_data_peaks or load_data_genes.")

@@ -4,9 +4,12 @@
 \name{DamIDResults}
 \alias{DamIDResults}
 \alias{show,DamIDResults-method}
+\alias{analysisTable}
 \title{The DamIDResults Class}
 \usage{
 \S4method{show}{DamIDResults}(object)
+
+analysisTable(object)
 }
 \arguments{
 \item{object}{A `DamIDResults` object.}
@@ -32,3 +35,32 @@ internal condition identifiers used in the analysis.}
 including the occupancy data.frame and other metadata.}
 }}
 
+\examples{
+# Helper function to create a sample DamIDResults object for examples
+.generate_accessor_example_results <- function() {
+  analysis_df <- data.frame(
+    logFC = c(2, -2), P.Value = c(0.01, 0.01),
+    row.names = c("chr1:1-100", "chr1:101-200")
+  )
+  new("DamIDResults",
+      analysis = analysis_df,
+      upCond1 = analysis_df[1, , drop = FALSE],
+      upCond2 = analysis_df[2, , drop = FALSE],
+      cond = c("Condition 1" = "C1", "Condition 2" = "C2"),
+      data = list(test_category = "bound")
+  )
+}
+dummy_results <- .generate_accessor_example_results()
+
+# Extract the full analysis table
+head(analysisTable(dummy_results))
+
+# Extract regions enriched in condition 1
+head(enrichedCond1(dummy_results))
+
+# Extract regions enriched in condition 2
+head(enrichedCond2(dummy_results))
+
+# Get the condition names
+conditionNames(dummy_results)
+}

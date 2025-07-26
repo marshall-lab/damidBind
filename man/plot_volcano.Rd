@@ -71,10 +71,50 @@ If a `list`, it specifies saving parameters:
 }}
 }
 \value{
-A `ggplot` object, invisibly. If `save` is specified, the plot is
-  also saved to the specified file(s).
+A `ggplot` object, invisibly.
 }
 \description{
 Plots a volcano plot with optional layered highlights and overlays,
 given the results from `differential_binding()` or `differential_analysis()`.
+}
+\examples{
+# ---- Helper function to create a sample DamIDResults object ----
+.generate_example_results <- function() {
+  mock_genes_gr <- GenomicRanges::GRanges(
+    seqnames = S4Vectors::Rle("2L", 7),
+    ranges = IRanges::IRanges(
+      start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+      end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+    ),
+    gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+    gene_name = c("ap", "dpr1", "side", "mav", "geneE", "geneF", "LargeTestGene")
+  )
+  data_dir <- system.file("extdata", package = "damidBind")
+  loaded_data <- load_data_peaks(
+    binding_profiles_path = data_dir,
+    peaks_path = data_dir,
+    ensdb_genes = mock_genes_gr,
+    quantile_norm = TRUE
+  )
+  diff_results <- differential_binding(
+     loaded_data,
+     cond = c("L4", "L5"),
+     cond_names = c("L4 Neurons", "L5 Neurons")
+  )
+  return(diff_results)
+}
+diff_results <- .generate_example_results()
+# ---- End of helper section ----
+
+# Generate a default volcano plot
+plot_volcano(diff_results)
+
+# Generate a plot with a highlighted gene group, but no other labels
+L4_genes_to_highlight <- c("ap", "dpr1", "side", "mav")
+plot_volcano(
+  diff_results,
+  label_config = NULL,
+  highlight = list("Key L4 Genes" = L4_genes_to_highlight)
+)
+
 }

@@ -82,8 +82,7 @@ analyse_go_enrichment(
 browse_igv_regions(input.diff)
 
 # Apply additional functions on the differential binding results
-# Use the '@' accessor to get data 'slots' from the S4 object
-my_custom_function(input.diff@analysis)
+my_custom_function(analysisTable(input.diff))
 ```
 
 
@@ -332,14 +331,14 @@ The return value of this function includes the full analysis table, including th
 
 ## Further analysis
 
-The `DamIDResults` object returned by `differential_binding()` and `differential_accessibility()` contains a slot named `analysis` (a data.frame) that can be used for any additional downstream data exploration, filtering, or analysis. You access this slot using the `@` operator.
+The `DamIDResults` object returned by `differential_binding()` and `differential_accessibility()` contains a slot named `analysis` (a dataframe) that can be used for any additional downstream data exploration, filtering, or analysis. You access this slot using the `analysisTable()` accessor.
 
-Below are the first 20 lines of the `analysis` slot from our `diff.bsh` object to illustrate the structure.
+Below are the first 20 lines of `analysisTable(diff.bsh)` to illustrate the structure.
 
 ```{r paged_table, echo=FALSE, results='asis'}
 # Display the data frame as a paged table
 DT::datatable(
-  head(diff.bsh@analysis, n = 20),
+  head(analysisTable(diff.bsh), n = 20),
   options = list(
     pageLength = 10, # Number of rows to show per page
     scrollX = TRUE # Enable horizontal scrolling for wide tables
