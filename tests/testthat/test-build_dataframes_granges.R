@@ -39,8 +39,8 @@ test_that("build_dataframes_from_granges handles GRanges with missing numeric mc
   gr_no_score <- GRanges("chr1", IRanges(1, width = 10)) # No score MCol
   gr_list_invalid <- list(sampleA = gr_no_score)
   expect_error(
-        damidBind:::build_dataframes_from_granges(gr_list_invalid),
-        "has no numeric metadata column|invalid subscript type 'list'|subscript out of bounds"
+    damidBind:::build_dataframes_from_granges(gr_list_invalid),
+    "has no numeric metadata column|invalid subscript type 'list'|subscript out of bounds"
   )
 })
 
@@ -59,10 +59,10 @@ test_that("build_dataframes_from_granges maintains original order if no merge ne
   gr_list <- list(sampleA = gr1)
   result <- data.frame(
     chr = as.character(seqnames(gr1)),
-      start = start(gr1),
-      end = end(gr1),
-      sampleA = mcols(gr1)$score,
-      stringsAsFactors = FALSE
-    )
+    start = start(gr1),
+    end = end(gr1),
+    sampleA = mcols(gr1)$score,
+    stringsAsFactors = FALSE
+  )
   expect_equal(damidBind:::build_dataframes_from_granges(gr_list), result, ignore_attr = "row.names")
 })

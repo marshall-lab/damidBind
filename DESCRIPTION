@@ -15,7 +15,7 @@ Description:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-biocViews: DifferentialBinding, GeneExpression, Epigenetics, Visualization, Sequencing, Software
+biocViews: DifferentialExpression, GeneExpression, Epigenetics, Visualization, Sequencing, Software
 Depends: R (>= 4.0.0)
 Imports: 
     ggplot2,

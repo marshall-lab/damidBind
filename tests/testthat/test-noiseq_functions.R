@@ -58,7 +58,7 @@ test_that("differential_accessibility returns expected structure and values", {
   expect_equal(res@analysis["peak1", "CondA_mean"], mean(c(100, 110)))
   expect_equal(res@analysis["peak1", "CondB_mean"], mean(c(20, 25)))
 
-  expect_equal(res@analysis["peak1", "logFC"], log2(105/22.5))
+  expect_equal(res@analysis["peak1", "logFC"], log2(105 / 22.5))
   # In the real run, strong evidence leads to prob=1, which correctly becomes Inf.
   expect_equal(res@analysis["peak1", "minuslogp"], Inf)
 

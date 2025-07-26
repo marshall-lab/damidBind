@@ -24,10 +24,9 @@ differential_accessibility <- function(
     data_list,
     cond,
     cond_names = NULL,
-    norm = "n"
-,    q = 0.8
-) {
-
+    norm = "n",
+    q = 0.8
+    ) {
   # Prep data for analysis
   prep_results <- prep_data_for_differential_analysis(
     data_list = data_list,
@@ -47,15 +46,17 @@ differential_accessibility <- function(
   # Prepare NOISeq input
   noiseq_data <- readData(data = mat, factors = factors)
 
-  capture.output({
-    noiseq_res <- noiseq(
-      noiseq_data,
-      conditions = cond_internal,
-      factor = "condition",
-      norm = norm,
-      replicates = "biological"
-    )
-  }, file = NULL)
+  capture.output(
+    {
+      noiseq_res <- noiseq(
+        noiseq_data,
+        conditions = cond_internal,
+        factor = "condition",
+        norm = norm,
+        replicates = "biological"
+      )
+    },
+    file = NULL)
 
   noiseq_df <- as.data.frame(noiseq_res@results[[1]])
 
@@ -107,14 +108,14 @@ differential_accessibility <- function(
   report_results(cond_display[2], upCond2)
 
   # adjust test_category to reflect accessibility
-  data_list$test_category = "accessible"
+  data_list$test_category <- "accessible"
 
   # Return a formal S4 object
   new("DamIDResults",
-      upCond1    = upCond1,
-      upCond2    = upCond2,
-      analysis   = noiseq_df,
-      cond       = mapping_cond,
-      data       = data_list
+    upCond1    = upCond1,
+    upCond2    = upCond2,
+    analysis   = noiseq_df,
+    cond       = mapping_cond,
+    data       = data_list
   )
 }

@@ -20,11 +20,11 @@ make_dummy_diff_results <- function() {
   upCond2 <- analysis_table[analysis_table$adj.P.Val < 0.05 & analysis_table$logFC < 0, ]
 
   new("DamIDResults",
-      upCond1 = upCond1,
-      upCond2 = upCond2,
-      analysis = analysis_table,
-      cond = c(ConditionA = "CondA", ConditionB = "CondB"),
-      data = list(test_category = "bound")
+    upCond1 = upCond1,
+    upCond2 = upCond2,
+    analysis = analysis_table,
+    cond = c(ConditionA = "CondA", ConditionB = "CondB"),
+    data = list(test_category = "bound")
   )
 }
 
@@ -118,4 +118,3 @@ test_that("plot_volcano skips saving if save is NULL/FALSE/0", {
   expect_true(file.exists(expected_file))
   file.remove(expected_file)
 })
-

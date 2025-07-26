@@ -24,7 +24,7 @@ vignette: |
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  comment = '##',
+  comment = "##",
   warning = FALSE
 )
 library(DT)
@@ -51,7 +51,7 @@ Using `damidBind`, in eight easy steps:
 input <- load_data_peaks(
   binding_profiles_path = "path/to/binding_profile_bedgraphs",
   peaks_path = "path/to/peak_gffs_or_beds"
-) # add quantile_norm = T if appropriate
+) # add quantile_norm = TRUE if appropriate
 
 # Deterimine differential binding  (use differential_accesibility() for CATaDa chromatin accessibility data)
 input.diff <- differential_binding(
@@ -74,7 +74,7 @@ plot_volcano(input.diff)
 
 # Analyse GO enrichment in peaks associated with one condition
 analyse_go_enrichment(
-  input.diff, 
+  input.diff,
   direction = "Condition 1 identifier set with differential_binding() above"
 )
 
@@ -147,7 +147,7 @@ A small example dataset is provided with `damidbind`. The dataset is derived fro
 To load up the data, we only need to know the path to the installed example datafiles:
 
 ```{r data_files}
-data_dir = system.file("extdata", package = "damidBind")
+data_dir <- system.file("extdata", package = "damidBind")
 
 # Show the files present for clarity in this vignette example:
 files <- list.files(data_dir)
@@ -167,10 +167,10 @@ And then we can use `damidBind` on the data. First, we load up the data. There a
 In this case, we're dealing with the binding of the transcription factor Bsh, so we'll use the `load_data_peaks()`. As this is the same transcription factor being profiled in two different cell types, and we'd expect the binding distribution to be similar, we'll use quantile normalisation on the datasets.
 
 ```{r load_data}
-input.bsh = load_data_peaks(
+input.bsh <- load_data_peaks(
   binding_profiles_path = data_dir,
-  peaks_path = data_dir, 
-  quantile_norm = T
+  peaks_path = data_dir,
+  quantile_norm = TRUE
 )
 ```
 
@@ -193,10 +193,10 @@ The input from `load_data_peaks()` or `load_data_genes()` feeds directly into th
 Here, we're not dealing with CATaDa data, so we'll use `differential_binding()` to find the significant, differentially-bound loci between the two conditions:
 
 ```{r differential_binding}
-diff.bsh = differential_binding(
+diff.bsh <- differential_binding(
   input.bsh,
-  cond = c("L4","L5"),
-  cond_names = c("L4 neurons","L5 neurons")
+  cond = c("L4", "L5"),
+  cond_names = c("L4 neurons", "L5 neurons")
 )
 ```
 
@@ -246,12 +246,12 @@ plot_volcano(
 
 #### Cleaning up the gene names
 
-However, a lot of plot label space can be taken up by generally uninformative snoRNA / tRNA genes. We can optionally remove these from the plot using the `clean_names=T` parameter, to show more potentially informative labels.
+However, a lot of plot label space can be taken up by generally uninformative snoRNA / tRNA genes. We can optionally remove these from the plot using the `clean_names=TRUE` parameter, to show more potentially informative labels.
 
 ```{r volcanoPlotCleanNames, fig.cap="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes associated with differentially bound peaks are displayed, after some common, but less useful, gene label classes are removed.  (Dataset from chromosome 2L only)"}
 plot_volcano(
   diff.bsh,
-  label_config = list(clean_names=T)
+  label_config = list(clean_names = TRUE)
 )
 ```
 
@@ -262,7 +262,7 @@ Already, that's becoming a lot clearer.
 But, what if we now wanted to highlight genes bound by Bsh, that are only expressed in L4 neurons? (data from scRNA-seq data, provided in Supplementary Files 2 & 3 of [@Xu2024]). This is straightforward to do:
 
 ```{r volcanoPlotHighlightedGenes, fig.cap="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in L4 neurons are highlighted.  (Dataset from chromosome 2L only)"}
-L4_only_genes = c("Mp", "tnc", "grn", "rut", "mtd", "rdgB", "Octbeta2R", "msi", "Octbeta3R", "beat-IIIb", "ap", "Fili", "LRP1", "CG7378", "CG13698", "twit", "CG9336", "tok", "CG12991", "dpr1", "CG42339", "beat-IIb", "mav", "CG34377", "alpha-Man-IIb", "Pli", "CG32428", "osp", "Pka-R2", "CG15202", "CG8916", "CG15894", "side", "CG42258", "CHES-1-like", "SP2353", "CG44838", "Atg1", "Traf4", "DIP-beta", "KCNQ", "metro", "nAChRalpha1", "path", "CG10527", "Pde8", "CG30116", "CG7985", "CG1688", "dpr12", "pigs", "Eip63F-1", "CG14795", "2mit", "CG42340", "BicD", "CG18265", "hppy", "5-HT1A", "Chd64", "CG33090", "Dyb", "Btk29A", "Apc", "Rox8", "nAChRalpha5", "CG42748", "CG3257", "CG2269", "beat-IV", "CG8086", "glec", "CG31688", "oaf", "Drl-2", "CG8188", "aos", "CG31676", "REPTOR", "RabX4", "alt", "Pura", "DIP1", "ewg", "side-VIII", "nAChRalpha7", "Alh", "kug", "Ca-Ma2d", "bru2", "CG43737", "lncRNA:CR44024", "lncRNA:CR46006", "Had1", "CG3961", "comm", "Toll-6", "CG13685", "tow", "CG10019")
+L4_only_genes <- c("Mp", "tnc", "grn", "rut", "mtd", "rdgB", "Octbeta2R", "msi", "Octbeta3R", "beat-IIIb", "ap", "Fili", "LRP1", "CG7378", "CG13698", "twit", "CG9336", "tok", "CG12991", "dpr1", "CG42339", "beat-IIb", "mav", "CG34377", "alpha-Man-IIb", "Pli", "CG32428", "osp", "Pka-R2", "CG15202", "CG8916", "CG15894", "side", "CG42258", "CHES-1-like", "SP2353", "CG44838", "Atg1", "Traf4", "DIP-beta", "KCNQ", "metro", "nAChRalpha1", "path", "CG10527", "Pde8", "CG30116", "CG7985", "CG1688", "dpr12", "pigs", "Eip63F-1", "CG14795", "2mit", "CG42340", "BicD", "CG18265", "hppy", "5-HT1A", "Chd64", "CG33090", "Dyb", "Btk29A", "Apc", "Rox8", "nAChRalpha5", "CG42748", "CG3257", "CG2269", "beat-IV", "CG8086", "glec", "CG31688", "oaf", "Drl-2", "CG8188", "aos", "CG31676", "REPTOR", "RabX4", "alt", "Pura", "DIP1", "ewg", "side-VIII", "nAChRalpha7", "Alh", "kug", "Ca-Ma2d", "bru2", "CG43737", "lncRNA:CR44024", "lncRNA:CR46006", "Had1", "CG3961", "comm", "Toll-6", "CG13685", "tow", "CG10019")
 
 plot_volcano(
   diff.bsh,
@@ -271,8 +271,8 @@ plot_volcano(
     "L4 specific" = L4_only_genes
   ),
   highlight_config = list(
-    size=1.5,
-    label=T
+    size = 1.5,
+    label = TRUE
   )
 )
 ```
@@ -282,7 +282,7 @@ Although this is just a truncated sample from chr 2L, the link between a subset 
 We could also compare this against genes bound by Bsh and only expressed in L5 neurons. For clarity, we'll drop gene labels from this plot.
 
 ```{r volcannoPlotMultipleHighlights, fig.cap="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in each subtype are highlighted.   (Dataset from chromosome 2L only)"}
-L5_only_genes = c("Ptth", "Nep2", "kek1", "CG4168", "kek3", "CG6959", "Dtg", "ND-23", "Scp2", "Octalpha2R", "Hs6st", "CG16791", "SKIP", "LpR1", "RpL34a", "Ald1", "CG10011", "heph", "nolo", "Act42A","Fkbp12", "Pkc53E", "AstC-R1", "Muc14A", "CG33543", "ChAT", "Act5C", "Ptpmeg2", "fabp", "CG31221", "Octbeta1R", "CG14669", "sdk", "Shawl", "side-V", "NaCP60E", "sif", "OtopLc", "side-II", "kuz", "CG42540", "Dscam3", "haf", "CG42673", "pdm3", "tinc", "CG42750", "sdt", "Nuak1", "Hk", "scrib", "tsr", "dpr20", "GluRIB", "CG43902", "CG44242", "Dscam2", "CG44422", "lncRNA:CR45312", "Scsalpha1", "Rop", "Con", "Hsc70-3", "dpr8", "eag", "ND-18", "Nrt", "CG17839", "fz", "CG32137", "Rh7", "Sod1", "CG32052", "dpr6", "Hsp67Ba", "axed", "GluRIA", "robo2")
+L5_only_genes <- c("Ptth", "Nep2", "kek1", "CG4168", "kek3", "CG6959", "Dtg", "ND-23", "Scp2", "Octalpha2R", "Hs6st", "CG16791", "SKIP", "LpR1", "RpL34a", "Ald1", "CG10011", "heph", "nolo", "Act42A", "Fkbp12", "Pkc53E", "AstC-R1", "Muc14A", "CG33543", "ChAT", "Act5C", "Ptpmeg2", "fabp", "CG31221", "Octbeta1R", "CG14669", "sdk", "Shawl", "side-V", "NaCP60E", "sif", "OtopLc", "side-II", "kuz", "CG42540", "Dscam3", "haf", "CG42673", "pdm3", "tinc", "CG42750", "sdt", "Nuak1", "Hk", "scrib", "tsr", "dpr20", "GluRIB", "CG43902", "CG44242", "Dscam2", "CG44422", "lncRNA:CR45312", "Scsalpha1", "Rop", "Con", "Hsc70-3", "dpr8", "eag", "ND-18", "Nrt", "CG17839", "fz", "CG32137", "Rh7", "Sod1", "CG32052", "dpr6", "Hsp67Ba", "axed", "GluRIA", "robo2")
 
 
 plot_volcano(
@@ -293,8 +293,8 @@ plot_volcano(
     "L5 specific" = L5_only_genes
   ),
   highlight_config = list(
-    size=1.5,
-    label=F
+    size = 1.5,
+    label = FALSE
   )
 )
 ```
@@ -321,9 +321,9 @@ The table on the left side of the window can be sorted by clicking on the column
 Gene ontology is a powerful means of understanding which biological processes may be changing between two sets of data. Using `r Biocpkg("ClusterProfiler")` as the backend, `damidbind` provides the function `analyse_go_enrichment()` to explore enrichment of genes associated with bound peaks, accessible regions, or differential expression. In all cases, the underlying gene IDs, rather than gene names, are used for enrichment analysis.
 
 ```{r gsea, fig.cap="Enriched GO terms for genes associated with differential Bsh binding in L4 neuron.  Dataset from chromosome 2L only."}
-go.bsh_l4 = analyse_go_enrichment(
-  diff.bsh, 
-  direction="L4", 
+go.bsh_l4 <- analyse_go_enrichment(
+  diff.bsh,
+  direction = "L4",
   org_db = org.Dm.eg.db::org.Dm.eg.db
 )
 ```
@@ -339,12 +339,12 @@ Below are the first 20 lines of the `analysis` slot from our `diff.bsh` object t
 ```{r paged_table, echo=FALSE, results='asis'}
 # Display the data frame as a paged table
 DT::datatable(
-  head(diff.bsh@analysis,n=20),
+  head(diff.bsh@analysis, n = 20),
   options = list(
     pageLength = 10, # Number of rows to show per page
     scrollX = TRUE   # Enable horizontal scrolling for wide tables
   )
-) %>% DT::formatRound(columns=c(1:8,11),digits=2)
+) %>% DT::formatRound(columns = c(1:8, 11), digits = 2)
 ```
 
 

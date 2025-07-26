@@ -24,21 +24,21 @@ plot_venn <- function(
     filename = NULL,
     font = "sans",
     format = c("pdf", "svg"),
-    region_colours = c("#FFA500","#2288DD","#CCCCCC")
-) {
+    region_colours = c("#FFA500", "#2288DD", "#CCCCCC")
+    ) {
   # Argument and field checks
   stopifnot(is(diff_results, "DamIDResults"))
 
   if (is.null(set_labels))
-    set_labels = names(diff_results@cond)
+    set_labels <- names(diff_results@cond)
 
   upCond1 <- rownames(diff_results@upCond1)
   upCond2 <- rownames(diff_results@upCond2)
   all_ids <- rownames(diff_results@analysis)
   # Defensive: remove NAs or empty
-  upCond1 <- upCond1[!is.na(upCond1) & nchar(upCond1)>0]
-  upCond2 <- upCond2[!is.na(upCond2) & nchar(upCond2)>0]
-  all_ids <- all_ids[!is.na(all_ids) & nchar(all_ids)>0]
+  upCond1 <- upCond1[!is.na(upCond1) & nchar(upCond1) > 0]
+  upCond2 <- upCond2[!is.na(upCond2) & nchar(upCond2) > 0]
+  all_ids <- all_ids[!is.na(all_ids) & nchar(all_ids) > 0]
 
   # Check minimum viable dataset
   if (length(all_ids) < 2)
@@ -61,7 +61,7 @@ plot_venn <- function(
     ytitle = set_labels[2],
     ztitle = NULL,
     title = title,
-    subtitle =subtitle,
+    subtitle = subtitle,
     x_c = region_colours[1],
     y_c = region_colours[2],
     z_c = region_colours[3],
@@ -85,7 +85,7 @@ plot_venn <- function(
   }
 
   # Default colours: orange, blue, neutral
-  reg_col <- rep(region_colours, length.out=3)
+  reg_col <- rep(region_colours, length.out = 3)
 
   # Call BioVenn (discarding the verbose set numbers messaging from this package)
   venn <- suppressMessages(do.call(BioVenn::draw.venn, biovenn_params))

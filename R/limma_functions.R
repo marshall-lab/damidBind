@@ -23,8 +23,7 @@ differential_binding <- function(
     cond,
     cond_names = NULL,
     fdr = 0.05
-) {
-
+    ) {
   # Prep data for analysis
   prep_results <- prep_data_for_differential_analysis(
     data_list = data_list,
@@ -91,18 +90,18 @@ differential_binding <- function(
   if ("gene_names" %in% colnames(occupancy_df) && "gene_ids" %in% colnames(occupancy_df)) {
     gene_names_annot <- occupancy_df[rownames(result_table), "gene_names"]
     gene_ids_annot   <- occupancy_df[rownames(result_table), "gene_ids"]
-    result_table[,"gene_names"] <- gene_names_annot
-    result_table[,"gene_ids"]   <- gene_ids_annot
+    result_table[, "gene_names"] <- gene_names_annot
+    result_table[, "gene_ids"]   <- gene_ids_annot
   } else {
-    result_table[,"gene_names"] <- NA_character_
-    result_table[,"gene_ids"]   <- NA_character_
+    result_table[, "gene_names"] <- NA_character_
+    result_table[, "gene_ids"]   <- NA_character_
   }
 
   result_table$minuslogp <- -log10(result_table$adj.P.Val) # Adjusted P values
 
   # Up/down regulation at FDR
-  upCond1 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC > 0,]
-  upCond2 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC < 0,]
+  upCond1 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC > 0, ]
+  upCond2 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC < 0, ]
 
   # Prepare mapping for output
   mapping_cond <- setNames(cond_internal, cond_display)
@@ -122,10 +121,10 @@ differential_binding <- function(
 
   # Return a formal S4 object
   new("DamIDResults",
-      upCond1 = upCond1,
-      upCond2 = upCond2,
-      analysis = result_table,
-      cond = mapping_cond,
-      data = data_list
+    upCond1 = upCond1,
+    upCond2 = upCond2,
+    analysis = result_table,
+    cond = mapping_cond,
+    data = data_list
   )
 }

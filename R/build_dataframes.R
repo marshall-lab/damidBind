@@ -134,10 +134,10 @@ load_data_peaks <- function(
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
     BPPARAM = BiocParallel::bpparam()
-) {
+    ) {
 
   if (is.null(ensdb_genes)) {
-    ensdb_genes = get_ensdb_genes(organism_keyword = organism)$genes
+    ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
   }
   if (!is(ensdb_genes, "GRanges")) {
     stop("ensdb_genes must be supplied as a GRanges object.")
@@ -244,9 +244,9 @@ load_data_genes <- function(
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
     BPPARAM = BiocParallel::bpparam()
-) {
+    ) {
   if (is.null(ensdb_genes)) {
-    ensdb_genes = get_ensdb_genes(organism_keyword = organism)$genes
+    ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
   }
   if (!is(ensdb_genes, "GRanges")) {
     stop("ensdb_genes must be supplied as a GRanges object.")
@@ -294,7 +294,7 @@ build_dataframes <- function(bedgraphs) {
     if (is.null(data.df)) {
       data.df <- gr
     } else {
-      data.df <- merge(data.df, gr, by = c("chr", "start", "end"), all = F)
+      data.df <- merge(data.df, gr, by = c("chr", "start", "end"), all = FALSE)
     }
     message(" - Loaded: ", sample_name)
   }
@@ -388,11 +388,13 @@ locate_files <- function(paths, pattern = NULL) {
 #' @return GRanges
 #' @keywords internal
 import_peaks <- function(path) {
-  tryCatch({
-    import(path)
-  }, error = function(e) {
-    stop("Failed to read peaks file: ", path, "\\n", e$message)
-  })
+  tryCatch(
+    {
+      import(path)
+    },
+    error = function(e) {
+      stop("Failed to read peaks file: ", path, "\\n", e$message)
+    })
 }
 
 #' Import a bedGraph file as a data.frame (chr, start, end, value)
@@ -401,11 +403,13 @@ import_peaks <- function(path) {
 #' @return data.frame
 #' @keywords internal
 import_bedgraph_as_df <- function(path, colname = "score") {
-  gr <- tryCatch({
-    import(path, format = "bedGraph")
-  }, error = function(e) {
-    stop("Failed to read bedGraph file: ", path, "\\n", e$message)
-  })
+  gr <- tryCatch(
+    {
+      import(path, format = "bedGraph")
+    },
+    error = function(e) {
+      stop("Failed to read bedGraph file: ", path, "\\n", e$message)
+    })
   df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]
   names(df) <- c("chr", "start", "end", colname)
   df

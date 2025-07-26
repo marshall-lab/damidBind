@@ -41,11 +41,11 @@ test_that("quantile_normalisation throws errors for invalid inputs", {
   # Test non-numeric input
   expect_error(quantile_normalisation(matrix(c("a", 1), nrow = 1)), "Input 'x' must be a numeric matrix.")
   # Test NA values
-  expect_error(quantile_normalisation(matrix(c(1, NA, 3, 4), nrow = 2)), "Input 'x' contains missing values", fixed=TRUE)
+  expect_error(quantile_normalisation(matrix(c(1, NA, 3, 4), nrow = 2)), "Input 'x' contains missing values", fixed = TRUE)
   # Test infinite values
-  expect_error(quantile_normalisation(matrix(c(1, Inf, 3, 4), nrow = 2)), "Input 'x' contains non-finite values", fixed=TRUE)
+  expect_error(quantile_normalisation(matrix(c(1, Inf, 3, 4), nrow = 2)), "Input 'x' contains non-finite values", fixed = TRUE)
   # Test NaN values
-  expect_error(quantile_normalisation(matrix(c(1, NaN, 3, 4), nrow = 2)), "Input 'x' contains missing values", fixed=TRUE)
+  expect_error(quantile_normalisation(matrix(c(1, NaN, 3, 4), nrow = 2)), "Input 'x' contains missing values", fixed = TRUE)
   # Test empty numeric matrix
   expect_error(quantile_normalisation(matrix(numeric(), nrow = 0, ncol = 3)), "Input 'x' must have at least one row and one column.")
   expect_error(quantile_normalisation(matrix(numeric(), nrow = 3, ncol = 0)), "Input 'x' must have at least one row and one column.")

@@ -15,11 +15,11 @@ make_dummy_diff_results_for_venn <- function() {
   upCond2 <- analysis_table[c("Locus2"), ]           # Sig for Cond2 (note, not Locus5)
 
   new("DamIDResults",
-      upCond1 = upCond1,
-      upCond2 = upCond2,
-      analysis = analysis_table,
-      cond = c(CondA = "Treatment_A", CondB = "Treatment_B"),
-      data = list(test_category = "bound")
+    upCond1 = upCond1,
+    upCond2 = upCond2,
+    analysis = analysis_table,
+    cond = c(CondA = "Treatment_A", CondB = "Treatment_B"),
+    data = list(test_category = "bound")
   )
 }
 
@@ -96,8 +96,8 @@ test_that("plot_venn correctly prepares data and calls BioVenn::draw.venn", {
 test_that("plot_venn handles cases with no significant regions", {
   diff_res_no_sig <- make_dummy_diff_results_for_venn()
   # Override with no significant results
-  diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[F, ]
-  diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[F, ]
+  diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[FALSE, ]
+  diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[FALSE, ]
 
   mock_draw_venn_args <- NULL # Reset mock args
   mock_draw_venn <- function(list_x, list_y, ...) {
@@ -121,7 +121,7 @@ test_that("plot_venn handles cases with no significant regions", {
 
 test_that("plot_venn warns if one condition has no loci", {
   diff_res_partial_sig <- make_dummy_diff_results_for_venn()
-  diff_res_partial_sig@upCond1 <- diff_res_partial_sig@upCond1[F, ] # No Cond1 sig
+  diff_res_partial_sig@upCond1 <- diff_res_partial_sig@upCond1[FALSE, ] # No Cond1 sig
 
   mock_draw_venn <- function(list_x, list_y, ...) invisible(NULL)
   local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")

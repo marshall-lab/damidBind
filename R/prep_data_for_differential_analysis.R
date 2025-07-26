@@ -55,7 +55,7 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
   if (any(cond1_matches & cond2_matches)) {
     overlapping_samples <- all_sample_cols[cond1_matches & cond2_matches]
     stop(sprintf("Conditions '%s' and '%s' overlap in sample names. The following samples belong to both: %s. Please ensure `cond` values uniquely identify samples.",
-                 cond[1], cond[2], paste(overlapping_samples, collapse = ", ")))
+      cond[1], cond[2], paste(overlapping_samples, collapse = ", ")))
   }
 
   # Check for unassigned samples (samples matching neither condition)
@@ -72,7 +72,7 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
 
   if (length(sel_cols) < 2) {
     stop(sprintf("Fewer than two sample columns matched for conditions '%s' and '%s'. Please check your 'cond' values against sample names. Found %d matched samples.",
-                 cond[1], cond[2], length(sel_cols)))
+      cond[1], cond[2], length(sel_cols)))
   }
 
   # Prepare the matrix for analysis

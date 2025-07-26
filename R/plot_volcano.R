@@ -33,7 +33,7 @@ check_list_input <- function(default_list, config_input) {
     return(NULL)
   } else {
     message("Input value was ", dQuote(as.character(config_input)),
-            ", which is not a list. Using default settings for this option.")
+      ", which is not a list. Using default settings for this option.")
     return(default_list)
   }
 }
@@ -104,7 +104,7 @@ plot_volcano <- function(
     highlight = NULL,
     highlight_config = list(),
     save = NULL
-) {
+    ) {
   stopifnot(is(diff_results, "DamIDResults"))
 
   analysis_table <- diff_results@analysis
@@ -120,13 +120,13 @@ plot_volcano <- function(
 
   # Set up base plotting config as before, e.g.:
   plot_defaults <- list(
-    title=sprintf("Differentially %s loci", test_category),
-    xlab=bquote(log[2]*"FC ("*.(cond_display[1])*" / "*.(cond_display[2])*")"),
-    ylab="",
-    ystat=ifelse(test_category=="accessible", "minuslogp","B"),
-    base_size=18,
+    title = sprintf("Differentially %s loci", test_category),
+    xlab = bquote(log[2] * "FC (" * .(cond_display[1]) * " / " * .(cond_display[2]) * ")"),
+    ylab = "",
+    ystat = ifelse(test_category == "accessible", "minuslogp", "B"),
+    base_size = 18,
     sig_colour = "orange",
-    nonsig_colour = rgb(0.4,0.4,0.4),
+    nonsig_colour = rgb(0.4, 0.4, 0.4),
     sig_alpha = 0.4,
     sig_size = 1,
     nonsig_alpha = 0.1,
@@ -152,7 +152,7 @@ plot_volcano <- function(
   highlight_defaults <- list(
     alpha = 1,
     size = 2,
-    label = T,
+    label = TRUE,
     colour = NULL,
     label_size = 4,
     max_overlaps = 10
@@ -170,7 +170,7 @@ plot_volcano <- function(
 
 
   # Plot dataframe
-  plot_df <- as.data.frame(plot_data, stringsAsFactors=F)
+  plot_df <- as.data.frame(plot_data, stringsAsFactors = FALSE)
   plot_df$id <- rownames(plot_data)
   plot_df$sig <- rownames(plot_data) %in% all_sig
 
@@ -178,23 +178,23 @@ plot_volcano <- function(
   clean_names <- function(x, clean, clean_extra = NULL) {
     if (is.null(x)) return(character(0))
     regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
-    x[!grepl(regex, x, ignore.case = F)]
+    x[!grepl(regex, x, ignore.case = FALSE)]
   }
 
   indices_to_clean <- function(x, clean, clean_extra = NULL) {
     if (is.null(x)) return(integer(0))
     regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
-    regex <- gsub("\\|\\|","|",x = regex) # Clean up potential double pipes
-    grep(regex, x, ignore.case = F)
+    regex <- gsub("\\|\\|", "|", x = regex) # Clean up potential double pipes
+    grep(regex, x, ignore.case = FALSE)
   }
 
   find_element_indices <- function(labels, elements) {
     if (is.null(elements) || length(elements) == 0) return(integer())
     # Escape special regex characters in the element names to prevent unintended regex patterns
     escaped_elements <- gsub("([[:punct:]])", "\\\\\\1", elements)
-    patt <- paste(escaped_elements, collapse="|")
+    patt <- paste(escaped_elements, collapse = "|")
     which(
-      grepl(sprintf("(^|,)(%s)(,|$)", patt), labels, perl=TRUE, ignore.case=TRUE)
+      grepl(sprintf("(^|,)(%s)(,|$)", patt), labels, perl = TRUE, ignore.case = TRUE)
     )
   }
 
@@ -208,7 +208,7 @@ plot_volcano <- function(
   if (!is.null(highlight) && length(highlight) > 0) {
     # Generate default colours if not provided or insufficient
     if (is.null(highlight_config$colour) || length(highlight_config$colour) < length(highlight)) {
-      highlight_default_pal <- hue_pal(l=50)(length(highlight))
+      highlight_default_pal <- hue_pal(l = 50)(length(highlight))
     } else {
       highlight_default_pal <- highlight_config$colour
     }
@@ -230,11 +230,11 @@ plot_volcano <- function(
       indices <- find_element_indices(gene_labels_all, group_elements)
 
       if (length(indices) > 0) {
-        layer_df <- plot_df[indices, , drop=FALSE]
+        layer_df <- plot_df[indices, , drop = FALSE]
         layer_df$highlight_group_name <- highlight_names[i]
 
         # Assign the specific labels to the layer_df for ggrepel
-        #layer_df$label_for_repel <- gene_labels_all[indices]
+        # layer_df$label_for_repel <- gene_labels_all[indices]
 
         # Split each locus label string by commas, trim whitespace
         split_labels <- strsplit(gene_labels_all[indices], split = ",")
@@ -264,8 +264,8 @@ plot_volcano <- function(
         }
 
         highlight_layers[[i]] <- geom_point(
-          data=layer_df,
-          aes(x=logFC, y = .data[[plot_config$ystat]], colour = highlight_group_name),
+          data = layer_df,
+          aes(x = logFC, y = .data[[plot_config$ystat]], colour = highlight_group_name),
           alpha  = highlight_config$alpha,
           size   = highlight_config$size
         )
@@ -274,7 +274,7 @@ plot_volcano <- function(
           message(sprintf("Highlight group '%s' will label: %s", highlight_names[i], paste(gene_labels_all[indices], collapse = ", ")))
           highlight_labels[[i]] <- geom_text_repel(
             data = layer_df,
-            aes(label=label_for_repel),
+            aes(label = label_for_repel),
             size = highlight_config$label_size,
             box.padding = 0.2,
             point.padding = 0.3,
@@ -302,8 +302,8 @@ plot_volcano <- function(
   }
 
   # Volcano plot construction
-  p <- ggplot(plot_df, aes(x=logFC, y = .data[[plot_config$ystat]])) +
-    theme_bw(base_size=plot_config$base_size) +
+  p <- ggplot(plot_df, aes(x = logFC, y = .data[[plot_config$ystat]])) +
+    theme_bw(base_size = plot_config$base_size) +
     geom_point(
       data = subset(plot_df, !sig),
       colour = plot_config$nonsig_colour,
@@ -370,7 +370,7 @@ plot_volcano <- function(
     # Convert back to indices in plot_df
     final_general_label_indices <- which(plot_df$id %in% filtered_general_labels_ids)
 
-    label_df_general <- plot_df[final_general_label_indices, , drop=FALSE]
+    label_df_general <- plot_df[final_general_label_indices, , drop = FALSE]
     label_df_general$label_to_display <- gene_labels_all[final_general_label_indices]
 
     # Apply cleaning filter
@@ -381,7 +381,7 @@ plot_volcano <- function(
         label_config$names_clean_extra
       )
       if (length(indices_to_remove) > 0) { # Explicitly use length
-        label_df_general <- label_df_general[seq_len(nrow(label_df_general))[-indices_to_remove], , drop=FALSE] # More robust removal
+        label_df_general <- label_df_general[seq_len(nrow(label_df_general))[-indices_to_remove], , drop = FALSE] # More robust removal
       }
     }
 
@@ -389,7 +389,7 @@ plot_volcano <- function(
       p <- p +
         geom_text_repel(
           data = label_df_general,
-          aes(label=label_to_display),
+          aes(label = label_to_display),
           size = label_config$label_size,
           box.padding = 0.2,
           point.padding = 0.3,
@@ -405,19 +405,21 @@ plot_volcano <- function(
 
   # Save to file if requested
   if (!is.null(save_config)) {
-    tryCatch({
-      full_filename <- paste0(save_config$filename, ".", save_config$format)
-      ggsave(
-        filename = full_filename,
-        plot = p,
-        width = save_config$width,
-        height = save_config$height,
-        units = "in",
-        device = save_config$format
-      )
-    }, error = function(e) {
-      message("An error occurred while saving the plot file(s): ", e$message)
-    })
+    tryCatch(
+      {
+        full_filename <- paste0(save_config$filename, ".", save_config$format)
+        ggsave(
+          filename = full_filename,
+          plot = p,
+          width = save_config$width,
+          height = save_config$height,
+          units = "in",
+          device = save_config$format
+        )
+      },
+      error = function(e) {
+        message("An error occurred while saving the plot file(s): ", e$message)
+      })
   } else {
     # Only print the plot if not saving to a file
     print(p)

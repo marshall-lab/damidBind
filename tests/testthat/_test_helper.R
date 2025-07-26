@@ -6,7 +6,7 @@
 make_dummy_ensdb_genes <- function(...) {
   # Mimic essential GRanges structure.
   genes_gr <- GRanges(
-    seqnames = Rle("2L",7),
+    seqnames = Rle("2L", 7),
     ranges = IRanges(
       start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
       end =   c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
@@ -61,7 +61,7 @@ create_mock_ensdb_object <- function() {
 
 
 setClass("MockHubResult",
-         slots = c(data = "DataFrame"))
+  slots = c(data = "DataFrame"))
 setMethod("length", "MockHubResult", function(x) {
   nrow(x@data)
 })

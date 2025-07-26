@@ -60,9 +60,9 @@ analyse_go_enrichment <- function(
     label_format_width = 30,
     save = NULL,
     save_results_path = NULL,
-    maxGSSize=1000,
-    minGSSize=10
-) {
+    maxGSSize = 1000,
+    minGSSize = 10
+    ) {
   # Input validation
   stopifnot(is(diff_results, "DamIDResults"))
 
@@ -79,10 +79,10 @@ analyse_go_enrichment <- function(
 
   # Determine which gene list to use based on 'direction'
   selected_display_name <- ""
-  if (direction %in% c("cond1",cond[1],cond1_display_name)) {
+  if (direction %in% c("cond1", cond[1], cond1_display_name)) {
     selected_rownames <- rownames(diff_results@upCond1)
     selected_display_name <- cond1_display_name
-  } else if (direction %in% c("cond2",cond[2],cond2_display_name)) {
+  } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
     selected_rownames <- rownames(diff_results@upCond2)
     selected_display_name <- cond2_display_name
   } else if (direction == "all") {
@@ -131,16 +131,18 @@ analyse_go_enrichment <- function(
   }
 
   # Map FBgnID to SYMBOL for clusterProfiler for both query and universe
-  gene_universe_map <- tryCatch({
-    bitr(
-      geneID = unique(c(gene_list_fbgnid, universe_fbgnid)),
-      fromType = "FLYBASE",
-      toType = "SYMBOL",
-      OrgDb = org_db
-    )
-  }, error = function(e) {
-    stop("Failed to map Flybase IDs to symbols using bitr: ", e$message)
-  })
+  gene_universe_map <- tryCatch(
+    {
+      bitr(
+        geneID = unique(c(gene_list_fbgnid, universe_fbgnid)),
+        fromType = "FLYBASE",
+        toType = "SYMBOL",
+        OrgDb = org_db
+      )
+    },
+    error = function(e) {
+      stop("Failed to map Flybase IDs to symbols using bitr: ", e$message)
+    })
 
   # Get symbols corresponding to the query FBgnIDs
   query_symbols_all <- gene_universe_map$SYMBOL[match(gene_list_fbgnid, gene_universe_map$FLYBASE)]
@@ -165,24 +167,26 @@ analyse_go_enrichment <- function(
   }
 
   # Perform GO enrichment
-  ego <- tryCatch({
-    enrichGO(
-      gene          = cleaned_query_symbols,
-      OrgDb         = org_db,
-      universe      = universe_symbols,
-      keyType       = 'SYMBOL',
-      ont           = ontology,
-      pAdjustMethod = "BH",
-      maxGSSize = maxGSSize,
-      minGSSize = minGSSize,
-      pvalueCutoff  = pvalue_cutoff,
-      qvalueCutoff  = qvalue_cutoff,
-      readable      = T # Retrieves gene symbols in result instead of IDs
-    )
-  }, error = function(e) {
-    message("Error during GO enrichment: ", e$message)
-    return(NULL)
-  })
+  ego <- tryCatch(
+    {
+      enrichGO(
+        gene          = cleaned_query_symbols,
+        OrgDb         = org_db,
+        universe      = universe_symbols,
+        keyType       = "SYMBOL",
+        ont           = ontology,
+        pAdjustMethod = "BH",
+        maxGSSize = maxGSSize,
+        minGSSize = minGSSize,
+        pvalueCutoff  = pvalue_cutoff,
+        qvalueCutoff  = qvalue_cutoff,
+        readable      = TRUE # Retrieves gene symbols in result instead of IDs
+      )
+    },
+    error = function(e) {
+      message("Error during GO enrichment: ", e$message)
+      return(NULL)
+    })
 
   if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
     message("No significant GO terms found. Returning NULL.")
@@ -191,8 +195,8 @@ analyse_go_enrichment <- function(
 
   # Convert to dataframe for plotting
   # ego <- mutate(ego, richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)))
-  ego.df = ego %>% as.data.frame()
-  ego.df$Description <- ego.df$Description %>% gsub("regulation","reg.",.)
+  ego.df <- ego %>% as.data.frame()
+  ego.df$Description <- ego.df$Description %>% gsub("regulation", "reg.", .)
   ego.df$GeneRatio <- sapply(strsplit(ego.df$GeneRatio, "/"), function(x) as.numeric(x[1]) / as.numeric(x[2]), USE.NAMES = FALSE)
 
 
@@ -201,41 +205,45 @@ analyse_go_enrichment <- function(
     plot_title <- sprintf("GO Enrichment for %s (%s)", selected_display_name, ontology)
   }
 
-  if (nrow(ego.df) > show_category) { plot_df <- ego.df %>% head(n=show_category) } else { plot_df <- ego.df }
+  if (nrow(ego.df) > show_category) {
+    plot_df <- ego.df %>% head(n = show_category)
+  } else {
+    plot_df <- ego.df
+  }
 
   max_x_value <- max(plot_df$GeneRatio, na.rm = TRUE)
 
   dplot <- ggplot(plot_df,
-                  aes(GeneRatio, fct_reorder(Description, GeneRatio))) +
-    geom_segment(aes(xend=0, yend = Description)) +
-    geom_point(aes(color=p.adjust, size = Count))+
-    scale_color_gradientn(colours=c("#f7ca64", "#46bac2", "#7e62a3"),
-                          name = bquote(italic(p)[adj]),
-                          trans = "log2",
-                          guide=guide_colorbar(reverse=TRUE, order=1),
-                          labels = scientific_format(digits=1)
+    aes(GeneRatio, fct_reorder(Description, GeneRatio))) +
+    geom_segment(aes(xend = 0, yend = Description)) +
+    geom_point(aes(color = p.adjust, size = Count)) +
+    scale_color_gradientn(colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+      name = bquote(italic(p)[adj]),
+      trans = "log2",
+      guide = guide_colorbar(reverse = TRUE, order = 1),
+      labels = scientific_format(digits = 1)
     ) +
-    scale_size_continuous(range=c(1, 10),
-                          labels = number_format(accuracy = 1),
-                          breaks = c((min(ego.df$Count)+1),
-                                     round(mean(c(min(ego.df$Count), max(ego.df$Count)))),
-                                     max(ego.df$Count))
+    scale_size_continuous(range = c(1, 10),
+      labels = number_format(accuracy = 1),
+      breaks = c((min(ego.df$Count) + 1),
+        round(mean(c(min(ego.df$Count), max(ego.df$Count)))),
+        max(ego.df$Count))
     ) +
-    labs(x="Gene Ratio", y=NULL, title=plot_title) + # Use labs for clarity
-    theme_bw(14)+
+    labs(x = "Gene Ratio", y = NULL, title = plot_title) + # Use labs for clarity
+    theme_bw(14) +
     scale_x_continuous(
       limits = c(0, max_x_value),
-      expand = expansion(mult = c(0.02,0.1), add = 0),
+      expand = expansion(mult = c(0.02, 0.1), add = 0),
       breaks = function(x) {
-        f = as.numeric(as.character(sprintf("%0.1f", x[1])))
-        t = as.numeric(as.character(sprintf("%0.1f", x[2])))
+        f <- as.numeric(as.character(sprintf("%0.1f", x[1])))
+        t <- as.numeric(as.character(sprintf("%0.1f", x[2])))
         return(seq(f, t, by = ((t - f) / 2)))
       }
     ) +
     scale_y_discrete(
       labels = function(y) str_wrap(y, width = label_format_width),
-      expand = expansion(add = c(0.5,1))
-    )+
+      expand = expansion(add = c(0.5, 1))
+    ) +
     theme(
       axis.text.y = element_text(lineheight = 0.8),
       plot.title.position = "plot",
@@ -244,12 +252,14 @@ analyse_go_enrichment <- function(
 
   # Save results table if path provided
   if (!is.null(save_results_path)) {
-    tryCatch({
-      write.csv(ego.df, file = save_results_path, row.names = FALSE)
-      message("GO enrichment results table saved to: ", save_results_path)
-    }, error = function(e) {
-      warning("Failed to save GO results table to CSV: ", e$message)
-    })
+    tryCatch(
+      {
+        write.csv(ego.df, file = save_results_path, row.names = FALSE)
+        message("GO enrichment results table saved to: ", save_results_path)
+      },
+      error = function(e) {
+        warning("Failed to save GO results table to CSV: ", e$message)
+      })
   }
 
   # Plot saving
@@ -262,20 +272,22 @@ analyse_go_enrichment <- function(
   save_config <- check_list_input(save_defaults, save)
 
   if (!is.null(save_config)) {
-    tryCatch({
-      full_filename <- paste0(save_config$filename, ".", save_config$format)
-      ggsave(
-        filename = full_filename,
-        plot = dplot,
-        width = save_config$width,
-        height = save_config$height,
-        units = "in",
-        device = save_config$format
-      )
-      message("GO dot plot saved to: ", full_filename)
-    }, error = function(e) {
-      message("An error occurred while saving the GO dot plot: ", e$message)
-    })
+    tryCatch(
+      {
+        full_filename <- paste0(save_config$filename, ".", save_config$format)
+        ggsave(
+          filename = full_filename,
+          plot = dplot,
+          width = save_config$width,
+          height = save_config$height,
+          units = "in",
+          device = save_config$format
+        )
+        message("GO dot plot saved to: ", full_filename)
+      },
+      error = function(e) {
+        message("An error occurred while saving the GO dot plot: ", e$message)
+      })
   } else {
     # Only print the plot if not saving to a file
     print(dplot)

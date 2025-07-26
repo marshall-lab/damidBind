@@ -14,7 +14,7 @@ gene_occupancy <- function(
     ensdb_genes = get_ensdb_genes()$genes,
     buffer = 0,
     BPPARAM = BiocParallel::bpparam()
-) {
+    ) {
   if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as returned by build_dataframes().")
   if (!is(ensdb_genes, "GRanges")) stop("'ensdb_genes' must be a GRanges object.")
   if (is.null(mcols(ensdb_genes)$gene_name)) stop("ensdb_genes must have a metadata column 'gene_name' with gene names.")
@@ -38,18 +38,18 @@ gene_occupancy <- function(
     )
   )
 
-  resolve_dups = function (gr) {
-    key <- sprintf("%s:%d-%d",seqnames(gr),start(gr),end(gr))
+  resolve_dups <- function(gr) {
+    key <- sprintf("%s:%d-%d", seqnames(gr), start(gr), end(gr))
     dup_pos <- 1
     while (any(duplicated(key))) {
       dups <- duplicated(key)
-      key[dups] <- sprintf("%s:%d-%d",seqnames(gr[dups]),start(gr[dups]),end(gr[dups])+dup_pos)
+      key[dups] <- sprintf("%s:%d-%d", seqnames(gr[dups]), start(gr[dups]), end(gr[dups]) + dup_pos)
       dup_pos <- dup_pos + 1
     }
     return(key)
   }
 
-  locs = resolve_dups(gene_gr)
+  locs <- resolve_dups(gene_gr)
   mcols(gene_gr)$gene_loc <- locs
 
   # Find overlaps between genes and fragments
@@ -87,15 +87,15 @@ gene_occupancy <- function(
     })
 
     # loc/name, nfrags, Averages,  name, gene_id
-    c(gene_loc[i],length(gene_hits),res,gene_names[i],gene_id[i])
+    c(gene_loc[i], length(gene_hits), res, gene_names[i], gene_id[i])
   }
 
   results <- BiocParallel::bplapply(seq_along(gene_gr), calc_occupancy, BPPARAM = BPPARAM)
   results <- do.call(rbind, results)
-  colnames(results)[1:2] <- c("name","nfrags")
-  colnames(results)[(ncol(results)-1):ncol(results)] <- c("gene_names","gene_ids")
+  colnames(results)[1:2] <- c("name", "nfrags")
+  colnames(results)[(ncol(results) - 1):ncol(results)] <- c("gene_names", "gene_ids")
   results_df <- as.data.frame(results)
-  results_df[,2:(ncol(results_df)-2)] <- apply(results_df[,2:(ncol(results_df)-2)],2,as.numeric)
+  results_df[, 2:(ncol(results_df) - 2)] <- apply(results_df[, 2:(ncol(results_df) - 2)], 2, as.numeric)
   results_df <- na.omit(results_df)
 
   # Rownames
@@ -120,7 +120,7 @@ gr_occupancy <- function(
     regions,
     buffer = 0,
     BPPARAM = BiocParallel::bpparam()
-) {
+    ) {
   if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as from build_dataframes().")
   if (!is(regions, "GRanges")) stop("'regions' must be a GRanges object.")
 
@@ -258,5 +258,5 @@ all_overlaps_to_original <- function(query, subject, maxgap = 0) {
     }
   }
 
-  return(list(genes=out,ids=gene_id_out))
+  return(list(genes = out, ids = gene_id_out))
 }

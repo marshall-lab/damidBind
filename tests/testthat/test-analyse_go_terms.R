@@ -21,11 +21,11 @@ make_dummy_diff_results_for_go <- function() {
   upCond2 <- analysis_table[c("Locus2"), ]           # Significant for Cond2
 
   new("DamIDResults",
-      upCond1 = upCond1,
-      upCond2 = upCond2,
-      analysis = analysis_table,
-      cond = c(Cond1 = "Condition_X", Cond2 = "Condition_Y"),
-      data = list(test_category = "bound")
+    upCond1 = upCond1,
+    upCond2 = upCond2,
+    analysis = analysis_table,
+    cond = c(Cond1 = "Condition_X", Cond2 = "Condition_Y"),
+    data = list(test_category = "bound")
   )
 }
 
@@ -42,24 +42,24 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
 
   # enrichGO mock: return a dummy enrichResult object for successful run
   mock_enrich_go_result <- new("enrichResult",
-                               readable = TRUE,
-                               result = data.frame(
-                                 ID = c("GO:0001", "GO:0002"),
-                                 Description = c("Biological Process 1", "Biological Process 2"),
-                                 GeneRatio = c("2/5", "3/5"),
-                                 BgRatio = c("10/100", "15/100"),
-                                 pvalue = c(0.001, 0.005),
-                                 p.adjust = c(0.002, 0.006),
-                                 qvalue = c(0.01, 0.02),
-                                 geneID = c("SYM1/SYM4", "SYM1/SYM2/SYM4"),
-                                 Count = c(2, 3),
-                                 stringsAsFactors = FALSE
-                               ),
-                               ontology = "BP",
-                               universe = c("SYM1", "SYM2", "SYM4", "SYM5", "SYM6", "SYM7", "SYM8", "SYM9", "SYM10", "SYM11"),
-                               gene = c("SYM1", "SYM4"), # For Cond1
-                               keytype = "SYMBOL",
-                               organism = "Drosophila melanogaster"
+    readable = TRUE,
+    result = data.frame(
+      ID = c("GO:0001", "GO:0002"),
+      Description = c("Biological Process 1", "Biological Process 2"),
+      GeneRatio = c("2/5", "3/5"),
+      BgRatio = c("10/100", "15/100"),
+      pvalue = c(0.001, 0.005),
+      p.adjust = c(0.002, 0.006),
+      qvalue = c(0.01, 0.02),
+      geneID = c("SYM1/SYM4", "SYM1/SYM2/SYM4"),
+      Count = c(2, 3),
+      stringsAsFactors = FALSE
+    ),
+    ontology = "BP",
+    universe = c("SYM1", "SYM2", "SYM4", "SYM5", "SYM6", "SYM7", "SYM8", "SYM9", "SYM10", "SYM11"),
+    gene = c("SYM1", "SYM4"), # For Cond1
+    keytype = "SYMBOL",
+    organism = "Drosophila melanogaster"
   )
 
   local_mocked_bindings(
@@ -102,7 +102,7 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
   expect_equal(res$results_table$ID, c("GO:0001", "GO:0002"))
   expect_equal(res$results_table$Description, c("Biological Process 1", "Biological Process 2"))
   expect_equal(res$results_table$Count, c(2, 3))
-  expect_equal(res$results_table$GeneRatio, c(2/5, 3/5))
+  expect_equal(res$results_table$GeneRatio, c(2 / 5, 3 / 5))
 
   # Check if results table and plot were 'saved' (i.e., files created by mock)
   expect_true(file.exists(tmp_go_file))
@@ -128,8 +128,8 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
 
 test_that("analyse_go_enrichment handles cases with no significant genes", {
   diff_res_no_sig <- make_dummy_diff_results_for_go()
-  diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[F, ] # No significant genes
-  diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[F, ]
+  diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[FALSE, ] # No significant genes
+  diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[FALSE, ]
 
   # Mock enrichGO to return NULL (no enrichment found, or no genes passed)
   local_mocked_bindings(
@@ -139,7 +139,7 @@ test_that("analyse_go_enrichment handles cases with no significant genes", {
   )
 
   expect_message(res <- analyse_go_enrichment(diff_res_no_sig, org_db = dummy_org_db),
-                 "No significant genes found for direction 'cond1'") # First message
+    "No significant genes found for direction 'cond1'") # First message
   expect_null(res)
 })
 
@@ -170,24 +170,24 @@ test_that("analyse_go_enrichment alias analyze_go_enrichment works", {
     stringsAsFactors = FALSE
   )
   mock_enrich_go_result <- new("enrichResult",
-                               readable = TRUE,
-                               result = data.frame(
-                                 ID = c("GO:0001"),
-                                 Description = c("Test Process"),
-                                 GeneRatio = c("1/2"),
-                                 BgRatio = c("10/100"),
-                                 pvalue = c(0.01),
-                                 p.adjust = c(0.01),
-                                 qvalue = c(0.01),
-                                 geneID = c("SYM1"),
-                                 Count = c(1),
-                                 stringsAsFactors = FALSE
-                               ),
-                               ontology = "BP",
-                               universe = c("SYM1", "SYM2", "SYM3", "SYM4", "SYM5", "SYM6"),
-                               gene = c("SYM1"),
-                               keytype = "SYMBOL",
-                               organism = "Drosophila melanogaster"
+    readable = TRUE,
+    result = data.frame(
+      ID = c("GO:0001"),
+      Description = c("Test Process"),
+      GeneRatio = c("1/2"),
+      BgRatio = c("10/100"),
+      pvalue = c(0.01),
+      p.adjust = c(0.01),
+      qvalue = c(0.01),
+      geneID = c("SYM1"),
+      Count = c(1),
+      stringsAsFactors = FALSE
+    ),
+    ontology = "BP",
+    universe = c("SYM1", "SYM2", "SYM3", "SYM4", "SYM5", "SYM6"),
+    gene = c("SYM1"),
+    keytype = "SYMBOL",
+    organism = "Drosophila melanogaster"
   )
 
   local_mocked_bindings(

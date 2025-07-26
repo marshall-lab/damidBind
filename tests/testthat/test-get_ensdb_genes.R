@@ -18,8 +18,8 @@ create_mock_query_result <- function() {
   df <- data.frame(
     ah_id = c("AH_Dm_113", "AH_Dm_112", "AH_Hs_113"),
     title = c("Ensembl 113 EnsDb for Drosophila melanogaster",
-              "Ensembl 112 EnsDb for Drosophila melanogaster",
-              "Ensembl 113 EnsDb for Homo sapiens"),
+      "Ensembl 112 EnsDb for Drosophila melanogaster",
+      "Ensembl 113 EnsDb for Homo sapiens"),
     species = c("Drosophila melanogaster", "Drosophila melanogaster", "Homo sapiens"),
     genome = c("BDGP6.49", "BDGP6.48", "GRCh38.p14"),
     stringsAsFactors = FALSE
@@ -39,8 +39,8 @@ test_that("get_ensdb_genes can retrieve Drosophila EnsDb and filter biotypes", {
       df <- S4Vectors::DataFrame(
         ah_id = c("AH_Dm_113", "AH_Dm_112", "AH_Hs_113"),
         title = c("Ensembl 113 EnsDb for Drosophila melanogaster",
-                  "Ensembl 112 EnsDb for Drosophila melanogaster",
-                  "Ensembl 113 EnsDb for Homo sapiens"),
+          "Ensembl 112 EnsDb for Drosophila melanogaster",
+          "Ensembl 113 EnsDb for Homo sapiens"),
         species = c("Drosophila melanogaster", "Drosophila melanogaster", "Homo sapiens"),
         genome = c("BDGP6.49", "BDGP6.48", "GRCh38.p14")
       )
@@ -103,8 +103,8 @@ test_that("get_ensdb_genes handles errors for non-existent organisms and invalid
       df <- S4Vectors::DataFrame(
         ah_id = c("AH_Dm_113", "AH_Dm_112", "AH_Hs_113"),
         title = c("Ensembl 113 EnsDb for Drosophila melanogaster",
-                  "Ensembl 112 EnsDb for Drosophila melanogaster",
-                  "Ensembl 113 EnsDb for Homo sapiens"),
+          "Ensembl 112 EnsDb for Drosophila melanogaster",
+          "Ensembl 113 EnsDb for Homo sapiens"),
         species = c("Drosophila melanogaster", "Drosophila melanogaster", "Homo sapiens"),
         genome = c("BDGP6.49", "BDGP6.48", "GRCh38.p14")
       )
@@ -145,4 +145,3 @@ test_that("get_ensdb_genes handles errors for non-existent organisms and invalid
     "Version '9999' is not available."
   )
 })
-

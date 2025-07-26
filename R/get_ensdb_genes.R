@@ -42,7 +42,7 @@ get_ensdb_genes <- function(
     ensembl_version = NULL,
     exclude_biotypes = c("transposable_element", "pseudogene"),
     include_gene_metadata = c("gene_id", "gene_name")
-) {
+    ) {
   message("Finding genome versions ...")
 
   ah <- AnnotationHub()
@@ -62,7 +62,7 @@ get_ensdb_genes <- function(
     matched_genomes <- tolower(meta_df$genome) == tolower(genome_build)
     if (!any(matched_genomes)) {
       stop(sprintf("No EnsDb found for organism '%s' with genome build '%s'. Available builds are: %s",
-                   organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")))
+        organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")))
     }
     filtered_query_res <- query_res[matched_genomes]
   } else {
@@ -80,18 +80,18 @@ get_ensdb_genes <- function(
       index <- which(ens_versions == ensembl_version)
     } else {
       stop(sprintf("Version '%s' is not available. Available builds are: %s",
-                   ensembl_version, paste(ens_versions, collapse = ", ")))
+        ensembl_version, paste(ens_versions, collapse = ", ")))
     }
   } else {
     index <- which.max(ens_versions)
   }
-  message(sprintf("Loading Ensembl genome version '%s'",filtered_query_res$title[[index]]))
+  message(sprintf("Loading Ensembl genome version '%s'", filtered_query_res$title[[index]]))
   ensdb <- filtered_query_res[[index]]
 
   # Extract genes object and filter
   genes_gr <- genes(ensdb)
-  genes_gr <- genes_gr[!(mcols(genes_gr)$gene_biotype %in% exclude_biotypes),]
-  genes_gr <- genes_gr[,colnames(mcols(genes_gr)) %in% include_gene_metadata]
+  genes_gr <- genes_gr[!(mcols(genes_gr)$gene_biotype %in% exclude_biotypes), ]
+  genes_gr <- genes_gr[, colnames(mcols(genes_gr)) %in% include_gene_metadata]
 
   # Extract genome build
   genome_build <- unique(genome(genes_gr))[1]

@@ -16,27 +16,27 @@
 #' @rdname DamIDResults-class
 #' @exportClass DamIDResults
 setClass("DamIDResults",
-         slots = c(
-           analysis = "data.frame",
-           upCond1 = "data.frame",
-           upCond2 = "data.frame",
-           cond = "character",
-           data = "list"
-         )
+  slots = c(
+    analysis = "data.frame",
+    upCond1 = "data.frame",
+    upCond2 = "data.frame",
+    cond = "character",
+    data = "list"
+  )
 )
 
 #' @rdname DamIDResults-class
 #' @param object A `DamIDResults` object.
 #' @export
 setMethod("show", "DamIDResults",
-          function(object) {
-            cat("An object of class 'DamIDResults'\n")
-            cond_display <- names(object@cond)
-            cat(sprintf("Differentially %s regions\n", object@data$test_category))
-            cat(sprintf("Comparison: '%s' vs '%s'\n", cond_display[1], cond_display[2]))
-            cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
-            cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
-            cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
-            cat("\nAccess results with the '@' accessor, e.g., object@analysis\n")
-          }
+  function(object) {
+    cat("An object of class 'DamIDResults'\n")
+    cond_display <- names(object@cond)
+    cat(sprintf("Differentially %s regions\n", object@data$test_category))
+    cat(sprintf("Comparison: '%s' vs '%s'\n", cond_display[1], cond_display[2]))
+    cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
+    cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
+    cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
+    cat("\nAccess results with the '@' accessor, e.g., object@analysis\n")
+  }
 )

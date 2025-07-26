@@ -21,19 +21,19 @@ browse_igv_regions <- function(
     colour_cond2 = "#2288dd",
     use_genome = NULL,
     padding_width = 20000,
-    host="localhost",
-    port=NULL
-){
+    host = "localhost",
+    port = NULL
+    ) {
   stopifnot(is(diff_results, "DamIDResults"))
 
   required <- c("igvShiny", "shiny", "DT")
-  for(pkg in required){
-    if(!requireNamespace(pkg, quietly=TRUE))
-      stop(sprintf("Package '%s' is required for browse_igv_regions().\n  Install with: BiocManager::install('%s')", pkg, pkg), call.=FALSE)
+  for (pkg in required) {
+    if (!requireNamespace(pkg, quietly = TRUE))
+      stop(sprintf("Package '%s' is required for browse_igv_regions().\n  Install with: BiocManager::install('%s')", pkg, pkg), call. = FALSE)
   }
 
-  preptbl = function (tbl) {
-    tbl$chr = as.character(tbl$chr)
+  preptbl <- function(tbl) {
+    tbl$chr <- as.character(tbl$chr)
     return(tbl)
   }
 
@@ -44,11 +44,11 @@ browse_igv_regions <- function(
 
   # Check for peaks and process if present
   binding_profiles_data <- diff_results@data$binding_profiles_data
-  peaks_incl = F
+  peaks_incl <- FALSE
   if ("pr" %in% names(diff_results@data)) {
     peaks <- diff_results@data$pr
-    peaks_bed <- peaks %>% as.data.frame() %>% select(c("seqnames","start","end")) %>% rename(chr=seqnames)
-    peaks_incl = T
+    peaks_bed <- peaks %>% as.data.frame() %>% select(c("seqnames", "start", "end")) %>% rename(chr = seqnames)
+    peaks_incl <- TRUE
   }
 
   # Sample columns: default is all, or user selection
@@ -57,7 +57,7 @@ browse_igv_regions <- function(
     use_samples <- all_sample_cols
   } else {
     use_samples <- intersect(as.character(samples), all_sample_cols)
-    if (length(use_samples)==0) stop("None of the requested samples present in data.")
+    if (length(use_samples) == 0) stop("None of the requested samples present in data.")
   }
 
   # Prepare data for table/region finding
@@ -83,8 +83,8 @@ browse_igv_regions <- function(
   down_idx <- down_idx[!is.na(down_idx)]
 
   # Table of differentially-bound regions to display
-  region_tab <- occ_tab[c(up_idx, down_idx), , drop=FALSE]
-  if(nrow(region_tab) == 0) stop("No differentially bound regions found to display.")
+  region_tab <- occ_tab[c(up_idx, down_idx), , drop = FALSE]
+  if (nrow(region_tab) == 0) stop("No differentially bound regions found to display.")
 
   region_tab$enriched <- c(rep(cond1_display_name, length(up_idx)), rep(cond2_display_name, length(down_idx)))
   region_tab <- region_tab
@@ -96,21 +96,21 @@ browse_igv_regions <- function(
   }
 
   # Shiny options
-  igvshiny_options <- parseAndValidateGenomeSpec(genomeName=use_genome, initialLocus="all")
-  shiny_connection_opts = list(host = host)
+  igvshiny_options <- parseAndValidateGenomeSpec(genomeName = use_genome, initialLocus = "all")
+  shiny_connection_opts <- list(host = host)
   if (!is.null(port) && is.numeric(port)) {
-    shiny_connection_opts[["port"]] = as.integer(port)
+    shiny_connection_opts[["port"]] <- as.integer(port)
   }
 
   # Get min/maxes of logFC
-  bp_min = binding_profiles_data[,use_samples] %>% min %>% floor
-  bp_max = binding_profiles_data[,use_samples] %>% max %>% ceiling
-  enrich_max = ceiling(max(abs(region_tab$logFC)))
+  bp_min <- binding_profiles_data[, use_samples] %>% min() %>% floor()
+  bp_max <- binding_profiles_data[, use_samples] %>% max() %>% ceiling()
+  enrich_max <- ceiling(max(abs(region_tab$logFC)))
 
   # Build Shiny app
   igvShinyApp <- shinyApp(
     ui = fluidPage(
-      titlePanel(sprintf("damidBind: Differentially-%s regions",diff_results$data_list$test_category)),
+      titlePanel(sprintf("damidBind: Differentially-%s regions", diff_results$data_list$test_category)),
       sidebarLayout(
         sidebarPanel(
           width = 6,
@@ -125,93 +125,95 @@ browse_igv_regions <- function(
         )
       )
     ),
-    server = function(input, output, session){
+    server = function(input, output, session) {
       # Set up IGV browser
       output$igv <- renderIgvShiny({
         igvShiny(igvshiny_options)
       })
 
       # Add tracks once ready
-      observeEvent(input$igvReady, {
-        message("IGV browser initialized.  Please note that the browser will block further interactive R analysis until stopped.")
+      observeEvent(input$igvReady,
+        {
+          message("IGV browser initialized.  Please note that the browser will block further interactive R analysis until stopped.")
 
-        # Add peaks track if present
-        if (peaks_incl) {
-          loadBedTrack(
-            session,
-            "igv",
-            tbl = preptbl(peaks_bed),
-            trackHeight = 50,
-            trackName = "Binding peaks",
-            color = "darkgreen"
-          )
-          message(" - Added 'Binding peaks' track")
-        }
+          # Add peaks track if present
+          if (peaks_incl) {
+            loadBedTrack(
+              session,
+              "igv",
+              tbl = preptbl(peaks_bed),
+              trackHeight = 50,
+              trackName = "Binding peaks",
+              color = "darkgreen"
+            )
+            message(" - Added 'Binding peaks' track")
+          }
 
-        # Add sample quantitative tracks
-        for (sample in use_samples) {
-          bprof <- binding_profiles_data[, c("chr", "start", "end", sample)]
-          loadBedGraphTrack(
-            session,
-            "igv",
-            tbl = preptbl(bprof),
-            autoscale=F,
-            min = bp_min,
-            max = bp_max,
-            trackHeight = 65,
-            trackName = sample,
-            color = "#6666cc"
-          )
-          message(paste(" - Added sample track:", sample))
-        }
+          # Add sample quantitative tracks
+          for (sample in use_samples) {
+            bprof <- binding_profiles_data[, c("chr", "start", "end", sample)]
+            loadBedGraphTrack(
+              session,
+              "igv",
+              tbl = preptbl(bprof),
+              autoscale = FALSE,
+              min = bp_min,
+              max = bp_max,
+              trackHeight = 65,
+              trackName = sample,
+              color = "#6666cc"
+            )
+            message(paste(" - Added sample track:", sample))
+          }
 
-        regcol_sel = c("chr","start","end","logFC")
-        # differentially-bound, significant cond1 regions track
-        if (length(up_idx) > 0) {
-          upCond1_df <- region_tab[region_tab$enriched == cond1_display_name, regcol_sel , drop=FALSE] # Use custom name
-          loadBedGraphTrack(
-            session,
-            "igv",
-            tbl = preptbl(upCond1_df),
-            autoscale=F,
-            min = 0,
-            max = enrich_max,
-            trackName = paste0("Enriched (", cond1_display_name, ")"), # Use custom name
-            color = colour_cond1
-          )
-          message(paste0(" - Added 'Enriched (", cond1_display_name, ")' regions track"))
-        }
+          regcol_sel <- c("chr", "start", "end", "logFC")
+          # differentially-bound, significant cond1 regions track
+          if (length(up_idx) > 0) {
+            upCond1_df <- region_tab[region_tab$enriched == cond1_display_name, regcol_sel, drop = FALSE] # Use custom name
+            loadBedGraphTrack(
+              session,
+              "igv",
+              tbl = preptbl(upCond1_df),
+              autoscale = FALSE,
+              min = 0,
+              max = enrich_max,
+              trackName = paste0("Enriched (", cond1_display_name, ")"), # Use custom name
+              color = colour_cond1
+            )
+            message(paste0(" - Added 'Enriched (", cond1_display_name, ")' regions track"))
+          }
 
-        # differentially-bound, significant cond2 regions track
-        if (length(down_idx) > 0) {
-          upCond2_df <- region_tab[region_tab$enriched == cond2_display_name, regcol_sel, drop=FALSE] # Use custom name
-          loadBedGraphTrack(
-            session,
-            "igv",
-            tbl = preptbl(upCond2_df),
-            autoscale=F,
-            min = -enrich_max,
-            max = 0,
-            trackName = paste0("Enriched (", cond2_display_name, ")"), # Use custom name
-            color = colour_cond2
-          )
-          message(paste0(" - Added 'Enriched (", cond2_display_name, ")' regions track"))
-        }
-      }, once = TRUE)
+          # differentially-bound, significant cond2 regions track
+          if (length(down_idx) > 0) {
+            upCond2_df <- region_tab[region_tab$enriched == cond2_display_name, regcol_sel, drop = FALSE] # Use custom name
+            loadBedGraphTrack(
+              session,
+              "igv",
+              tbl = preptbl(upCond2_df),
+              autoscale = FALSE,
+              min = -enrich_max,
+              max = 0,
+              trackName = paste0("Enriched (", cond2_display_name, ")"), # Use custom name
+              color = colour_cond2
+            )
+            message(paste0(" - Added 'Enriched (", cond2_display_name, ")' regions track"))
+          }
+        },
+        once = TRUE)
 
       # Region datatable for display
       output$region_table <- renderDT({
         show_cols <- intersect(
-          c("region_name","logFC", "enriched", "gene_names", "gene_ids"),
+          c("region_name", "logFC", "enriched", "gene_names", "gene_ids"),
           names(region_tab)
         )
         datatable(
-          region_tab[, show_cols, drop=FALSE],
+          region_tab[, show_cols, drop = FALSE],
           rownames = FALSE,
           selection = "single",
-          options = list(pageLength = 12, order = list(list(2, "desc")), scrollX=T),
+          options = list(pageLength = 12, order = list(list(2, "desc")), scrollX = TRUE),
           width = "100%"
-        ) %>% formatRound(columns=2,digits=2)
+        ) %>% formatRound(columns = 2, digits = 2)
       })
 
       # Pan IGV when a region is selected in table
@@ -219,7 +221,7 @@ browse_igv_regions <- function(
         if (length(input$region_table_rows_selected)) {
           sel_row <- input$region_table_rows_selected[1]
           sel_reg <- region_tab[sel_row, ]
-          region_string <- sprintf("%s:%d-%d", sel_reg$chr, max(sel_reg$start-padding_width,1), sel_reg$end+padding_width)
+          region_string <- sprintf("%s:%d-%d", sel_reg$chr, max(sel_reg$start - padding_width, 1), sel_reg$end + padding_width)
           showGenomicRegion(session, "igv", region_string)
         }
       })
