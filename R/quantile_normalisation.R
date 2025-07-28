@@ -33,6 +33,7 @@
 #' x <- matrix(rnorm(9), nrow = 3)
 #' quantile_normalisation(x)
 #'
+#' @aliases quantile_normalization
 #' @export
 quantile_normalisation <- function(x) {
   # Argument checks
@@ -93,20 +94,5 @@ quantile_normalisation <- function(x) {
   x_norm
 }
 
-#' Quantile Normalization (US spelling alias)
-#'
-#' This is a direct alias for \code{quantile_normalisation()}; it is provided for users who prefer US English spelling.
-#' See \code{?quantile_normalisation} for documentation.
-#'
-#' @param x A numeric matrix; rows are features (e.g., genes), columns are samples/arrays.
-#' @return A numeric matrix of the same dimensions as \code{x}, quantile normalised.
-#'
-#' @aliases quantile_normalization
-#'
-#' #' @examples
-#' set.seed(1)
-#' x <- matrix(rnorm(9), nrow = 3)
-#' quantile_normalisation(x)
-#'
 #' @export
 quantile_normalization <- quantile_normalisation

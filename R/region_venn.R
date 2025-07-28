@@ -84,8 +84,8 @@ plot_venn <- function(
   Cond2_full <- union(upCond2, nonsig)
 
   # Warn if one group is empty
-  if (length(upCond1) == 0) warning("No loci present in upCond1; circle 1 will not have a non-overlap region.")
-  if (length(upCond2) == 0) warning("No loci present in upCond2; circle 2 will not have a non-overlap region.")
+  if (length(upCond1) == 0) message(sprintf("Note: No loci were differentially enriched in condition 1 ('%s')", set_labels[1]))
+  if (length(upCond2) == 0) message(sprintf("Note: No loci were differentially enriched in condition 2 ('%s')", set_labels[2]))
 
   biovenn_params <- list(
     list_x = Cond1_full,

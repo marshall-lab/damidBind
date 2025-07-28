@@ -465,7 +465,7 @@ plot_volcano <- function(
         )
       },
       error = function(e) {
-        message("An error occurred while saving the plot file(s): ", e$message)
+        warning("Failed to save the volcano plot: ", conditionMessage(e))
       }
     )
   }

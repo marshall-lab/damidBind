@@ -143,13 +143,9 @@ browse_igv_regions <- function(
     shiny_connection_opts[["port"]] <- as.integer(port)
   }
 
-  # Get min/maxes of logFC
-  bp_min <- binding_profiles_data[, use_samples] %>%
-    min() %>%
-    floor()
-  bp_max <- binding_profiles_data[, use_samples] %>%
-    max() %>%
-    ceiling()
+  # Get min/maxes of profiles and logFC to display all at a set scale without clipping
+  bp_min <- floor(min(binding_profiles_data[, use_samples]))
+  bp_max <- ceiling(max(binding_profiles_data[, use_samples]))
   enrich_max <- ceiling(max(abs(region_tab$logFC)))
 
   # Build Shiny app
@@ -208,7 +204,7 @@ browse_igv_regions <- function(
               trackName = sample,
               color = "#6666cc"
             )
-            message(paste(" - Added sample track:", sample))
+            message(sprintf(" - Added sample track: %s", sample))
           }
 
           regcol_sel <- c("chr", "start", "end", "logFC")
@@ -222,10 +218,10 @@ browse_igv_regions <- function(
               autoscale = FALSE,
               min = 0,
               max = enrich_max,
-              trackName = paste0("Enriched (", cond1_display_name, ")"), # Use custom name
+              trackName = sprintf("Enriched (%s)", cond1_display_name), # Use custom name
               color = colour_cond1
             )
-            message(paste0(" - Added 'Enriched (", cond1_display_name, ")' regions track"))
+            message(sprintf(" - Added 'Enriched (%s) regions track", cond1_display_name))
           }
 
           # differentially-bound, significant cond2 regions track
@@ -238,10 +234,10 @@ browse_igv_regions <- function(
               autoscale = FALSE,
               min = -enrich_max,
               max = 0,
-              trackName = paste0("Enriched (", cond2_display_name, ")"), # Use custom name
+              trackName = sprintf("Enriched (%s)", cond2_display_name), # Use custom name
               color = colour_cond2
             )
-            message(paste0(" - Added 'Enriched (", cond2_display_name, ")' regions track"))
+            message(sprintf(" - Added 'Enriched (%s) regions track", cond2_display_name))
           }
         },
         once = TRUE

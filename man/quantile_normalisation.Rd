@@ -2,6 +2,7 @@
 % Please edit documentation in R/quantile_normalisation.R
 \name{quantile_normalisation}
 \alias{quantile_normalisation}
+\alias{quantile_normalization}
 \title{Quantile Normalisation}
 \usage{
 quantile_normalisation(x)

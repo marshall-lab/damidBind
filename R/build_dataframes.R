@@ -30,7 +30,7 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
     if (!is.list(binding_profiles) || is.null(names(binding_profiles))) {
       stop("binding_profiles must be a named list of GRanges objects")
     }
-    if (!all(sapply(binding_profiles, function(x) is(x, "GRanges")))) {
+    if (!all(vapply(binding_profiles, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
       stop("All binding_profiles list elements must be GRanges objects")
     }
     message("Building binding profile dataframe from supplied GRanges objects ...")
@@ -170,7 +170,7 @@ load_data_peaks <- function(
     if (!is.list(peaks) || is.null(names(peaks))) {
       stop("peaks must be a named list of GRanges objects")
     }
-    if (!all(sapply(peaks, function(x) is(x, "GRanges")))) {
+    if (!all(vapply(peaks, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
       stop("All peaks list elements must be GRanges objects")
     }
     message("Using supplied peaks GRanges list.")
@@ -341,7 +341,7 @@ build_dataframes_from_granges <- function(gr_list) {
 
     # Detect numeric metadata columns
     mcols_gr <- mcols(gr)
-    numeric_cols <- names(mcols_gr)[sapply(mcols_gr, is.numeric)]
+    numeric_cols <- names(mcols_gr)[vapply(mcols_gr, is.numeric, FUN.VALUE = logical(1))]
 
     if (length(numeric_cols) == 0) {
       stop("GRanges object '", sample_name, "' has no numeric metadata column for binding signal.")
@@ -409,7 +409,7 @@ import_peaks <- function(path) {
       import(path)
     },
     error = function(e) {
-      stop("Failed to read peaks file: ", path, "\\n", e$message)
+      stop(sprintf("Failed to read peaks file '%s':\\n%s", path, conditionMessage(e)))
     }
   )
 }
@@ -425,7 +425,7 @@ import_bedgraph_as_df <- function(path, colname = "score") {
       import(path, format = "bedGraph")
     },
     error = function(e) {
-      stop("Failed to read bedGraph file: ", path, "\\n", e$message)
+      stop(sprintf("Failed to read bedGraph file '%s':\\n%s", path, conditionMessage(e)))
     }
   )
   df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]

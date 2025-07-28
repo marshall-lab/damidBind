@@ -117,10 +117,10 @@ gene_occupancy <- function(
     blens <- overlap_ends - overlap_starts + 1
     if (any(blens < 1)) blens[blens < 1] <- 0
 
-    res <- sapply(sample_cols, function(col) {
+    res <- vapply(sample_cols, function(col) {
       vals <- binding_data[[col]][gene_hits]
       weighted.mean(vals, w = blens, na.rm = TRUE)
-    })
+    }, FUN.VALUE = numeric(1))
 
     # loc/name, nfrags, Averages,  name, gene_id
     c(gene_loc[i], length(gene_hits), res, gene_names[i], gene_id[i])
@@ -235,10 +235,10 @@ gr_occupancy <- function(
     blens <- overlap_ends - overlap_starts + 1
     if (any(blens < 1)) blens[blens < 1] <- 0
 
-    avg_scores <- sapply(sample_cols, function(col) {
+    avg_scores <- vapply(sample_cols, function(col) {
       vals <- binding_data[[col]][region_hits]
       weighted.mean(vals, w = blens, na.rm = TRUE)
-    })
+    }, FUN.VALUE = numeric(1))
 
     return(c(mcols(regions)$name[i], length(region_hits), avg_scores))
   }
@@ -291,7 +291,7 @@ gr_occupancy <- function(
 #' print(reduced)
 #' # The result combines overlapping regions [100-149] and [120-169] into [100-169].
 reduce_regions <- function(peaks) {
-  if (!is.list(peaks) || !all(sapply(peaks, function(x) is(x, "GRanges")))) {
+  if (!is.list(peaks) || !all(vapply(peaks, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
     stop("'peaks' must be a list of GRanges objects.")
   }
   combined <- do.call(c, unname(peaks))

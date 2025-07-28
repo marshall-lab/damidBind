@@ -106,11 +106,10 @@ test_that("plot_venn handles cases with no significant regions", {
   }
   local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")
 
-  # Use evaluate_promise for robustly testing multiple warnings
   res <- evaluate_promise(plot_venn(diff_res_no_sig))
-  expect_length(res$warnings, 2)
-  expect_match(res$warnings[1], "No loci present in upCond1", fixed = TRUE)
-  expect_match(res$warnings[2], "No loci present in upCond2", fixed = TRUE)
+  expect_length(res$messages, 2)
+  expect_match(res$messages[1], "Note: No loci were differentially enriched in condition 1", fixed = TRUE)
+  expect_match(res$messages[2], "Note: No loci were differentially enriched in condition 2", fixed = TRUE)
 
   expect_true(!is.null(mock_draw_venn_args))
   # All loci should be in both 'full' sets, as they're all non-significant
@@ -119,14 +118,14 @@ test_that("plot_venn handles cases with no significant regions", {
 })
 
 
-test_that("plot_venn warns if one condition has no loci", {
+test_that("plot_venn messages if one condition has no loci", {
   diff_res_partial_sig <- make_dummy_diff_results_for_venn()
   diff_res_partial_sig@upCond1 <- diff_res_partial_sig@upCond1[FALSE, ] # No Cond1 sig
 
   mock_draw_venn <- function(list_x, list_y, ...) invisible(NULL)
   local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")
 
-  expect_warning(plot_venn(diff_res_partial_sig), "No loci present in upCond1")
+  expect_message(plot_venn(diff_res_partial_sig), "Note: No loci were differentially enriched in condition 1")
 })
 
 test_that("plot_venn uses default set_labels if not provided", {

@@ -42,8 +42,20 @@ setMethod(
   }
 )
 
+
 #' @rdname DamIDResults-class
+#' @section Accessor Functions:
+#' These functions provide a convenient way to access the different data slots
+#' of a `DamIDResults` object.
+#'
 #' @param object A `DamIDResults` object.
+#' @return
+#' \itemize{
+#'   \item `analysisTable(object)`: returns a data.frame with the full differential analysis.
+#'   \item `enrichedCond1(object)`: returns a data.frame of regions enriched in condition 1.
+#'   \item `enrichedCond2(object)`: returns a data.frame of regions enriched in condition 2.
+#'   \item `conditionNames(object)`: returns a named character vector mapping display names to internal condition identifiers.
+#' }
 #' @export
 #' @examples
 #' # Helper function to create a sample DamIDResults object for examples
@@ -73,9 +85,29 @@ setMethod(
 #'
 #' # Get the condition names
 #' conditionNames(dummy_results)
-analysisTable <- function(object) object@analysis
-analysisTable <- function(object) object@analysis
-enrichedCond1 <- function(object) object@upCond1
-enrichedCond2 <- function(object) object@upCond2
-conditionNames <- function(object) object@cond
+setGeneric("analysisTable", function(object) standardGeneric("analysisTable"))
+
+#' @rdname DamIDResults-class
+setMethod("analysisTable", "DamIDResults", function(object) object@analysis)
+
+#' @rdname DamIDResults-class
+#' @export
+setGeneric("enrichedCond1", function(object) standardGeneric("enrichedCond1"))
+
+#' @rdname DamIDResults-class
+setMethod("enrichedCond1", "DamIDResults", function(object) object@upCond1)
+
+#' @rdname DamIDResults-class
+#' @export
+setGeneric("enrichedCond2", function(object) standardGeneric("enrichedCond2"))
+
+#' @rdname DamIDResults-class
+setMethod("enrichedCond2", "DamIDResults", function(object) object@upCond2)
+
+#' @rdname DamIDResults-class
+#' @export
+setGeneric("conditionNames", function(object) standardGeneric("conditionNames"))
+
+#' @rdname DamIDResults-class
+setMethod("conditionNames", "DamIDResults", function(object) object@cond)
 

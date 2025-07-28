@@ -2,6 +2,7 @@
 % Please edit documentation in R/analyse_go_terms.R
 \name{analyse_go_enrichment}
 \alias{analyse_go_enrichment}
+\alias{analyze_go_enrichment}
 \title{Perform Gene Ontology (GO) Enrichment Analysis for Differentially Bound/Expressed Regions}
 \usage{
 analyse_go_enrichment(

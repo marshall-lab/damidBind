@@ -96,6 +96,7 @@
 #'   }
 #' }
 #'
+#' @aliases analyze_go_enrichment
 #' @export
 analyse_go_enrichment <- function(
     diff_results,
@@ -189,7 +190,7 @@ analyse_go_enrichment <- function(
       )
     },
     error = function(e) {
-      stop("Failed to map Flybase IDs to symbols using bitr: ", e$message)
+      stop("Failed to map Flybase IDs to symbols using bitr: ", conditionMessage(e))
     }
   )
 
@@ -233,7 +234,7 @@ analyse_go_enrichment <- function(
       )
     },
     error = function(e) {
-      message("Error during GO enrichment: ", e$message)
+      warning("GO enrichment failed: ", conditionMessage(e))
       return(NULL)
     })
 
@@ -314,7 +315,7 @@ analyse_go_enrichment <- function(
         message("GO enrichment results table saved to: ", save_results_path)
       },
       error = function(e) {
-        warning("Failed to save GO results table to CSV: ", e$message)
+        warning("Failed to save GO results table to CSV: ", conditionMessage(e))
       }
     )
   }
@@ -343,13 +344,14 @@ analyse_go_enrichment <- function(
         message("GO dot plot saved to: ", full_filename)
       },
       error = function(e) {
-        message("An error occurred while saving the GO dot plot: ", e$message)
+        message("Failed to save the GO dot plot: ", conditionMessage(e))
       }
     )
-  } else {
-    # Only print the plot if not saving to a file
-    print(dplot)
   }
+  # else {
+  #   # Only print the plot if not saving to a file
+  #   print(dplot)
+  # }
 
   invisible(list(
     enrich_go_object = ego,
@@ -358,91 +360,8 @@ analyse_go_enrichment <- function(
   ))
 }
 
-
-#' GO Enrichment Analysis (US spelling alias)
-#'
-#' This is a direct alias for `analyse_go_enrichment()`; it is provided for users who prefer US English spelling.
-#' See `?analyse_go_enrichment` for documentation.
-#'
-#' @param diff_results A `DamIDResults` object, as returned by
-#'   `differential_binding()` or `differential_accessibility()`.
-#' @param direction Character string. Specifies which set of genes to analyse, either using condition names, "cond1" or "cond2", or "all" (for all significantly enriched genes from either direction).  Default is "cond1".
-#' @param org_db An OrgDb object specifying the organism's annotation database.
-#'   For Drosophila, use `org.Dm.eg.db::org.Dm.eg.db`.
-#' @param ontology Character string. The GO ontology to use: "BP" (Biological Process),
-#'   "MF" (Molecular Function), or "CC" (Cellular Component). Default is "BP".
-#' @param pvalue_cutoff Numeric. Adjusted p-value cutoff for significance. Default: 0.05.
-#' @param qvalue_cutoff Numeric. Q-value cutoff for significance. Default: 0.2.
-#' @param plot_title Character string. Title for the generated dot plot.
-#' @param show_category Integer. Number of top enriched GO categories to display in the plot. Default: 12.
-#' @param label_format_width Integer. Max character length for GO term labels on the plot. Default: 30.
-#' @param save List or `NULL`. Controls saving the plot to a file (dot plot).
-#'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
-#'   If a `list`, it specifies saving parameters:
-#'   - \code{filename} (character): The path and base name for the output file. If not specified, the default name "damidBind_GSEA_dotplot" is used.
-#'   - \code{format} (character): File format ("pdf", "svg", or "png").
-#'     Default is "pdf".
-#'   - \code{width} (numeric): Width of the plot in inches. Default is 6
-#'   - \code{height} (numeric): Height of the plot in inches. Default is 6.
-#' @param save_results_path Character string or NULL. If a path is provided (e.g., "go_results.csv"), the
-#'   enrichment results table will be saved to this CSV file.
-#' @param maxGSSize Integer. Maximum size of gene sets to consider. Default: 1000.
-#' @param minGSSize Integer. Minimum size of gene sets to consider. Default: 10.
-#'
-#' @examples
-#' # This example requires the 'org.Dm.eg.db' package
-#' if (requireNamespace("org.Dm.eg.db", quietly = TRUE)) {
-#'
-#'   # ---- Helper function to create a sample DamIDResults object ----
-#'   .generate_example_results <- function() {
-#'     # Define a mock gene object. Note: Real, mappable FlyBase IDs are
-#'     # used for the 'gene_id' column to ensure the example runs.
-#'     mock_genes_gr <- GenomicRanges::GRanges(
-#'       seqnames = S4Vectors::Rle("2L", 7),
-#'       ranges = IRanges::IRanges(
-#'         start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-#'         end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
-#'       ),
-#'       gene_id = c("FBgn0034439", "FBgn0031267", "FBgn0051138", "FBgn0031265",
-#'                   "FBgn0004655", "FBgn0000251", "FBgn0000252"),
-#'       gene_name = c("ap", "dpr1", "side", "dpr2", "eg", "bi", "br")
-#'     )
-#'     data_dir <- system.file("extdata", package = "damidBind")
-#'     loaded_data <- load_data_peaks(
-#'       binding_profiles_path = data_dir,
-#'       peaks_path = data_dir,
-#'       ensdb_genes = mock_genes_gr,
-#'       quantile_norm = TRUE
-#'     )
-#'     diff_results <- differential_binding(
-#'        loaded_data,
-#'        cond = c("L4", "L5"),
-#'        cond_names = c("L4 Neurons", "L5 Neurons")
-#'     )
-#'     return(diff_results)
-#'   }
-#'   diff_results <- .generate_example_results()
-#'   # ---- End of helper section ----
-#'
-#'   # Run GO Enrichment for genes enriched in the first condition ("L4")
-#'   # Note: with tiny sample data, this may not find significant terms.
-#'   go_results <- analyse_go_enrichment(
-#'     diff_results,
-#'     direction = "L4",
-#'     org_db = org.Dm.eg.db::org.Dm.eg.db
-#'   )
-#'
-#'   # Print the results table if any enrichment was found
-#'   if (!is.null(go_results)) {
-#'     print(go_results$results_table)
-#'   }
-#' }
-#'
-#'
-#' @aliases analyze_go_enrichment
 #' @export
 analyze_go_enrichment <- analyse_go_enrichment
-
 
 # Internal helper function (not exported)
 # This function helps filter out gene symbols that are typically not useful for GO enrichment

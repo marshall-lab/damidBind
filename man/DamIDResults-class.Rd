@@ -5,14 +5,43 @@
 \alias{DamIDResults}
 \alias{show,DamIDResults-method}
 \alias{analysisTable}
+\alias{analysisTable,DamIDResults-method}
+\alias{enrichedCond1}
+\alias{enrichedCond1,DamIDResults-method}
+\alias{enrichedCond2}
+\alias{enrichedCond2,DamIDResults-method}
+\alias{conditionNames}
+\alias{conditionNames,DamIDResults-method}
 \title{The DamIDResults Class}
 \usage{
 \S4method{show}{DamIDResults}(object)
 
 analysisTable(object)
+
+\S4method{analysisTable}{DamIDResults}(object)
+
+enrichedCond1(object)
+
+\S4method{enrichedCond1}{DamIDResults}(object)
+
+enrichedCond2(object)
+
+\S4method{enrichedCond2}{DamIDResults}(object)
+
+conditionNames(object)
+
+\S4method{conditionNames}{DamIDResults}(object)
 }
 \arguments{
 \item{object}{A `DamIDResults` object.}
+}
+\value{
+\itemize{
+  \item `analysisTable(object)`: returns a data.frame with the full differential analysis.
+  \item `enrichedCond1(object)`: returns a data.frame of regions enriched in condition 1.
+  \item `enrichedCond2(object)`: returns a data.frame of regions enriched in condition 2.
+  \item `conditionNames(object)`: returns a named character vector mapping display names to internal condition identifiers.
+}
 }
 \description{
 An S4 class to store the results of a damidBind differential analysis,
@@ -34,6 +63,12 @@ internal condition identifiers used in the analysis.}
 \item{\code{data}}{A list containing the initial input data used for the analysis,
 including the occupancy data.frame and other metadata.}
 }}
+
+\section{Accessor Functions}{
+
+These functions provide a convenient way to access the different data slots
+of a `DamIDResults` object.
+}
 
 \examples{
 # Helper function to create a sample DamIDResults object for examples
