@@ -118,3 +118,24 @@ test_that("plot_volcano skips saving if save is NULL/FALSE/0", {
   expect_true(file.exists(expected_file))
   file.remove(expected_file)
 })
+
+test_that("S4 plot method for DamIDResults works as a wrapper", {
+  diff_res <- make_dummy_diff_results()
+
+  p_standalone <- plot_volcano(diff_res)
+  p_method <- plot(diff_res)
+
+  # Check that both return ggplot objects
+  expect_s3_class(p_method, "ggplot")
+
+  # Check that the core components are identical
+  expect_equal(p_method$data, p_standalone$data)
+  expect_equal(p_method$mapping, p_standalone$mapping)
+  expect_equal(p_method$labels, p_standalone$labels)
+
+  # Test that arguments passed via '...' are correctly forwarded
+  custom_title <- "A Custom Test Title For the S4 Method"
+  p_custom_method <- plot(diff_res,
+                          plot_config = list(title = custom_title))
+  expect_equal(p_custom_method$labels$title, custom_title)
+})
