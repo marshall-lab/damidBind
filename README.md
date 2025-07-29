@@ -22,7 +22,7 @@ BiocManager::install("marshall-lab/damidBind")
 
 # Vignette
 
-A more complete guide to using `damidBind` can be found in the [damidBind vignette](https://marshall-lab/damidBind/damidBind_vignette.html).
+A more complete guide to using `damidBind` can be found in the [damidBind vignette](https://marshall-lab/damidBind/docs/articles/damidBind_vignette.html).
 
 # Quick start guide
 
@@ -65,6 +65,6 @@ analyse_go_enrichment(
 browse_igv_regions(input.diff)
 
 # Apply additional functions on the differential binding results
-# Use the '@' accessor to obtain data slots from the S4 object
+# Use the analysisTable() accessor to obtain the full analysis
 my_custom_function(analysisTable(input.diff))
 ```

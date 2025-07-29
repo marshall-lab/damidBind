@@ -19,7 +19,6 @@
 #' # This example launches an interactive Shiny app and is not run by
 #' # automated checks. It requires an internet connection for IGV.
 #'
-#' # ---- Helper function to create a sample DamIDResults object ----
 #' .generate_example_results <- function() {
 #'     mock_genes_gr <- GenomicRanges::GRanges(
 #'         seqnames = S4Vectors::Rle("2L", 7),
@@ -45,7 +44,6 @@
 #'     return(diff_results)
 #' }
 #' diff_results <- .generate_example_results()
-#' # ---- End of helper section ----
 #'
 #' # Launch the interactive browser (requires network access; uncomment to run)
 #' # browse_igv_regions(diff_results)

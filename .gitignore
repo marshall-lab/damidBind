@@ -15,5 +15,6 @@ damidBind.Rproj
 .DS_Store
 Thumbs.db
 /doc
-/doc/
+/docs
 Rplots.pdf
+_pkgdown.yml
