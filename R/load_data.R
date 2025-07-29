@@ -9,34 +9,34 @@
 #' @return A dataframe containing the merged binding profiles.
 #' @noRd
 process_binding_profiles <- function(binding_profiles_path = NULL, binding_profiles = NULL) {
-  # Validate that one and only one input type is provided
-  if (is.null(binding_profiles_path) && is.null(binding_profiles)) {
-    stop("Must supply one of binding_profiles_path or binding_profiles")
-  }
-  if (!is.null(binding_profiles_path) && !is.null(binding_profiles)) {
-    stop("Provide only one of binding_profiles_path or binding_profiles, not both")
-  }
+    # Validate that one and only one input type is provided
+    if (is.null(binding_profiles_path) && is.null(binding_profiles)) {
+        stop("Must supply one of binding_profiles_path or binding_profiles")
+    }
+    if (!is.null(binding_profiles_path) && !is.null(binding_profiles)) {
+        stop("Provide only one of binding_profiles_path or binding_profiles, not both")
+    }
 
-  if (!is.null(binding_profiles_path)) {
-    # Load from file paths
-    message("Locating binding profile files")
-    binding_files <- locate_files(binding_profiles_path, pattern = "\\.(bedgraph|bg)(\\.gz)?$")
-    if (length(binding_files) == 0) {
-      stop("No binding profile files (.bedgraph) found in the specified path(s).")
+    if (!is.null(binding_profiles_path)) {
+        # Load from file paths
+        message("Locating binding profile files")
+        binding_files <- locate_files(binding_profiles_path, pattern = "\\.(bedgraph|bg)(\\.gz)?$")
+        if (length(binding_files) == 0) {
+            stop("No binding profile files (.bedgraph) found in the specified path(s).")
+        }
+        binding_profiles_data <- build_dataframes(binding_files)
+    } else {
+        # Load from a list of GRanges objects
+        if (!is.list(binding_profiles) || is.null(names(binding_profiles))) {
+            stop("binding_profiles must be a named list of GRanges objects")
+        }
+        if (!all(vapply(binding_profiles, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
+            stop("All binding_profiles list elements must be GRanges objects")
+        }
+        message("Building binding profile dataframe from supplied GRanges objects ...")
+        binding_profiles_data <- build_dataframes_from_granges(binding_profiles)
     }
-    binding_profiles_data <- build_dataframes(binding_files)
-  } else {
-    # Load from a list of GRanges objects
-    if (!is.list(binding_profiles) || is.null(names(binding_profiles))) {
-      stop("binding_profiles must be a named list of GRanges objects")
-    }
-    if (!all(vapply(binding_profiles, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
-      stop("All binding_profiles list elements must be GRanges objects")
-    }
-    message("Building binding profile dataframe from supplied GRanges objects ...")
-    binding_profiles_data <- build_dataframes_from_granges(binding_profiles)
-  }
-  return(binding_profiles_data)
+    return(binding_profiles_data)
 }
 
 #' Internal Helper: Apply Quantile Normalisation
@@ -49,22 +49,22 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
 #' @return A data.frame, which is quantile-normalised if requested.
 #' @noRd
 apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
-  if (isTRUE(quantile_norm)) {
-    message("Applying quantile normalisation")
-    coord_cols <- binding_profiles_data[, 1:3, drop = FALSE]
-    signal_mat <- as.matrix(binding_profiles_data[, -(1:3), drop = FALSE])
+    if (isTRUE(quantile_norm)) {
+        message("Applying quantile normalisation")
+        coord_cols <- binding_profiles_data[, 1:3, drop = FALSE]
+        signal_mat <- as.matrix(binding_profiles_data[, -(1:3), drop = FALSE])
 
-    if (ncol(signal_mat) == 0) {
-      warning("No signal columns found for quantile normalisation. Returning original data.")
-      return(binding_profiles_data)
+        if (ncol(signal_mat) == 0) {
+            warning("No signal columns found for quantile normalisation. Returning original data.")
+            return(binding_profiles_data)
+        }
+
+        qnorm_mat <- quantile_normalisation(signal_mat)
+        colnames(qnorm_mat) <- paste0(colnames(signal_mat), "_qnorm")
+
+        binding_profiles_data <- cbind(coord_cols, as.data.frame(qnorm_mat))
     }
-
-    qnorm_mat <- quantile_normalisation(signal_mat)
-    colnames(qnorm_mat) <- paste0(colnames(signal_mat), "_qnorm")
-
-    binding_profiles_data <- cbind(coord_cols, as.data.frame(qnorm_mat))
-  }
-  return(binding_profiles_data)
+    return(binding_profiles_data)
 }
 
 
@@ -107,14 +107,14 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' # This object, based on the package's unit tests, avoids network access
 #' # and includes a very long gene to ensure overlaps with sample data.
 #' mock_genes_gr <- GenomicRanges::GRanges(
-#'   seqnames = S4Vectors::Rle("2L", 7),
-#'   ranges = IRanges::IRanges(
-#'     start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-#'     end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
-#'   ),
-#'   strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
-#'   gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
-#'   gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+#'     seqnames = S4Vectors::Rle("2L", 7),
+#'     ranges = IRanges::IRanges(
+#'         start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'         end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'     ),
+#'     strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+#'     gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+#'     gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
 #' )
 #'
 #' # Get path to sample data files included with the package
@@ -122,10 +122,10 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'
 #' # Run loading function using sample files and mock gene annotations
 #' loaded_data <- load_data_peaks(
-#'   binding_profiles_path = data_dir,
-#'   peaks_path = data_dir,
-#'   ensdb_genes = mock_genes_gr,
-#'   quantile_norm = TRUE
+#'     binding_profiles_path = data_dir,
+#'     peaks_path = data_dir,
+#'     ensdb_genes = mock_genes_gr,
+#'     quantile_norm = TRUE
 #' )
 #'
 #' # View the structure of the output
@@ -141,59 +141,59 @@ load_data_peaks <- function(
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
     BPPARAM = BiocParallel::bpparam()) {
-  if (is.null(ensdb_genes)) {
-    ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
-  }
-  if (!is(ensdb_genes, "GRanges")) {
-    stop("ensdb_genes must be supplied as a GRanges object.")
-  }
-
-  binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
-  binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
-
-  # Validate and load peaks
-  if (is.null(peaks_path) && is.null(peaks)) {
-    stop("Must supply one of peaks_path or peaks")
-  }
-  if (!is.null(peaks_path) && !is.null(peaks)) {
-    stop("Provide only one of peaks_path or peaks, not both")
-  }
-
-  if (!is.null(peaks_path)) {
-    message("Locating peak files")
-    peaks_files <- locate_files(peaks_path, pattern = "\\.(gff|bed)(\\.gz)?$")
-    if (length(peaks_files) == 0) {
-      stop("No peak files (.gff or .bed) found in the specified path(s).")
+    if (is.null(ensdb_genes)) {
+        ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
     }
-    peaks <- lapply(peaks_files, import_peaks)
-  } else {
-    if (!is.list(peaks) || is.null(names(peaks))) {
-      stop("peaks must be a named list of GRanges objects")
+    if (!is(ensdb_genes, "GRanges")) {
+        stop("ensdb_genes must be supplied as a GRanges object.")
     }
-    if (!all(vapply(peaks, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
-      stop("All peaks list elements must be GRanges objects")
+
+    binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
+
+    # Validate and load peaks
+    if (is.null(peaks_path) && is.null(peaks)) {
+        stop("Must supply one of peaks_path or peaks")
     }
-    message("Using supplied peaks GRanges list.")
-  }
+    if (!is.null(peaks_path) && !is.null(peaks)) {
+        stop("Provide only one of peaks_path or peaks, not both")
+    }
 
-  # Process peaks and calculate occupancy
-  pr <- reduce_regions(peaks)
-  message("Calculating occupancy over peaks")
-  occupancy <- gr_occupancy(binding_profiles_data, pr, BPPARAM = BPPARAM)
+    if (!is.null(peaks_path)) {
+        message("Locating peak files")
+        peaks_files <- locate_files(peaks_path, pattern = "\\.(gff|bed)(\\.gz)?$")
+        if (length(peaks_files) == 0) {
+            stop("No peak files (.gff or .bed) found in the specified path(s).")
+        }
+        peaks <- lapply(peaks_files, import_peaks)
+    } else {
+        if (!is.list(peaks) || is.null(names(peaks))) {
+            stop("peaks must be a named list of GRanges objects")
+        }
+        if (!all(vapply(peaks, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
+            stop("All peaks list elements must be GRanges objects")
+        }
+        message("Using supplied peaks GRanges list.")
+    }
 
-  gene_overlaps <- all_overlaps_to_original(pr, ensdb_genes, maxgap = 1000)
-  occupancy$gene_names <- gene_overlaps$genes
-  if (!is.null(gene_overlaps$ids)) {
-    occupancy$gene_ids <- gene_overlaps$ids
-  }
+    # Process peaks and calculate occupancy
+    pr <- reduce_regions(peaks)
+    message("Calculating occupancy over peaks")
+    occupancy <- gr_occupancy(binding_profiles_data, pr, BPPARAM = BPPARAM)
 
-  list(
-    binding_profiles_data = binding_profiles_data,
-    peaks = peaks,
-    pr = pr,
-    occupancy = occupancy,
-    test_category = "bound"
-  )
+    gene_overlaps <- all_overlaps_to_original(pr, ensdb_genes, maxgap = 1000)
+    occupancy$gene_names <- gene_overlaps$genes
+    if (!is.null(gene_overlaps$ids)) {
+        occupancy$gene_ids <- gene_overlaps$ids
+    }
+
+    list(
+        binding_profiles_data = binding_profiles_data,
+        peaks = peaks,
+        pr = pr,
+        occupancy = occupancy,
+        test_category = "bound"
+    )
 }
 
 
@@ -229,14 +229,14 @@ load_data_peaks <- function(
 #' # This object, based on the package's unit tests, avoids network access
 #' # and includes a very long gene to ensure overlaps with sample data.
 #' mock_genes_gr <- GenomicRanges::GRanges(
-#'   seqnames = S4Vectors::Rle("2L", 7),
-#'   ranges = IRanges::IRanges(
-#'     start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-#'     end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
-#'   ),
-#'   strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
-#'   gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
-#'   gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+#'     seqnames = S4Vectors::Rle("2L", 7),
+#'     ranges = IRanges::IRanges(
+#'         start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'         end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'     ),
+#'     strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+#'     gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+#'     gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
 #' )
 #'
 #' # Get path to sample data files included with the package
@@ -245,9 +245,9 @@ load_data_peaks <- function(
 #' # Run loading function using sample files and mock gene annotations
 #' # This calculates occupancy over genes instead of peaks.
 #' loaded_data_genes <- load_data_genes(
-#'   binding_profiles_path = data_dir,
-#'   ensdb_genes = mock_genes_gr,
-#'   quantile_norm = FALSE
+#'     binding_profiles_path = data_dir,
+#'     ensdb_genes = mock_genes_gr,
+#'     quantile_norm = FALSE
 #' )
 #'
 #' # View the head of the occupancy table
@@ -261,24 +261,24 @@ load_data_genes <- function(
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
     BPPARAM = BiocParallel::bpparam()) {
-  if (is.null(ensdb_genes)) {
-    ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
-  }
-  if (!is(ensdb_genes, "GRanges")) {
-    stop("ensdb_genes must be supplied as a GRanges object.")
-  }
+    if (is.null(ensdb_genes)) {
+        ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
+    }
+    if (!is(ensdb_genes, "GRanges")) {
+        stop("ensdb_genes must be supplied as a GRanges object.")
+    }
 
-  binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
-  binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
+    binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
 
-  # Calculate occupancy over genes
-  occupancy <- gene_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
+    # Calculate occupancy over genes
+    occupancy <- gene_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
 
-  list(
-    binding_profiles_data = binding_profiles_data,
-    occupancy = occupancy,
-    test_category = "expressed"
-  )
+    list(
+        binding_profiles_data = binding_profiles_data,
+        occupancy = occupancy,
+        test_category = "expressed"
+    )
 }
 
 
@@ -289,34 +289,34 @@ load_data_genes <- function(
 #' @return data.frame with merged intervals and all sample columns.
 #' @noRd
 build_dataframes <- function(bedgraphs) {
-  message("Building binding profile dataframe from input files ...")
-  if (length(bedgraphs) < 1) stop("No bedGraph files supplied.")
+    message("Building binding profile dataframe from input files ...")
+    if (length(bedgraphs) < 1) stop("No bedGraph files supplied.")
 
-  # Helper function to deal with multiple periods in files
-  strip_all_exts_recursive <- function(filepath) {
-    lastpath <- ""
-    while (filepath != lastpath) {
-      lastpath <- filepath
-      filepath <- file_path_sans_ext(filepath)
+    # Helper function to deal with multiple periods in files
+    strip_all_exts_recursive <- function(filepath) {
+        lastpath <- ""
+        while (filepath != lastpath) {
+            lastpath <- filepath
+            filepath <- file_path_sans_ext(filepath)
+        }
+        filepath
     }
-    filepath
-  }
 
-  data.df <- NULL
-  for (bf in bedgraphs) {
-    # Name sample by filename (remove extension)
-    sample_name <- basename(strip_all_exts_recursive(bf))
-    gr <- import_bedgraph_as_df(bf, colname = sample_name)
-    if (is.null(data.df)) {
-      data.df <- gr
-    } else {
-      data.df <- merge(data.df, gr, by = c("chr", "start", "end"), all = FALSE)
+    data.df <- NULL
+    for (bf in bedgraphs) {
+        # Name sample by filename (remove extension)
+        sample_name <- basename(strip_all_exts_recursive(bf))
+        gr <- import_bedgraph_as_df(bf, colname = sample_name)
+        if (is.null(data.df)) {
+            data.df <- gr
+        } else {
+            data.df <- merge(data.df, gr, by = c("chr", "start", "end"), all = FALSE)
+        }
+        message(" - Loaded: ", sample_name)
     }
-    message(" - Loaded: ", sample_name)
-  }
-  # Order by chromosome and location
-  data.df <- data.df[order(data.df$chr, data.df$start), ]
-  data.df
+    # Order by chromosome and location
+    data.df <- data.df[order(data.df$chr, data.df$start), ]
+    data.df
 }
 
 
@@ -329,44 +329,44 @@ build_dataframes <- function(bedgraphs) {
 #' @return data.frame with merged intervals and columns: chr, start, end, sample columns.
 #' @noRd
 build_dataframes_from_granges <- function(gr_list) {
-  if (length(gr_list) == 0) stop("Empty GRanges list supplied to build_dataframes_from_granges.")
+    if (length(gr_list) == 0) stop("Empty GRanges list supplied to build_dataframes_from_granges.")
 
-  df_list <- lapply(seq_along(gr_list), function(i) {
-    gr <- gr_list[[i]]
-    sample_name <- names(gr_list)[i]
+    df_list <- lapply(seq_along(gr_list), function(i) {
+        gr <- gr_list[[i]]
+        sample_name <- names(gr_list)[i]
 
-    if (!is(gr, "GRanges")) {
-      stop("Element ", i, " of gr_list is not a GRanges object.")
-    }
+        if (!is(gr, "GRanges")) {
+            stop("Element ", i, " of gr_list is not a GRanges object.")
+        }
 
-    # Detect numeric metadata columns
-    mcols_gr <- mcols(gr)
-    numeric_cols <- names(mcols_gr)[vapply(mcols_gr, is.numeric, FUN.VALUE = logical(1))]
+        # Detect numeric metadata columns
+        mcols_gr <- mcols(gr)
+        numeric_cols <- names(mcols_gr)[vapply(mcols_gr, is.numeric, FUN.VALUE = logical(1))]
 
-    if (length(numeric_cols) == 0) {
-      stop("GRanges object '", sample_name, "' has no numeric metadata column for binding signal.")
-    } else if (length(numeric_cols) > 1) {
-      stop("GRanges object '", sample_name, "' has multiple numeric metadata columns; please provide exactly one.")
-    }
-    value_col <- numeric_cols[1]
+        if (length(numeric_cols) == 0) {
+            stop("GRanges object '", sample_name, "' has no numeric metadata column for binding signal.")
+        } else if (length(numeric_cols) > 1) {
+            stop("GRanges object '", sample_name, "' has multiple numeric metadata columns; please provide exactly one.")
+        }
+        value_col <- numeric_cols[1]
 
-    df <- data.frame(
-      chr = as.character(seqnames(gr)),
-      start = start(gr),
-      end = end(gr),
-      value = mcols_gr[[value_col]],
-      stringsAsFactors = FALSE
-    )
-    colnames(df)[4] <- sample_name
-    return(df)
-  })
+        df <- data.frame(
+            chr = as.character(seqnames(gr)),
+            start = start(gr),
+            end = end(gr),
+            value = mcols_gr[[value_col]],
+            stringsAsFactors = FALSE
+        )
+        colnames(df)[4] <- sample_name
+        return(df)
+    })
 
-  # Merge profiles
-  merged_df <- Reduce(function(x, y) merge(x, y, by = c("chr", "start", "end"), all = FALSE), df_list)
+    # Merge profiles
+    merged_df <- Reduce(function(x, y) merge(x, y, by = c("chr", "start", "end"), all = FALSE), df_list)
 
-  # Sort and return
-  merged_df <- merged_df[order(merged_df$chr, merged_df$start), , drop = FALSE]
-  return(merged_df)
+    # Sort and return
+    merged_df <- merged_df[order(merged_df$chr, merged_df$start), , drop = FALSE]
+    return(merged_df)
 }
 
 
@@ -376,27 +376,27 @@ build_dataframes_from_granges <- function(gr_list) {
 #' @return Character vector of file paths.
 #' @noRd
 locate_files <- function(paths, pattern = NULL) {
-  files <- character()
-  for (p in paths) {
-    # Expand wildcards
-    expanded <- Sys.glob(p)
-    # List files in directory, if p is a bare directory
-    if (dir.exists(p)) {
-      dir_files <- list.files(p, pattern = pattern, full.names = TRUE)
-      files <- c(files, dir_files)
+    files <- character()
+    for (p in paths) {
+        # Expand wildcards
+        expanded <- Sys.glob(p)
+        # List files in directory, if p is a bare directory
+        if (dir.exists(p)) {
+            dir_files <- list.files(p, pattern = pattern, full.names = TRUE)
+            files <- c(files, dir_files)
+        }
+        # Check if expanded globs were dirs:
+        for (checkexpdir in expanded) {
+            if (dir.exists(checkexpdir)) {
+                dir_files <- list.files(checkexpdir, pattern, full.names = TRUE)
+                files <- c(files, dir_files)
+            }
+        }
+        # Include expanded gene_names
+        files <- c(files, expanded[grepl(pattern, expanded, ignore.case = TRUE)])
     }
-    # Check if expanded globs were dirs:
-    for (checkexpdir in expanded) {
-      if (dir.exists(checkexpdir)) {
-        dir_files <- list.files(checkexpdir, pattern, full.names = TRUE)
-        files <- c(files, dir_files)
-      }
-    }
-    # Include expanded gene_names
-    files <- c(files, expanded[grepl(pattern, expanded, ignore.case = TRUE)])
-  }
-  files <- unique(files)
-  return(files[file.exists(files)])
+    files <- unique(files)
+    return(files[file.exists(files)])
 }
 
 #' Import a GFF file as a GRanges object
@@ -404,14 +404,14 @@ locate_files <- function(paths, pattern = NULL) {
 #' @return GRanges
 #' @noRd
 import_peaks <- function(path) {
-  tryCatch(
-    {
-      import(path)
-    },
-    error = function(e) {
-      stop(sprintf("Failed to read peaks file '%s':\\n%s", path, conditionMessage(e)))
-    }
-  )
+    tryCatch(
+        {
+            import(path)
+        },
+        error = function(e) {
+            stop(sprintf("Failed to read peaks file '%s':\n%s", path, conditionMessage(e)))
+        }
+    )
 }
 
 #' Import a bedGraph file as a data.frame (chr, start, end, value)
@@ -420,15 +420,15 @@ import_peaks <- function(path) {
 #' @return data.frame
 #' @noRd
 import_bedgraph_as_df <- function(path, colname = "score") {
-  gr <- tryCatch(
-    {
-      import(path, format = "bedGraph")
-    },
-    error = function(e) {
-      stop(sprintf("Failed to read bedGraph file '%s':\\n%s", path, conditionMessage(e)))
-    }
-  )
-  df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]
-  names(df) <- c("chr", "start", "end", colname)
-  df
+    gr <- tryCatch(
+        {
+            import(path, format = "bedGraph")
+        },
+        error = function(e) {
+            stop(sprintf("Failed to read bedGraph file '%s':\n%s", path, conditionMessage(e)))
+        }
+    )
+    df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]
+    names(df) <- c("chr", "start", "end", colname)
+    df
 }

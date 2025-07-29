@@ -32,8 +32,8 @@
 #' # This example requires an internet connection and will download data.
 #' # It is wrapped in \donttest{} so it is not run by automated checks.
 #' dm_genes <- get_ensdb_genes(
-#'   organism_keyword = "drosophila melanogaster",
-#'   ensembl_version = 110
+#'     organism_keyword = "drosophila melanogaster",
+#'     ensembl_version = 110
 #' )
 #'
 #' # View the fetched genes GRanges object
@@ -47,79 +47,79 @@ get_ensdb_genes <- function(
     ensembl_version = NULL,
     exclude_biotypes = c("transposable_element", "pseudogene"),
     include_gene_metadata = c("gene_id", "gene_name")) {
-  message("Finding genome versions ...")
+    message("Finding genome versions ...")
 
-  ah <- AnnotationHub()
+    ah <- AnnotationHub()
 
-  # Query EnsDb databases matching the organism keyword (case-insensitive)
-  query_res <- query(ah, c("EnsDb", organism_keyword))
+    # Query EnsDb databases matching the organism keyword (case-insensitive)
+    query_res <- query(ah, c("EnsDb", organism_keyword))
 
-  if (length(query_res) == 0) {
-    stop("No EnsDb found for organism: ", organism_keyword)
-  }
-
-  # Extract metadata DataFrame for all query results
-  meta_df <- mcols(query_res)
-
-  # If genome_build is specified, filter query_res by genome_build (case-insensitive match)
-  if (!is.null(genome_build)) {
-    matched_genomes <- tolower(meta_df$genome) == tolower(genome_build)
-    if (!any(matched_genomes)) {
-      stop(sprintf(
-        "No EnsDb found for organism '%s' with genome build '%s'. Available builds are: %s",
-        organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")
-      ))
+    if (length(query_res) == 0) {
+        stop("No EnsDb found for organism: ", organism_keyword)
     }
-    filtered_query_res <- query_res[matched_genomes]
-  } else {
-    filtered_query_res <- query_res
-  }
 
-  # Extract Ensembl versions from titles, e.g. "Ensembl 113 EnsDb for ..."
-  ens_versions <- as.integer(sub("Ensembl ([0-9]+) EnsDb.*", "\\1", filtered_query_res$title))
+    # Extract metadata DataFrame for all query results
+    meta_df <- mcols(query_res)
 
-  if (all(is.na(ens_versions))) {
-    # fallback: pick last resource if version parsing fails
-    index <- length(filtered_query_res)
-  } else if (!(is.null(ensembl_version))) {
-    if (ensembl_version %in% ens_versions) {
-      index <- which(ens_versions == ensembl_version)
+    # If genome_build is specified, filter query_res by genome_build (case-insensitive match)
+    if (!is.null(genome_build)) {
+        matched_genomes <- tolower(meta_df$genome) == tolower(genome_build)
+        if (!any(matched_genomes)) {
+            stop(sprintf(
+                "No EnsDb found for organism '%s' with genome build '%s'. Available builds are: %s",
+                organism_keyword, genome_build, paste(unique(meta_df$genome), collapse = ", ")
+            ))
+        }
+        filtered_query_res <- query_res[matched_genomes]
     } else {
-      stop(sprintf(
-        "Version '%s' is not available. Available builds are: %s",
-        ensembl_version, paste(ens_versions, collapse = ", ")
-      ))
+        filtered_query_res <- query_res
     }
-  } else {
-    index <- which.max(ens_versions)
-  }
-  message(sprintf("Loading Ensembl genome version '%s'", filtered_query_res$title[[index]]))
-  ensdb <- filtered_query_res[[index]]
 
-  # Extract genes object and filter
-  genes_gr <- genes(ensdb)
-  genes_gr <- genes_gr[!(mcols(genes_gr)$gene_biotype %in% exclude_biotypes), ]
-  genes_gr <- genes_gr[, colnames(mcols(genes_gr)) %in% include_gene_metadata]
+    # Extract Ensembl versions from titles, e.g. "Ensembl 113 EnsDb for ..."
+    ens_versions <- as.integer(sub("Ensembl ([0-9]+) EnsDb.*", "\\1", filtered_query_res$title))
 
-  # Extract genome build
-  genome_build <- unique(genome(genes_gr))[1]
+    if (all(is.na(ens_versions))) {
+        # fallback: pick last resource if version parsing fails
+        index <- length(filtered_query_res)
+    } else if (!(is.null(ensembl_version))) {
+        if (ensembl_version %in% ens_versions) {
+            index <- which(ens_versions == ensembl_version)
+        } else {
+            stop(sprintf(
+                "Version '%s' is not available. Available builds are: %s",
+                ensembl_version, paste(ens_versions, collapse = ", ")
+            ))
+        }
+    } else {
+        index <- which.max(ens_versions)
+    }
+    message(sprintf("Loading Ensembl genome version '%s'", filtered_query_res$title[[index]]))
+    ensdb <- filtered_query_res[[index]]
 
-  # Extract metadata
-  ensdb_meta_df <- metadata(ensdb)
-  ensdb_metav <- setNames(as.character(ensdb_meta_df[, 2]), ensdb_meta_df[, 1])
-  ensembl_version <- if ("ensembl_version" %in% names(ensdb_metav)) ensdb_metav[["ensembl_version"]] else NA
-  species <- if ("species" %in% names(ensdb_metav)) ensdb_metav[["species"]] else NA
-  common_name <- if ("common_name" %in% names(ensdb_metav)) ensdb_metav[["common_name"]] else NA
+    # Extract genes object and filter
+    genes_gr <- genes(ensdb)
+    genes_gr <- genes_gr[!(mcols(genes_gr)$gene_biotype %in% exclude_biotypes), ]
+    genes_gr <- genes_gr[, colnames(mcols(genes_gr)) %in% include_gene_metadata]
 
-  # Close the DB connection to prevent warning
-  dbcon <- dbconn(ensdb)
-  dbDisconnect(dbcon)
+    # Extract genome build
+    genome_build <- unique(genome(genes_gr))[1]
 
-  return(list(
-    genes = genes_gr,
-    ensembl_version = ensembl_version,
-    genome_build = genome_build,
-    species = species,
-    common_name = common_name
-  ))
+    # Extract metadata
+    ensdb_meta_df <- metadata(ensdb)
+    ensdb_metav <- setNames(as.character(ensdb_meta_df[, 2]), ensdb_meta_df[, 1])
+    ensembl_version <- if ("ensembl_version" %in% names(ensdb_metav)) ensdb_metav[["ensembl_version"]] else NA
+    species <- if ("species" %in% names(ensdb_metav)) ensdb_metav[["species"]] else NA
+    common_name <- if ("common_name" %in% names(ensdb_metav)) ensdb_metav[["common_name"]] else NA
+
+    # Close the DB connection to prevent warning
+    dbcon <- dbconn(ensdb)
+    dbDisconnect(dbcon)
+
+    return(list(
+        genes = genes_gr,
+        ensembl_version = ensembl_version,
+        genome_build = genome_build,
+        species = species,
+        common_name = common_name
+    ))
 }

@@ -51,14 +51,14 @@ named list, with element names used as sample names.
 # This object, based on the package's unit tests, avoids network access
 # and includes a very long gene to ensure overlaps with sample data.
 mock_genes_gr <- GenomicRanges::GRanges(
-  seqnames = S4Vectors::Rle("2L", 7),
-  ranges = IRanges::IRanges(
-    start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-    end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
-  ),
-  strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
-  gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
-  gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
+    seqnames = S4Vectors::Rle("2L", 7),
+    ranges = IRanges::IRanges(
+        start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+        end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+    ),
+    strand = S4Vectors::Rle(GenomicRanges::strand(c("+", "-", "+", "+", "-", "-", "+"))),
+    gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007"),
+    gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "LargeTestGene")
 )
 
 # Get path to sample data files included with the package
@@ -67,9 +67,9 @@ data_dir <- system.file("extdata", package = "damidBind")
 # Run loading function using sample files and mock gene annotations
 # This calculates occupancy over genes instead of peaks.
 loaded_data_genes <- load_data_genes(
-  binding_profiles_path = data_dir,
-  ensdb_genes = mock_genes_gr,
-  quantile_norm = FALSE
+    binding_profiles_path = data_dir,
+    ensdb_genes = mock_genes_gr,
+    quantile_norm = FALSE
 )
 
 # View the head of the occupancy table

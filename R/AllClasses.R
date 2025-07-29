@@ -16,30 +16,30 @@
 #' @rdname DamIDResults-class
 #' @exportClass DamIDResults
 setClass("DamIDResults",
-         slots = c(
-           analysis = "data.frame",
-           upCond1 = "data.frame",
-           upCond2 = "data.frame",
-           cond = "character",
-           data = "list"
-         )
+    slots = c(
+        analysis = "data.frame",
+        upCond1 = "data.frame",
+        upCond2 = "data.frame",
+        cond = "character",
+        data = "list"
+    )
 )
 
 #' @rdname DamIDResults-class
 #' @param object A `DamIDResults` object.
 #' @export
 setMethod(
-  "show", "DamIDResults",
-  function(object) {
-    cat("An object of class 'DamIDResults'\n")
-    cond_display <- names(object@cond)
-    cat(sprintf("Differentially %s regions\n", object@data$test_category))
-    cat(sprintf("Comparison: '%s' vs '%s'\n", cond_display[1], cond_display[2]))
-    cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
-    cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
-    cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
-    cat("\\nAccess results with accessor functions like analysisTable(object).\n")
-  }
+    "show", "DamIDResults",
+    function(object) {
+        cat("An object of class 'DamIDResults'\n")
+        cond_display <- names(object@cond)
+        cat(sprintf("Differentially %s regions\n", object@data$test_category))
+        cat(sprintf("Comparison: '%s' vs '%s'\n", cond_display[1], cond_display[2]))
+        cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
+        cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
+        cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
+        cat("\nAccess results with accessor functions like analysisTable(object).\n")
+    }
 )
 
 
@@ -60,17 +60,17 @@ setMethod(
 #' @examples
 #' # Helper function to create a sample DamIDResults object for examples
 #' .generate_accessor_example_results <- function() {
-#'   analysis_df <- data.frame(
-#'     logFC = c(2, -2), P.Value = c(0.01, 0.01),
-#'     row.names = c("chr1:1-100", "chr1:101-200")
-#'   )
-#'   new("DamIDResults",
-#'       analysis = analysis_df,
-#'       upCond1 = analysis_df[1, , drop = FALSE],
-#'       upCond2 = analysis_df[2, , drop = FALSE],
-#'       cond = c("Condition 1" = "C1", "Condition 2" = "C2"),
-#'       data = list(test_category = "bound")
-#'   )
+#'     analysis_df <- data.frame(
+#'         logFC = c(2, -2), P.Value = c(0.01, 0.01),
+#'         row.names = c("chr1:1-100", "chr1:101-200")
+#'     )
+#'     new("DamIDResults",
+#'         analysis = analysis_df,
+#'         upCond1 = analysis_df[1, , drop = FALSE],
+#'         upCond2 = analysis_df[2, , drop = FALSE],
+#'         cond = c("Condition 1" = "C1", "Condition 2" = "C2"),
+#'         data = list(test_category = "bound")
+#'     )
 #' }
 #' dummy_results <- .generate_accessor_example_results()
 #'
@@ -110,4 +110,3 @@ setGeneric("conditionNames", function(object) standardGeneric("conditionNames"))
 
 #' @rdname DamIDResults-class
 setMethod("conditionNames", "DamIDResults", function(object) object@cond)
-

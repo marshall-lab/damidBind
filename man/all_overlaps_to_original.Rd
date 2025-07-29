@@ -35,10 +35,10 @@ query_regions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100, 500), wi
 
 # Create a subject GRanges object with gene annotations
 gene_annotations <- GenomicRanges::GRanges(
-  "chr1",
-  IRanges::IRanges(c(90, 200, 525), width = c(30, 50, 50)),
-  gene_name = c("geneA", "geneB", "geneC"),
-  gene_id = c("FBgn01", "FBgn02", "FBgn03")
+    "chr1",
+    IRanges::IRanges(c(90, 200, 525), width = c(30, 50, 50)),
+    gene_name = c("geneA", "geneB", "geneC"),
+    gene_id = c("FBgn01", "FBgn02", "FBgn03")
 )
 
 # Find overlaps (query 1 overlaps geneA; query 2 overlaps geneC)

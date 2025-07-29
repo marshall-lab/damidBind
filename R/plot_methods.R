@@ -14,9 +14,10 @@
 #'
 #' @rdname DamIDResults-class
 #' @export
-setMethod("plot", signature(x = "DamIDResults", y = "missing"),
-          function(x, y, ...) {
-            # This method simply calls the main volcano plot function by default.
-            plot_volcano(diff_results = x, ...)
-          }
+setMethod(
+    "plot", signature(x = "DamIDResults", y = "missing"),
+    function(x, y, ...) {
+        # This method simply calls the main volcano plot function by default.
+        plot_volcano(diff_results = x, ...)
+    }
 )

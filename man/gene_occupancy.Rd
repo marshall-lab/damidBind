@@ -39,26 +39,27 @@ each fragment and the gene body.
 \examples{
 # 1. Create a GRanges object for gene annotations
 genes_gr <- GenomicRanges::GRanges(
-  "chrY",
-  IRanges::IRanges(c(1000, 3000), width = 500),
-  gene_name = c("gene1", "gene2"),
-  gene_id = c("ID1", "ID2")
+    "chrY",
+    IRanges::IRanges(c(1000, 3000), width = 500),
+    gene_name = c("gene1", "gene2"),
+    gene_id = c("ID1", "ID2")
 )
 
 # 2. Create mock binding data
 binding_df <- data.frame(
-  chr = "chrY",
-  start = c(950, 1200, 3100),
-  end = c(1050, 1300, 3200),
-  sampleA = c(1.5, 2.0, 0.5),
-  sampleB = c(1.8, 2.2, 0.4)
+    chr = "chrY",
+    start = c(950, 1200, 3100),
+    end = c(1050, 1300, 3200),
+    sampleA = c(1.5, 2.0, 0.5),
+    sampleB = c(1.8, 2.2, 0.4)
 )
 
 # 3. Calculate average gene occupancy
 # Use BiocParallel::SerialParam() for deterministic execution in examples
 if (requireNamespace("BiocParallel", quietly = TRUE)) {
-  gene_occ <- gene_occupancy(binding_df, genes_gr,
-                             BPPARAM = BiocParallel::SerialParam())
-  print(gene_occ)
+    gene_occ <- gene_occupancy(binding_df, genes_gr,
+        BPPARAM = BiocParallel::SerialParam()
+    )
+    print(gene_occ)
 }
 }

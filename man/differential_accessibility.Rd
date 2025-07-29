@@ -46,23 +46,23 @@ performs NOISeq analysis, and returns differentially-accessible loci.
 
 # Create a mock data_list with plausible count data
 mock_occupancy_counts <- data.frame(
-   name = c("peak1", "peak2", "peak3"),
-   gene_names = c("GeneA", "GeneB", "GeneC"),
-   gene_ids = c("ID_A", "ID_B", "ID_C"),
-   GroupA_rep1 = c(100, 20, 50), GroupA_rep2 = c(110, 25, 45),
-   GroupB_rep1 = c(10, 200, 55), GroupB_rep2 = c(15, 220, 60),
-   row.names = c("peak1", "peak2", "peak3")
+    name = c("peak1", "peak2", "peak3"),
+    gene_names = c("GeneA", "GeneB", "GeneC"),
+    gene_ids = c("ID_A", "ID_B", "ID_C"),
+    GroupA_rep1 = c(100, 20, 50), GroupA_rep2 = c(110, 25, 45),
+    GroupB_rep1 = c(10, 200, 55), GroupB_rep2 = c(15, 220, 60),
+    row.names = c("peak1", "peak2", "peak3")
 )
 
 mock_data_list <- list(
-   occupancy = mock_occupancy_counts,
-   test_category = "accessible"
+    occupancy = mock_occupancy_counts,
+    test_category = "accessible"
 )
 
 # Run differential accessibility analysis
 diff_access_results <- differential_accessibility(
-   mock_data_list,
-   cond = c("GroupA", "GroupB")
+    mock_data_list,
+    cond = c("GroupA", "GroupB")
 )
 
 # View the results summary

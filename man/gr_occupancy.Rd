@@ -39,24 +39,25 @@ fragment and the region.
 # 1. Create a set of regions (e.g., reduced peaks)
 regions_gr <- GenomicRanges::GRanges("chrX", IRanges::IRanges(start = c(100, 500), width = 100))
 S4Vectors::mcols(regions_gr)$name <- paste0(
-  GenomicRanges::seqnames(regions_gr), ":",
-  GenomicRanges::start(regions_gr), "-", GenomicRanges::end(regions_gr)
+    GenomicRanges::seqnames(regions_gr), ":",
+    GenomicRanges::start(regions_gr), "-", GenomicRanges::end(regions_gr)
 )
 
 # 2. Create a mock binding data data.frame
 binding_df <- data.frame(
-  chr = "chrX",
-  start = c(90, 150, 480, 550),
-  end = c(110, 170, 520, 580),
-  sampleA = c(1.2, 0.8, 2.5, 3.0),
-  sampleB = c(1.0, 0.9, 2.8, 2.9)
+    chr = "chrX",
+    start = c(90, 150, 480, 550),
+    end = c(110, 170, 520, 580),
+    sampleA = c(1.2, 0.8, 2.5, 3.0),
+    sampleB = c(1.0, 0.9, 2.8, 2.9)
 )
 
 # 3. Calculate occupancy over the regions
 # Use BiocParallel::SerialParam() for deterministic execution in examples
 if (requireNamespace("BiocParallel", quietly = TRUE)) {
-  occupancy_data <- gr_occupancy(binding_df, regions_gr,
-                                 BPPARAM = BiocParallel::SerialParam())
-  print(occupancy_data)
+    occupancy_data <- gr_occupancy(binding_df, regions_gr,
+        BPPARAM = BiocParallel::SerialParam()
+    )
+    print(occupancy_data)
 }
 }

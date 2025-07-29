@@ -50,50 +50,50 @@
 #' @examples
 #' # This example requires the 'org.Dm.eg.db' package
 #' if (requireNamespace("org.Dm.eg.db", quietly = TRUE)) {
+#'     # Helper function to create a sample DamIDResults object
+#'     .generate_example_results <- function() {
+#'         # Define a mock gene object. Note: Real, mappable FlyBase IDs are
+#'         # used for the 'gene_id' column to ensure the example runs.
+#'         mock_genes_gr <- GenomicRanges::GRanges(
+#'             seqnames = S4Vectors::Rle("2L", 7),
+#'             ranges = IRanges::IRanges(
+#'                 start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
+#'                 end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
+#'             ),
+#'             gene_id = c(
+#'                 "FBgn0034439", "FBgn0031267", "FBgn0051138", "FBgn0031265",
+#'                 "FBgn0004655", "FBgn0000251", "FBgn0000252"
+#'             ),
+#'             gene_name = c("ap", "dpr1", "side", "dpr2", "eg", "bi", "br")
+#'         )
+#'         data_dir <- system.file("extdata", package = "damidBind")
+#'         loaded_data <- load_data_peaks(
+#'             binding_profiles_path = data_dir,
+#'             peaks_path = data_dir,
+#'             ensdb_genes = mock_genes_gr,
+#'             quantile_norm = TRUE
+#'         )
+#'         diff_results <- differential_binding(
+#'             loaded_data,
+#'             cond = c("L4", "L5"),
+#'             cond_names = c("L4 Neurons", "L5 Neurons")
+#'         )
+#'         return(diff_results)
+#'     }
+#'     diff_results <- .generate_example_results()
 #'
-#'   # ---- Helper function to create a sample DamIDResults object ----
-#'   .generate_example_results <- function() {
-#'     # Define a mock gene object. Note: Real, mappable FlyBase IDs are
-#'     # used for the 'gene_id' column to ensure the example runs.
-#'     mock_genes_gr <- GenomicRanges::GRanges(
-#'       seqnames = S4Vectors::Rle("2L", 7),
-#'       ranges = IRanges::IRanges(
-#'         start = c(1000, 2000, 3000, 5000, 6000, 7000, 8000),
-#'         end = c(1500, 2500, 3500, 5500, 6500, 7500, 20000000)
-#'       ),
-#'       gene_id = c("FBgn0034439", "FBgn0031267", "FBgn0051138", "FBgn0031265",
-#'                   "FBgn0004655", "FBgn0000251", "FBgn0000252"),
-#'       gene_name = c("ap", "dpr1", "side", "dpr2", "eg", "bi", "br")
+#'     # Run GO Enrichment for genes enriched in the first condition ("L4")
+#'     # Note: with tiny sample data, this may not find significant terms.
+#'     go_results <- analyse_go_enrichment(
+#'         diff_results,
+#'         direction = "L4",
+#'         org_db = org.Dm.eg.db::org.Dm.eg.db
 #'     )
-#'     data_dir <- system.file("extdata", package = "damidBind")
-#'     loaded_data <- load_data_peaks(
-#'       binding_profiles_path = data_dir,
-#'       peaks_path = data_dir,
-#'       ensdb_genes = mock_genes_gr,
-#'       quantile_norm = TRUE
-#'     )
-#'     diff_results <- differential_binding(
-#'        loaded_data,
-#'        cond = c("L4", "L5"),
-#'        cond_names = c("L4 Neurons", "L5 Neurons")
-#'     )
-#'     return(diff_results)
-#'   }
-#'   diff_results <- .generate_example_results()
-#'   # ---- End of helper section ----
 #'
-#'   # Run GO Enrichment for genes enriched in the first condition ("L4")
-#'   # Note: with tiny sample data, this may not find significant terms.
-#'   go_results <- analyse_go_enrichment(
-#'     diff_results,
-#'     direction = "L4",
-#'     org_db = org.Dm.eg.db::org.Dm.eg.db
-#'   )
-#'
-#'   # Print the results table if any enrichment was found
-#'   if (!is.null(go_results)) {
-#'     print(go_results$results_table)
-#'   }
+#'     # Print the results table if any enrichment was found
+#'     if (!is.null(go_results)) {
+#'         print(go_results$results_table)
+#'     }
 #' }
 #'
 #' @aliases analyze_go_enrichment
@@ -112,252 +112,254 @@ analyse_go_enrichment <- function(
     save_results_path = NULL,
     maxGSSize = 1000,
     minGSSize = 10) {
-  # Input validation
-  stopifnot(is(diff_results, "DamIDResults"))
+    # Input validation
+    stopifnot(is(diff_results, "DamIDResults"))
 
-  if (!inherits(org_db, "OrgDb")) {
-    stop("'org_db' must be a valid OrgDb object (e.g., org.Dm.eg.db::org.Dm.eg.db).")
-  }
-
-  analysis_df <- diff_results@analysis
-
-  cond <- diff_results@cond
-  cond_display_names <- names(cond)
-  cond1_display_name <- cond_display_names[1]
-  cond2_display_name <- cond_display_names[2]
-
-  # Determine which gene list to use based on 'direction'
-  selected_display_name <- ""
-  if (direction %in% c("cond1", cond[1], cond1_display_name)) {
-    selected_rownames <- rownames(diff_results@upCond1)
-    selected_display_name <- cond1_display_name
-  } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
-    selected_rownames <- rownames(diff_results@upCond2)
-    selected_display_name <- cond2_display_name
-  } else if (direction == "all") {
-    selected_rownames <- unique(c(rownames(diff_results@upCond1), rownames(diff_results@upCond2)))
-    selected_display_name <- "All Significant"
-  } else {
-    stop("Invalid 'direction' specified. Must be 'cond1' (or condition 1 name), 'cond2' (or condition 2 name), or 'all'.")
-  }
-
-  if (length(selected_rownames) == 0) {
-    message(sprintf("No significant genes found for direction '%s' (representing %s). Returning NULL.", direction, selected_display_name))
-    return(NULL)
-  }
-
-  # Ensure the selected_rownames are present in the analysis_df
-  selected_rownames <- selected_rownames[selected_rownames %in% rownames(analysis_df)]
-  if (length(selected_rownames) == 0) {
-    message(sprintf("Selected genes for direction '%s' (representing %s) not found in analysis_data. Returning NULL.", direction, selected_display_name))
-    return(NULL)
-  }
-
-  query_df <- analysis_df[selected_rownames, , drop = FALSE]
-
-  # Extract query gene list (FBgnIDs), handling potentially comma-separated values
-  if (!"gene_ids" %in% colnames(query_df)) {
-    stop("Column 'gene_ids' not found in analysis_data. Ensure it is included.")
-  }
-  gene_list_fbgnid <- unique(unlist(strsplit(query_df$gene_ids, ",")))
-  gene_list_fbgnid <- gene_list_fbgnid[nchar(gene_list_fbgnid) > 0]
-
-  if (length(gene_list_fbgnid) == 0) {
-    message("No valid Flybase IDs found in the query gene list. Returning NULL.")
-    return(NULL)
-  }
-
-  # Extract universe gene list (all FBgnIDs in the input data)
-  if (!"gene_ids" %in% colnames(analysis_df)) {
-    stop("Column 'gene_ids' not found in analysis_data for universe. Ensure it is included.")
-  }
-  universe_fbgnid <- unique(unlist(strsplit(analysis_df$gene_ids, ",")))
-  universe_fbgnid <- universe_fbgnid[nchar(universe_fbgnid) > 0]
-
-  if (length(universe_fbgnid) < length(gene_list_fbgnid) || length(universe_fbgnid) < 11) {
-    message("Universe of Flybase IDs is too small or invalid for enrichment analysis. Returning NULL.")
-    return(NULL)
-  }
-
-  # Map FBgnID to SYMBOL for clusterProfiler for both query and universe
-  gene_universe_map <- tryCatch(
-    {
-      bitr(
-        geneID = unique(c(gene_list_fbgnid, universe_fbgnid)),
-        fromType = "FLYBASE",
-        toType = "SYMBOL",
-        OrgDb = org_db
-      )
-    },
-    error = function(e) {
-      stop("Failed to map Flybase IDs to symbols using bitr: ", conditionMessage(e))
+    if (!inherits(org_db, "OrgDb")) {
+        stop("'org_db' must be a valid OrgDb object (e.g., org.Dm.eg.db::org.Dm.eg.db).")
     }
-  )
 
-  # Get symbols corresponding to the query FBgnIDs
-  query_symbols_all <- gene_universe_map$SYMBOL[match(gene_list_fbgnid, gene_universe_map$FLYBASE)]
-  query_symbols_all <- na.omit(query_symbols_all)
+    analysis_df <- diff_results@analysis
 
-  # Clean the gene symbols
-  cleaned_query_symbols <- clean_gene_symbols(query_symbols_all)
+    cond <- diff_results@cond
+    cond_display_names <- names(cond)
+    cond1_display_name <- cond_display_names[1]
+    cond2_display_name <- cond_display_names[2]
 
-  if (length(cleaned_query_symbols) == 0) {
-    message("No valid gene symbols remaining after filtering and mapping. Returning NULL.")
-    return(NULL)
-  }
+    # Determine which gene list to use based on 'direction'
+    selected_display_name <- ""
+    if (direction %in% c("cond1", cond[1], cond1_display_name)) {
+        selected_rownames <- rownames(diff_results@upCond1)
+        selected_display_name <- cond1_display_name
+    } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
+        selected_rownames <- rownames(diff_results@upCond2)
+        selected_display_name <- cond2_display_name
+    } else if (direction == "all") {
+        selected_rownames <- unique(c(rownames(diff_results@upCond1), rownames(diff_results@upCond2)))
+        selected_display_name <- "All Significant"
+    } else {
+        stop("Invalid 'direction' specified. Must be 'cond1' (or condition 1 name), 'cond2' (or condition 2 name), or 'all'.")
+    }
 
-  # Get symbols corresponding to the universe FBgnIDs
-  universe_symbols <- gene_universe_map$SYMBOL[match(universe_fbgnid, gene_universe_map$FLYBASE)]
-  universe_symbols <- na.omit(universe_symbols)
-  universe_symbols <- unique(universe_symbols)
+    if (length(selected_rownames) == 0) {
+        message(sprintf("No significant genes found for direction '%s' (representing %s). Returning NULL.", direction, selected_display_name))
+        return(NULL)
+    }
 
-  if (length(universe_symbols) < length(cleaned_query_symbols)) {
-    message("Mapped universe symbols count is less than query symbols. Adjust universe or check mapping. Returning NULL.")
-    return(NULL)
-  }
+    # Ensure the selected_rownames are present in the analysis_df
+    selected_rownames <- selected_rownames[selected_rownames %in% rownames(analysis_df)]
+    if (length(selected_rownames) == 0) {
+        message(sprintf("Selected genes for direction '%s' (representing %s) not found in analysis_data. Returning NULL.", direction, selected_display_name))
+        return(NULL)
+    }
 
-  # Perform GO enrichment
-  ego <- tryCatch(
-    {
-      enrichGO(
-        gene          = cleaned_query_symbols,
-        OrgDb         = org_db,
-        universe      = universe_symbols,
-        keyType       = "SYMBOL",
-        ont           = ontology,
-        pAdjustMethod = "BH",
-        maxGSSize = maxGSSize,
-        minGSSize = minGSSize,
-        pvalueCutoff  = pvalue_cutoff,
-        qvalueCutoff  = qvalue_cutoff,
-        readable      = TRUE # Retrieves gene symbols in result instead of IDs
-      )
-    },
-    error = function(e) {
-      warning("GO enrichment failed: ", conditionMessage(e))
-      return(NULL)
-    })
+    query_df <- analysis_df[selected_rownames, , drop = FALSE]
 
-  if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
-    message("No significant GO terms found. Returning NULL.")
-    return(NULL)
-  }
+    # Extract query gene list (FBgnIDs), handling potentially comma-separated values
+    if (!"gene_ids" %in% colnames(query_df)) {
+        stop("Column 'gene_ids' not found in analysis_data. Ensure it is included.")
+    }
+    gene_list_fbgnid <- unique(unlist(strsplit(query_df$gene_ids, ",")))
+    gene_list_fbgnid <- gene_list_fbgnid[nchar(gene_list_fbgnid) > 0]
 
-  # Convert to dataframe for plotting
-  # ego <- mutate(ego, richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)))
-  ego.df <- ego %>% as.data.frame()
-  ego.df$Description <- ego.df$Description %>% gsub("regulation", "reg.", .)
-  ego.df$GeneRatio <- vapply(strsplit(ego.df$GeneRatio, "/"), function(x) {
-    as.numeric(x[1]) / as.numeric(x[2])
-  }, FUN.VALUE = numeric(1))
+    if (length(gene_list_fbgnid) == 0) {
+        message("No valid Flybase IDs found in the query gene list. Returning NULL.")
+        return(NULL)
+    }
 
-  # Generate dot plot
-  if (is.null(plot_title)) {
-    plot_title <- sprintf("GO Enrichment for %s (%s)", selected_display_name, ontology)
-  }
+    # Extract universe gene list (all FBgnIDs in the input data)
+    if (!"gene_ids" %in% colnames(analysis_df)) {
+        stop("Column 'gene_ids' not found in analysis_data for universe. Ensure it is included.")
+    }
+    universe_fbgnid <- unique(unlist(strsplit(analysis_df$gene_ids, ",")))
+    universe_fbgnid <- universe_fbgnid[nchar(universe_fbgnid) > 0]
 
-  if (nrow(ego.df) > show_category) {
-    plot_df <- ego.df %>% head(n = show_category)
-  } else {
-    plot_df <- ego.df
-  }
+    if (length(universe_fbgnid) < length(gene_list_fbgnid) || length(universe_fbgnid) < 11) {
+        message("Universe of Flybase IDs is too small or invalid for enrichment analysis. Returning NULL.")
+        return(NULL)
+    }
 
-  max_x_value <- max(plot_df$GeneRatio, na.rm = TRUE)
-
-  dplot <- ggplot(
-    plot_df,
-    aes(GeneRatio, fct_reorder(Description, GeneRatio))
-  ) +
-    geom_segment(aes(xend = 0, yend = Description)) +
-    geom_point(aes(color = p.adjust, size = Count)) +
-    scale_color_gradientn(
-      colours = c("#f7ca64", "#46bac2", "#7e62a3"),
-      name = bquote(italic(p)[adj]),
-      trans = "log2",
-      guide = guide_colorbar(reverse = TRUE, order = 1),
-      labels = scientific_format(digits = 1)
-    ) +
-    scale_size_continuous(
-      range = c(1, 10),
-      labels = number_format(accuracy = 1),
-      breaks = c(
-        (min(ego.df$Count) + 1),
-        round(mean(c(min(ego.df$Count), max(ego.df$Count)))),
-        max(ego.df$Count)
-      )
-    ) +
-    labs(x = "Gene Ratio", y = NULL, title = plot_title) + # Use labs for clarity
-    theme_bw(14) +
-    scale_x_continuous(
-      limits = c(0, max_x_value),
-      expand = expansion(mult = c(0.02, 0.1), add = 0),
-      breaks = function(x) {
-        f <- as.numeric(as.character(sprintf("%0.1f", x[1])))
-        t <- as.numeric(as.character(sprintf("%0.1f", x[2])))
-        return(seq(f, t, by = ((t - f) / 2)))
-      }
-    ) +
-    scale_y_discrete(
-      labels = function(y) str_wrap(y, width = label_format_width),
-      expand = expansion(add = c(0.5, 1))
-    ) +
-    theme(
-      axis.text.y = element_text(lineheight = 0.8),
-      plot.title.position = "plot",
-      plot.title = element_text(hjust = 0.5, vjust = 1)
+    # Map FBgnID to SYMBOL for clusterProfiler for both query and universe
+    gene_universe_map <- tryCatch(
+        {
+            bitr(
+                geneID = unique(c(gene_list_fbgnid, universe_fbgnid)),
+                fromType = "FLYBASE",
+                toType = "SYMBOL",
+                OrgDb = org_db
+            )
+        },
+        error = function(e) {
+            stop("Failed to map Flybase IDs to symbols using bitr: ", conditionMessage(e))
+        }
     )
 
-  # Save results table if path provided
-  if (!is.null(save_results_path)) {
-    tryCatch(
-      {
-        write.csv(ego.df, file = save_results_path, row.names = FALSE)
-        message("GO enrichment results table saved to: ", save_results_path)
-      },
-      error = function(e) {
-        warning("Failed to save GO results table to CSV: ", conditionMessage(e))
-      }
+    # Get symbols corresponding to the query FBgnIDs
+    query_symbols_all <- gene_universe_map$SYMBOL[match(gene_list_fbgnid, gene_universe_map$FLYBASE)]
+    query_symbols_all <- na.omit(query_symbols_all)
+
+    # Clean the gene symbols
+    cleaned_query_symbols <- clean_gene_symbols(query_symbols_all)
+
+    if (length(cleaned_query_symbols) == 0) {
+        message("No valid gene symbols remaining after filtering and mapping. Returning NULL.")
+        return(NULL)
+    }
+
+    # Get symbols corresponding to the universe FBgnIDs
+    universe_symbols <- gene_universe_map$SYMBOL[match(universe_fbgnid, gene_universe_map$FLYBASE)]
+    universe_symbols <- na.omit(universe_symbols)
+    universe_symbols <- unique(universe_symbols)
+
+    if (length(universe_symbols) < length(cleaned_query_symbols)) {
+        message("Mapped universe symbols count is less than query symbols. Adjust universe or check mapping. Returning NULL.")
+        return(NULL)
+    }
+
+    # Perform GO enrichment
+    ego <- tryCatch(
+        {
+            enrichGO(
+                gene = cleaned_query_symbols,
+                OrgDb = org_db,
+                universe = universe_symbols,
+                keyType = "SYMBOL",
+                ont = ontology,
+                pAdjustMethod = "BH",
+                maxGSSize = maxGSSize,
+                minGSSize = minGSSize,
+                pvalueCutoff = pvalue_cutoff,
+                qvalueCutoff = qvalue_cutoff,
+                readable = TRUE # Retrieves gene symbols in result instead of IDs
+            )
+        },
+        error = function(e) {
+            warning("GO enrichment failed: ", conditionMessage(e))
+            return(NULL)
+        }
     )
-  }
 
-  # Plot saving
-  save_defaults <- list(
-    filename = "damidBind_GSEA_dotplot",
-    format = "pdf",
-    width = 6,
-    height = 6
-  )
-  save_config <- check_list_input(save_defaults, save)
+    if (is.null(ego) || nrow(as.data.frame(ego)) == 0) {
+        message("No significant GO terms found. Returning NULL.")
+        return(NULL)
+    }
 
-  if (!is.null(save_config)) {
-    tryCatch(
-      {
-        full_filename <- paste0(save_config$filename, ".", save_config$format)
-        ggsave(
-          filename = full_filename,
-          plot = dplot,
-          width = save_config$width,
-          height = save_config$height,
-          units = "in",
-          device = save_config$format
+    # Convert to dataframe for plotting
+    # ego <- mutate(ego, richFactor = Count / as.numeric(sub("/\\d+", "", BgRatio)))
+    ego.df <- ego %>% as.data.frame()
+    ego.df$Description <- ego.df$Description %>% gsub("regulation", "reg.", .)
+    ego.df$GeneRatio <- vapply(strsplit(ego.df$GeneRatio, "/"), function(x) {
+        as.numeric(x[1]) / as.numeric(x[2])
+    }, FUN.VALUE = numeric(1))
+
+    # Generate dot plot
+    if (is.null(plot_title)) {
+        plot_title <- sprintf("GO Enrichment for %s (%s)", selected_display_name, ontology)
+    }
+
+    if (nrow(ego.df) > show_category) {
+        plot_df <- ego.df %>% head(n = show_category)
+    } else {
+        plot_df <- ego.df
+    }
+
+    max_x_value <- max(plot_df$GeneRatio, na.rm = TRUE)
+
+    dplot <- ggplot(
+        plot_df,
+        aes(GeneRatio, fct_reorder(Description, GeneRatio))
+    ) +
+        geom_segment(aes(xend = 0, yend = Description)) +
+        geom_point(aes(color = p.adjust, size = Count)) +
+        scale_color_gradientn(
+            colours = c("#f7ca64", "#46bac2", "#7e62a3"),
+            name = bquote(italic(p)[adj]),
+            trans = "log2",
+            guide = guide_colorbar(reverse = TRUE, order = 1),
+            labels = scientific_format(digits = 1)
+        ) +
+        scale_size_continuous(
+            range = c(1, 10),
+            labels = number_format(accuracy = 1),
+            breaks = c(
+                (min(ego.df$Count) + 1),
+                round(mean(c(min(ego.df$Count), max(ego.df$Count)))),
+                max(ego.df$Count)
+            )
+        ) +
+        labs(x = "Gene Ratio", y = NULL, title = plot_title) + # Use labs for clarity
+        theme_bw(14) +
+        scale_x_continuous(
+            limits = c(0, max_x_value),
+            expand = expansion(mult = c(0.02, 0.1), add = 0),
+            breaks = function(x) {
+                f <- as.numeric(as.character(sprintf("%0.1f", x[1])))
+                t <- as.numeric(as.character(sprintf("%0.1f", x[2])))
+                return(seq(f, t, by = ((t - f) / 2)))
+            }
+        ) +
+        scale_y_discrete(
+            labels = function(y) str_wrap(y, width = label_format_width),
+            expand = expansion(add = c(0.5, 1))
+        ) +
+        theme(
+            axis.text.y = element_text(lineheight = 0.8),
+            plot.title.position = "plot",
+            plot.title = element_text(hjust = 0.5, vjust = 1)
         )
-        message("GO dot plot saved to: ", full_filename)
-      },
-      error = function(e) {
-        message("Failed to save the GO dot plot: ", conditionMessage(e))
-      }
-    )
-  }
-  # else {
-  #   # Only print the plot if not saving to a file
-  #   print(dplot)
-  # }
 
-  invisible(list(
-    enrich_go_object = ego,
-    results_table = ego.df,
-    dot_plot = dplot
-  ))
+    # Save results table if path provided
+    if (!is.null(save_results_path)) {
+        tryCatch(
+            {
+                write.csv(ego.df, file = save_results_path, row.names = FALSE)
+                message("GO enrichment results table saved to: ", save_results_path)
+            },
+            error = function(e) {
+                warning("Failed to save GO results table to CSV: ", conditionMessage(e))
+            }
+        )
+    }
+
+    # Plot saving
+    save_defaults <- list(
+        filename = "damidBind_GSEA_dotplot",
+        format = "pdf",
+        width = 6,
+        height = 6
+    )
+    save_config <- check_list_input(save_defaults, save)
+
+    if (!is.null(save_config)) {
+        tryCatch(
+            {
+                full_filename <- paste0(save_config$filename, ".", save_config$format)
+                ggsave(
+                    filename = full_filename,
+                    plot = dplot,
+                    width = save_config$width,
+                    height = save_config$height,
+                    units = "in",
+                    device = save_config$format
+                )
+                message("GO dot plot saved to: ", full_filename)
+            },
+            error = function(e) {
+                message("Failed to save the GO dot plot: ", conditionMessage(e))
+            }
+        )
+    } else {
+        # Print the plot if not saving to a file
+        # Used here as the return value is a list including results,
+        # and R will not print the plot automatically
+        print(dplot)
+    }
+
+    list(
+        dot_plot = dplot,
+        enrich_go_object = ego,
+        results_table = ego.df
+    )
 }
 
 #' @export
@@ -366,12 +368,12 @@ analyze_go_enrichment <- analyse_go_enrichment
 # Internal helper function (not exported)
 # This function helps filter out gene symbols that are typically not useful for GO enrichment
 clean_gene_symbols <- function(x, clean_regex = "snoRNA|snRNA|tRNA", clean_extra = NULL) {
-  if (is.null(x) || length(x) == 0) {
-    return(character(0))
-  }
-  if (!is.null(clean_extra)) {
-    clean_regex <- paste(clean_regex, clean_extra, sep = "|")
-  }
-  keep <- !grepl(clean_regex, as.character(x), ignore.case = TRUE)
-  return(x[keep])
+    if (is.null(x) || length(x) == 0) {
+        return(character(0))
+    }
+    if (!is.null(clean_extra)) {
+        clean_regex <- paste(clean_regex, clean_extra, sep = "|")
+    }
+    keep <- !grepl(clean_regex, as.character(x), ignore.case = TRUE)
+    return(x[keep])
 }

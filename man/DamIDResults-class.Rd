@@ -87,17 +87,17 @@ of a `DamIDResults` object.
 \examples{
 # Helper function to create a sample DamIDResults object for examples
 .generate_accessor_example_results <- function() {
-  analysis_df <- data.frame(
-    logFC = c(2, -2), P.Value = c(0.01, 0.01),
-    row.names = c("chr1:1-100", "chr1:101-200")
-  )
-  new("DamIDResults",
-      analysis = analysis_df,
-      upCond1 = analysis_df[1, , drop = FALSE],
-      upCond2 = analysis_df[2, , drop = FALSE],
-      cond = c("Condition 1" = "C1", "Condition 2" = "C2"),
-      data = list(test_category = "bound")
-  )
+    analysis_df <- data.frame(
+        logFC = c(2, -2), P.Value = c(0.01, 0.01),
+        row.names = c("chr1:1-100", "chr1:101-200")
+    )
+    new("DamIDResults",
+        analysis = analysis_df,
+        upCond1 = analysis_df[1, , drop = FALSE],
+        upCond2 = analysis_df[2, , drop = FALSE],
+        cond = c("Condition 1" = "C1", "Condition 2" = "C2"),
+        data = list(test_category = "bound")
+    )
 }
 dummy_results <- .generate_accessor_example_results()
 

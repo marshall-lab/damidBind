@@ -22,7 +22,7 @@ minimal set of genomic intervals.
 # Create a list of GRanges objects with overlapping regions
 gr1 <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100, 200), width = 50))
 gr2 <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(120, 300), width = 50))
-gr_list <- list(gr1,gr2)
+gr_list <- list(gr1, gr2)
 
 # Reduce the list to a single set of non-overlapping regions
 reduced <- reduce_regions(gr_list)

@@ -36,62 +36,62 @@
 #' @aliases quantile_normalization
 #' @export
 quantile_normalisation <- function(x) {
-  # Argument checks
-  if (!is.matrix(x)) {
-    stop("Input 'x' must be a matrix.")
-  }
-
-  if (!is.numeric(x)) {
-    stop("Input 'x' must be a numeric matrix.")
-  }
-
-  # Check for missing or non-finite values
-  if (anyNA(x)) {
-    stop("Input 'x' contains missing values (NA). Please remove or impute them before normalisation.")
-  }
-
-  if (any(!is.finite(x))) {
-    stop("Input 'x' contains non-finite values (Inf or NaN). Please remove or replace them before normalisation.")
-  }
-
-  n_row <- nrow(x)
-  n_col <- ncol(x)
-
-  if (n_row == 0L || n_col == 0L) {
-    stop("Input 'x' must have at least one row and one column.")
-  }
-
-  if (n_row == 1L) {
-    return(x)
-  }
-
-  # Compute quantile means
-  sorted_cols <- apply(x, 2, sort, method = "quick")
-  quantile_means <- rowMeans(sorted_cols)
-
-  # Normalise each column using PreprocessCore's tie rule
-  x_norm <- matrix(NA_real_, n_row, n_col)
-  for (j in seq_len(n_col)) {
-    col <- x[, j]
-    ranks <- rank(col, ties.method = "average")
-    r_floor <- floor(ranks)
-    frac <- ranks - r_floor
-    idx1 <- pmax(1L, r_floor)
-    idx2 <- pmin(n_row, r_floor + 1L)
-
-    values <- quantile_means[idx1]
-    w <- frac > 0.4
-    if (any(w)) {
-      values[w] <- 0.5 * (quantile_means[idx1[w]] + quantile_means[idx2[w]])
+    # Argument checks
+    if (!is.matrix(x)) {
+        stop("Input 'x' must be a matrix.")
     }
 
-    x_norm[, j] <- values
-  }
+    if (!is.numeric(x)) {
+        stop("Input 'x' must be a numeric matrix.")
+    }
 
-  colnames(x_norm) <- colnames(x)
-  rownames(x_norm) <- rownames(x)
+    # Check for missing or non-finite values
+    if (anyNA(x)) {
+        stop("Input 'x' contains missing values (NA). Please remove or impute them before normalisation.")
+    }
 
-  x_norm
+    if (any(!is.finite(x))) {
+        stop("Input 'x' contains non-finite values (Inf or NaN). Please remove or replace them before normalisation.")
+    }
+
+    n_row <- nrow(x)
+    n_col <- ncol(x)
+
+    if (n_row == 0L || n_col == 0L) {
+        stop("Input 'x' must have at least one row and one column.")
+    }
+
+    if (n_row == 1L) {
+        return(x)
+    }
+
+    # Compute quantile means
+    sorted_cols <- apply(x, 2, sort, method = "quick")
+    quantile_means <- rowMeans(sorted_cols)
+
+    # Normalise each column using PreprocessCore's tie rule
+    x_norm <- matrix(NA_real_, n_row, n_col)
+    for (j in seq_len(n_col)) {
+        col <- x[, j]
+        ranks <- rank(col, ties.method = "average")
+        r_floor <- floor(ranks)
+        frac <- ranks - r_floor
+        idx1 <- pmax(1L, r_floor)
+        idx2 <- pmin(n_row, r_floor + 1L)
+
+        values <- quantile_means[idx1]
+        w <- frac > 0.4
+        if (any(w)) {
+            values[w] <- 0.5 * (quantile_means[idx1[w]] + quantile_means[idx2[w]])
+        }
+
+        x_norm[, j] <- values
+    }
+
+    colnames(x_norm) <- colnames(x)
+    rownames(x_norm) <- rownames(x)
+
+    x_norm
 }
 
 #' @export
