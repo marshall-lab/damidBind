@@ -49,5 +49,5 @@ Suggests:
     org.Dm.eg.db
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
-URL: https://github.com/marshall-lab/damidBind
+URL: https://marshall-lab.org/damidBind
 BugReports: https://github.com/marshall-lab/damidBind/issues
