@@ -37,6 +37,7 @@ Imports:
     forcats,
     scales,
     methods,
+    stats,
     igvShiny,
     shiny,
     DT
