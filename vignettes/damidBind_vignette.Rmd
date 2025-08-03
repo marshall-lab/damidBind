@@ -97,11 +97,13 @@ my_custom_function(analysisTable(input.diff))
 
 ## Sample input data (provided online through a Zenodo repository)
 
-Three previously-published sample datasets will be deposited in Zenodo and made available for exploring the features and capabilities of `r Githubpkg("marshall-lab/damidbind")`:
+[Three previously-published sample datasets](https://doi.org/10.5281/zenodo.16649477) have been deposited in Zenodo and made available for fully exploring the features and capabilities of `r Githubpkg("marshall-lab/damidbind")`:
 
 -   Bsh transcription factor binding in L4 and L5 neurons of the *Drosophila* lamina [@Xu2024]
 -   CATaDa chromatin accessibility data in L4 and L5 neurons [@Xu2024]
 -   RNA Polymerase II occupancy in *Drosophila* larval neural stem cells and adult neurons. [@Marshall2017]
+
+Processed files (incl. binding profiles and peaks files) are provided for all datasets.
 
 # Data preparation
 
