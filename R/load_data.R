@@ -430,5 +430,14 @@ import_bedgraph_as_df <- function(path, colname = "score") {
     )
     df <- as.data.frame(gr)[, c("seqnames", "start", "end", "score")]
     names(df) <- c("chr", "start", "end", colname)
+
+    # Test for gapped offset (caused when loading closed rather than half-open datasets) and correct if present
+    gaps <- df$start[-1] - df$end[-nrow(df)]
+    tab <- table(gaps)
+    if (as.integer(names(which.max(tab)))==2) {
+      # start of fragment(n+1) is always 2bp away from end of fragment(n): needs correcting
+      df$end <- df$end+1
+    }
+
     df
 }
