@@ -42,7 +42,6 @@ setMethod(
     }
 )
 
-
 #' @rdname DamIDResults-class
 #' @section Accessor Functions:
 #' These functions provide a convenient way to access the different data slots
@@ -110,3 +109,10 @@ setGeneric("conditionNames", function(object) standardGeneric("conditionNames"))
 
 #' @rdname DamIDResults-class
 setMethod("conditionNames", "DamIDResults", function(object) object@cond)
+
+#' @rdname DamIDResults-class
+#' @export
+setGeneric("inputData", function(object) standardGeneric("inputData"))
+
+#' @rdname DamIDResults-class
+setMethod("inputData", "DamIDResults", function(object) object@data)
