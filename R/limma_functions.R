@@ -10,6 +10,13 @@
 #' @param cond_names Vector (character, optional). Custom display names for
 #'   the two conditions in outputs/plots. Order maps to `cond`.
 #' @param fdr Numeric. FDR threshold for significance (default 0.05).
+#' @param filter_positive_enrichment Logical. If `TRUE` (default), regions
+#'   are only considered significantly enriched if the mean score in the
+#'   enriched condition is greater than zero. For example, for a region to be
+#'   in `upCond1`, its logFC must be positive and its mean score in condition 1
+#'   must be > 0. This is a common biological filter to focus on regions with
+#'   genuine binding enrichment, rather than changes between two states of
+#'   depletion. Set to `FALSE` to include all statistically significant changes.
 #' @return A `DamIDResults` object containing the results. Access slots using
 #'   the `@` accessor (e.g., `results@analysis`). The object includes:
 #'   \item{upCond1}{data.frame of regions enriched in condition 1}
@@ -58,7 +65,8 @@ differential_binding <- function(
     data_list,
     cond,
     cond_names = NULL,
-    fdr = 0.05) {
+    fdr = 0.05,
+    filter_positive_enrichment = TRUE) {
     # Prep data for analysis
     prep_results <- prep_data_for_differential_analysis(
         data_list = data_list,
@@ -135,8 +143,28 @@ differential_binding <- function(
     result_table$minuslogp <- -log10(result_table$adj.P.Val) # Adjusted P values
 
     # Up/down regulation at FDR
-    upCond1 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC > 0, ]
-    upCond2 <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC < 0, ]
+    upCond1_all <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC > 0, ]
+    upCond2_all <- result_table[result_table$adj.P.Val <= fdr & result_table$logFC < 0, ]
+
+    # Filter positive enrichment
+    if (isTRUE(filter_positive_enrichment)) {
+      message("\nFiltering for positive enrichment (mean score > 0 in the enriched condition).")
+      upCond1 <- upCond1_all[upCond1_all[[mean1_name]] > 0, ]
+      upCond2 <- upCond2_all[upCond2_all[[mean2_name]] > 0, ]
+
+      # Report discarded results
+      n_discarded1 <- nrow(upCond1_all) - nrow(upCond1)
+      n_discarded2 <- nrow(upCond2_all) - nrow(upCond2)
+      if (n_discarded1 > 0) {
+        message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded1, cond_display[1]))
+      }
+      if (n_discarded2 > 0) {
+        message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded2, cond_display[2]))
+      }
+    } else {
+      upCond1 <- upCond1_all
+      upCond2 <- upCond2_all
+    }
 
     # Prepare mapping for output
     mapping_cond <- setNames(cond_internal, cond_display)
