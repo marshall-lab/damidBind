@@ -288,7 +288,7 @@ analyse_go_enrichment <- function(
             )
         ) +
         labs(x = "Gene Ratio", y = NULL, title = plot_title) + # Use labs for clarity
-        theme_bw(14) +
+        theme_bw(18) +
         scale_x_continuous(
             limits = c(0, max_x_value),
             expand = expansion(mult = c(0.02, 0.1), add = 0),
