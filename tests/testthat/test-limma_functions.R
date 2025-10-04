@@ -78,3 +78,58 @@ test_that("differential_binding handles cases with no significant results", {
     expect_equal(nrow(res@upCond1), 0)
     expect_equal(nrow(res@upCond2), 0)
 })
+
+
+test_that("differential_binding can optionally filter for positive enrichment", {
+    # Mock occupancy data:
+    # 'neg_sig': significant difference, both means negative
+    # 'pos_sig': significant difference, both means positive (standard case)
+    # 'non_sig': not significant
+    occupancy_df <- data.frame(
+      name = c("neg_sig", "pos_sig", "non_sig"),
+      gene_names = c("GeneNeg", "GenePos", "GeneNon"),
+      CondA_rep1 = c(-0.9, 3.1, 1.0),
+      CondA_rep2 = c(-1.1, 2.9, 1.1),
+      CondB_rep1 = c(-2.9, 1.1, 1.0),
+      CondB_rep2 = c(-3.1, 0.9, 0.9),
+      stringsAsFactors = FALSE
+    )
+    rownames(occupancy_df) <- occupancy_df$name
+    dl <- list(occupancy = occupancy_df, test_category = "bound")
+    cond <- c("CondA", "CondB")
+
+    # Test condition without filter
+    # Both 'neg_sig' and 'pos_sig' should be in upCond1 (logFC > 0).
+    res_unfiltered <- suppressMessages(
+      differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = FALSE)
+    )
+
+    expect_s4_class(res_unfiltered, "DamIDResults")
+
+    # Check that both significant loci are found when not filtering.
+    expect_true("neg_sig" %in% rownames(res_unfiltered@upCond1))
+    expect_true("pos_sig" %in% rownames(res_unfiltered@upCond1))
+    expect_equal(nrow(res_unfiltered@upCond1), 2)
+    expect_equal(nrow(res_unfiltered@upCond2), 0)
+
+    # Test with the filter (default)
+    res_filtered <- suppressMessages(
+      differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = TRUE)
+    )
+
+    expect_s4_class(res_filtered, "DamIDResults")
+    # 'neg_sig' should now be filtered out from the final "enriched" set.
+    expect_false("neg_sig" %in% rownames(res_filtered@upCond1))
+    # 'pos_sig' should remain.
+    expect_true("pos_sig" %in% rownames(res_filtered@upCond1))
+    expect_equal(nrow(res_filtered@upCond1), 1)
+    expect_equal(nrow(res_filtered@upCond2), 0)
+
+    # Verify 'neg_sig' is still present in the full analysis table.
+    expect_true("neg_sig" %in% rownames(res_filtered@analysis))
+    # Double-check that the means were negative.
+    expect_lt(res_filtered@analysis["neg_sig", "CondA_mean"], 0)
+    expect_lt(res_filtered@analysis["neg_sig", "CondB_mean"], 0)
+})
+
+
