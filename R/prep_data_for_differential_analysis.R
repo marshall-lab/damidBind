@@ -63,7 +63,7 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
     unassigned_mask <- !(cond1_matches | cond2_matches)
     if (any(unassigned_mask)) {
         unassigned_samples <- all_sample_cols[unassigned_mask]
-        stop(sprintf("The following samples could not be assigned to either condition '%s' or '%s': %s. Please check `cond` values or sample naming.", cond[1], cond[2], paste(unassigned_samples, collapse = ", ")))
+        warning(sprintf("The following samples could not be assigned to either condition '%s' or '%s':\n    %s\n\n", cond[1], cond[2], paste(unassigned_samples, collapse = "\n    ")))
     }
 
     # Get sample names based on masks
@@ -84,10 +84,12 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
 
     # Create factors data frame
     factors <- data.frame(
-        condition = factor(rep(cond, times = c(length(samples_cond1), length(samples_cond2)))),
+        condition = factor(
+          rep(cond, times = c(length(samples_cond1), length(samples_cond2))),
+          levels = unique(cond)
+          ),
         row.names = sel_cols
     )
-    levels(factors$condition) <- cond # Ensure factor levels are in the correct order
 
     # Process cond_names for display
     if (is.null(cond_names)) {
