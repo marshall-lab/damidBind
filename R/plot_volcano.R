@@ -51,7 +51,7 @@ check_list_input <- function(default_list, config_input) {
 #'   colours, etc); see details.
 #'   \itemize{
 #'     \item \code{title}, \code{xlab}, \code{ylab} (character)
-#'     \item \code{ystat} (character): The column name from `diff_results@analysis`
+#'     \item \code{ystat} (character): The column name from `analysisTable(diff_results)`
 #'       to use for the y-axis (e.g., "minuslogp" or "B"). Default is "B".
 #'     \item \code{base_size} (integer): ggplot theme base font size.
 #'     \item \code{sig_colour}, \code{nonsig_colour} (colours)
@@ -150,16 +150,16 @@ plot_volcano <- function(
     save = NULL) {
     stopifnot(is(diff_results, "DamIDResults"))
 
-    analysis_table <- diff_results@analysis
-    upCond1 <- rownames(diff_results@upCond1)
-    upCond2 <- rownames(diff_results@upCond2)
+    analysis_table <- analysisTable(diff_results)
+    upCond1 <- rownames(enrichedCond1(diff_results))
+    upCond2 <- rownames(enrichedCond2(diff_results))
     all_sig <- unique(c(upCond1, upCond2))
     plot_data <- analysis_table
     gene_labels_all <- if ("gene_names" %in% names(plot_data)) plot_data$gene_names else rownames(plot_data)
 
-    # Get custom condition names from diff_results@cond
-    cond_display <- names(diff_results@cond)
-    test_category <- diff_results@data$test_category
+    # Get custom condition names from conditionNames(diff_results)
+    cond_display <- names(conditionNames(diff_results))
+    test_category <- inputData(diff_results)$test_category
 
     # Set up base plotting config as before, e.g.:
     plot_defaults <- list(
@@ -381,9 +381,9 @@ plot_volcano <- function(
       if (isTRUE(highlight_config$legend)) {
         p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
         if (isTRUE(highlight_config$legend_within)) {
-            p <- p + theme(legend.position = highlight_config$legend_pos$legend.position,
+            p <- p + theme(legend.position.inside = highlight_config$legend_pos$legend.position,
                            legend.justification = highlight_config$legend_pos$legend.justification,
-                           legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", size=0.3),
+                           legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
                            legend.key.width  = unit(0, "lines"),
                            legend.key = element_rect(fill = "transparent", colour = NA))
         }
@@ -413,6 +413,9 @@ plot_volcano <- function(
       if (nrow(label_df_general) > 0) {
         label_df_general$label_to_display <- gene_labels_all[final_general_label_indices]
 
+        # add highlight_group_name to allow general + highlight labels
+        label_df_general$highlight_group_name <- NA_character_
+
         # Apply cleaning filter
         if (isTRUE(label_config$clean_names) && nrow(label_df_general) > 0) {
           indices_to_remove <- indices_to_clean(
@@ -425,7 +428,7 @@ plot_volcano <- function(
           }
         }
 
-        # Add the general labels to our list for final plotting
+        # Add the general labels to the list for final plotting
         if (nrow(label_df_general) > 0) {
           all_label_data[[length(all_label_data) + 1]] <- label_df_general
         }
