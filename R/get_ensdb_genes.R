@@ -106,7 +106,13 @@ get_ensdb_genes <- function(
 
     # Extract metadata
     ensdb_meta_df <- metadata(ensdb)
-    ensdb_metav <- setNames(as.character(ensdb_meta_df[, 2]), ensdb_meta_df[, 1])
+
+    # Ensure required columns exist
+    if (!all(c("name", "value") %in% colnames(ensdb_meta_df))) {
+        stop("The metadata format from the EnsDb object is unexpected.")
+    }
+    ensdb_metav <- setNames(ensdb_meta_df$value, ensdb_meta_df$name)
+
     ensembl_version <- if ("ensembl_version" %in% names(ensdb_metav)) ensdb_metav[["ensembl_version"]] else NA
     species <- if ("species" %in% names(ensdb_metav)) ensdb_metav[["species"]] else NA
     common_name <- if ("common_name" %in% names(ensdb_metav)) ensdb_metav[["common_name"]] else NA
