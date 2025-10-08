@@ -119,9 +119,9 @@ analyse_go_enrichment <- function(
         stop("'org_db' must be a valid OrgDb object (e.g., org.Dm.eg.db::org.Dm.eg.db).")
     }
 
-    analysis_df <- diff_results@analysis
+    analysis_df <- analysisTable(diff_results)
 
-    cond <- diff_results@cond
+    cond <- conditionNames(diff_results)
     cond_display_names <- names(cond)
     cond1_display_name <- cond_display_names[1]
     cond2_display_name <- cond_display_names[2]
@@ -129,13 +129,13 @@ analyse_go_enrichment <- function(
     # Determine which gene list to use based on 'direction'
     selected_display_name <- ""
     if (direction %in% c("cond1", cond[1], cond1_display_name)) {
-        selected_rownames <- rownames(diff_results@upCond1)
+        selected_rownames <- rownames(enrichedCond1(diff_results))
         selected_display_name <- cond1_display_name
     } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
-        selected_rownames <- rownames(diff_results@upCond2)
+        selected_rownames <- rownames(enrichedCond2(diff_results))
         selected_display_name <- cond2_display_name
     } else if (direction == "all") {
-        selected_rownames <- unique(c(rownames(diff_results@upCond1), rownames(diff_results@upCond2)))
+        selected_rownames <- unique(c(rownames(enrichedCond1(diff_results)), rownames(enrichedCond2(diff_results))))
         selected_display_name <- "All Significant"
     } else {
         stop("Invalid 'direction' specified. Must be 'cond1' (or condition 1 name), 'cond2' (or condition 2 name), or 'all'.")

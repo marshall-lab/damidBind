@@ -74,15 +74,15 @@ browse_igv_regions <- function(
     }
 
     # Get the custom condition names
-    cond_display_names <- names(diff_results@cond)
+    cond_display_names <- names(conditionNames(diff_results))
     cond1_display_name <- cond_display_names[1]
     cond2_display_name <- cond_display_names[2]
 
     # Check for peaks and process if present
-    binding_profiles_data <- diff_results@data$binding_profiles_data
+    binding_profiles_data <- inputData(diff_results)$binding_profiles_data
     peaks_incl <- FALSE
-    if ("pr" %in% names(diff_results@data)) {
-        peaks <- diff_results@data$pr
+    if ("pr" %in% names(inputData(diff_results))) {
+        peaks <- inputData(diff_results)$pr
         peaks_bed <- peaks %>%
             as.data.frame() %>%
             select(c("seqnames", "start", "end")) %>%
@@ -100,7 +100,7 @@ browse_igv_regions <- function(
     }
 
     # Prepare data for table/region finding
-    occupancy <- diff_results@analysis
+    occupancy <- analysisTable(diff_results)
 
     # Extract region locations from rownames
     rn <- rownames(occupancy)
@@ -115,8 +115,8 @@ browse_igv_regions <- function(
     occ_tab <- cbind(genloc, occupancy)
 
     # Differentially-regulated regions
-    up_idx <- match(rownames(diff_results@upCond1), occ_tab$region_name)
-    down_idx <- match(rownames(diff_results@upCond2), occ_tab$region_name)
+    up_idx <- match(rownames(enrichedCond1(diff_results)), occ_tab$region_name)
+    down_idx <- match(rownames(enrichedCond2(diff_results)), occ_tab$region_name)
 
     up_idx <- up_idx[!is.na(up_idx)]
     down_idx <- down_idx[!is.na(down_idx)]
@@ -149,7 +149,7 @@ browse_igv_regions <- function(
     # Build Shiny app
     igvShinyApp <- shinyApp(
         ui = fluidPage(
-            titlePanel(sprintf("damidBind: Differentially-%s regions", diff_results@data$test_category)),
+            titlePanel(sprintf("damidBind: Differentially-%s regions", inputData(diff_results)$test_category)),
             sidebarLayout(
                 sidebarPanel(
                     width = 6,
