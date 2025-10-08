@@ -104,8 +104,6 @@ gene_occupancy <- function(
 
         # Get covered fragment intervals and intersect size with gene
         gene_range <- ranges(gene_gr)[i]
-        # chr <- seqnames(gene_gr)[i]
-        # gene_loci <- mcols(gene_gr)$gene_loc[i]
 
         frag_starts <- binding_data$start[gene_hits]
         frag_ends <- binding_data$end[gene_hits]
@@ -131,8 +129,10 @@ gene_occupancy <- function(
     results <- do.call(rbind, results)
     colnames(results)[1:2] <- c("name", "nfrags")
     colnames(results)[(ncol(results) - 1):ncol(results)] <- c("gene_names", "gene_ids")
+
     results_df <- as.data.frame(results)
-    results_df[, 2:(ncol(results_df) - 2)] <- apply(results_df[, 2:(ncol(results_df) - 2)], 2, as.numeric)
+    cols_to_convert <- c("nfrags", sample_cols)
+    results_df[, cols_to_convert] <- lapply(results_df[, cols_to_convert], as.numeric)
     results_df <- na.omit(results_df)
 
     # Rownames
