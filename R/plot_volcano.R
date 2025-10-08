@@ -84,8 +84,8 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{label_size}: Numeric; label size (default: 4).
 #'     \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
 #'     \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
-#'     \item \code{legend_within}: Logical; whether to draw the plot legend for the highlight groups within the plot (default: TRUE).
-#'     \item \code{legend_pos}: list; when legend_within is TRUE, internal position for the lgend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+#'     \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
+#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the lgend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
 #'   }
 #' @param save List or `NULL`. Controls saving the plot to a file.
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
@@ -200,7 +200,7 @@ plot_volcano <- function(
         label_size = 4,
         max_overlaps = 10,
         legend = TRUE,
-        legend_within = TRUE,
+        legend_inside = TRUE,
         legend_pos = list(
             legend.position = c(0.97, 0.05),
             legend.justification = c(1, 0)
@@ -379,13 +379,15 @@ plot_volcano <- function(
 
       # Adjust legend appearance for highlights if the legend is visible
       if (isTRUE(highlight_config$legend)) {
-        p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
-        if (isTRUE(highlight_config$legend_within)) {
+        if (isTRUE(highlight_config$legend_inside)) {
+            p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3),position="inside"))
             p <- p + theme(legend.position.inside = highlight_config$legend_pos$legend.position,
                            legend.justification = highlight_config$legend_pos$legend.justification,
                            legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
                            legend.key.width  = unit(0, "lines"),
                            legend.key = element_rect(fill = "transparent", colour = NA))
+        } else {
+            p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
         }
       }
     }
