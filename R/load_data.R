@@ -51,8 +51,12 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
 apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
     if (isTRUE(quantile_norm)) {
         message("Applying quantile normalisation")
-        coord_cols <- binding_profiles_data[, 1:3, drop = FALSE]
-        signal_mat <- as.matrix(binding_profiles_data[, -(1:3), drop = FALSE])
+
+        coord_col_names <- c("chr", "start", "end")
+        signal_col_names <- setdiff(colnames(binding_profiles_data), coord_col_names)
+
+        coord_cols <- binding_profiles_data[, coord_col_names, drop = FALSE]
+        signal_mat <- as.matrix(binding_profiles_data[, signal_col_names, drop = FALSE])
 
         if (ncol(signal_mat) == 0) {
             warning("No signal columns found for quantile normalisation. Returning original data.")

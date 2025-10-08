@@ -37,17 +37,17 @@ test_that("plot_venn correctly prepares data and calls BioVenn::draw.venn", {
 
     # Define a mock for BioVenn::draw.venn
     # This mock will store the parameters it was called with.
-    mock_draw_venn_args <- NULL
+    captured_args <- new.env()
     mock_draw_venn <- function(list_x, list_y, ..., filename = NULL, output = NULL) {
-        mock_draw_venn_args <<- list(
+        captured_args$last_call <- list(
             list_x = list_x,
             list_y = list_y,
             filename = filename,
             output = output,
-            other_args = list(...) # Capture other arguments
+            other_args = list(...)
         )
-        message("BioVenn::draw.venn mocked successfully!") # Confirm mock was hit
-        invisible(NULL) # Match invisible return of original
+        message("BioVenn::draw.venn mocked successfully")
+        invisible(NULL)
     }
 
     local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")
@@ -68,36 +68,33 @@ test_that("plot_venn correctly prepares data and calls BioVenn::draw.venn", {
     })
 
     # Verify mock was called
-    expect_true(!is.null(mock_draw_venn_args))
-
-    # Verify list_x and list_y contents based on diff_res's logic
-    # As per your function's logic:
-    # Cond1_full are all ids *not only* in Cond2.
-    # Cond2_full are all ids *not only* in Cond1.
-    # This matches the BioVenn logic of:
-    # A_only = upCond1_only
-    # B_only = upCond2_only
-    # AB_overlap = non_sig
+    expect_true(exists("last_call", envir = captured_args))
 
     # Expected non-significant loci:
-    nonsig_expected <- setdiff(rownames(diff_res@analysis), union(rownames(diff_res@upCond1), rownames(diff_res@upCond2)))
-    expect_equal(sort(mock_draw_venn_args$list_x), sort(union(rownames(diff_res@upCond1), nonsig_expected)))
-    expect_equal(sort(mock_draw_venn_args$list_y), sort(union(rownames(diff_res@upCond2), nonsig_expected)))
+    nonsig_expected <- setdiff(rownames(analysisTable(diff_res)), union(rownames(enrichedCond1(diff_res)), rownames(enrichedCond2(diff_res))))
+    expect_equal(sort(captured_args$last_call$list_x), sort(union(rownames(enrichedCond1(diff_res)), nonsig_expected)))
+    expect_equal(sort(captured_args$last_call$list_y), sort(union(rownames(enrichedCond2(diff_res)), nonsig_expected)))
 
     # Verify other parameters
-    expect_equal(mock_draw_venn_args$other_args$xtitle, custom_set_labels[1])
-    expect_equal(mock_draw_venn_args$other_args$ytitle, custom_set_labels[2])
-    expect_equal(mock_draw_venn_args$other_args$title, "My Venn Plot")
-    expect_equal(mock_draw_venn_args$other_args$subtitle, "Test Subtitle")
-    expect_equal(mock_draw_venn_args$filename, "test_venn.pdf")
-    expect_equal(mock_draw_venn_args$output, "pdf")
+    expect_equal(captured_args$last_call$other_args$xtitle, custom_set_labels[1])
+    expect_equal(captured_args$last_call$other_args$ytitle, custom_set_labels[2])
+    expect_equal(captured_args$last_call$other_args$title, "My Venn Plot")
+    expect_equal(captured_args$last_call$other_args$subtitle, "Test Subtitle")
+    expect_equal(captured_args$last_call$filename, "test_venn.pdf")
+    expect_equal(captured_args$last_call$output, "pdf")
 })
 
 test_that("plot_venn handles cases with no significant regions", {
-    diff_res_no_sig <- make_dummy_diff_results_for_venn()
-    # Override with no significant results
-    diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[FALSE, ]
-    diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[FALSE, ]
+    base_results <- make_dummy_diff_results_for_venn()
+
+    # dummy results object with no significant hits
+    diff_res_no_sig <- new("DamIDResults",
+                           upCond1 = analysisTable(base_results)[FALSE, ],
+                           upCond2 = analysisTable(base_results)[FALSE, ],
+                           analysis = analysisTable(base_results),
+                           cond = conditionNames(base_results),
+                           data = inputData(base_results)
+    )
 
     mock_draw_venn_args <- NULL # Reset mock args
     mock_draw_venn <- function(list_x, list_y, ...) {
@@ -112,15 +109,23 @@ test_that("plot_venn handles cases with no significant regions", {
     expect_match(res$messages[2], "Note: No loci were differentially enriched in condition 2", fixed = TRUE)
 
     expect_true(!is.null(mock_draw_venn_args))
-    # All loci should be in both 'full' sets, as they're all non-significant
-    expect_equal(sort(mock_draw_venn_args$list_x), sort(rownames(diff_res_no_sig@analysis)))
-    expect_equal(sort(mock_draw_venn_args$list_y), sort(rownames(diff_res_no_sig@analysis)))
+    # All loci should be in both 'full' sets, as all are non-significant
+    expect_equal(sort(mock_draw_venn_args$list_x), sort(rownames(analysisTable(diff_res_no_sig))))
+    expect_equal(sort(mock_draw_venn_args$list_y), sort(rownames(analysisTable(diff_res_no_sig))))
 })
 
 
 test_that("plot_venn messages if one condition has no loci", {
-    diff_res_partial_sig <- make_dummy_diff_results_for_venn()
-    diff_res_partial_sig@upCond1 <- diff_res_partial_sig@upCond1[FALSE, ] # No Cond1 sig
+    base_results <- make_dummy_diff_results_for_venn()
+
+    # dummy results object with no significant hits
+    diff_res_partial_sig <- new("DamIDResults",
+                           upCond1 = analysisTable(base_results)[FALSE, ],
+                           upCond2 =  enrichedCond2(base_results),
+                           analysis = analysisTable(base_results),
+                           cond = conditionNames(base_results),
+                           data = inputData(base_results)
+    )
 
     mock_draw_venn <- function(list_x, list_y, ...) invisible(NULL)
     local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")
@@ -130,15 +135,15 @@ test_that("plot_venn messages if one condition has no loci", {
 
 test_that("plot_venn uses default set_labels if not provided", {
     diff_res <- make_dummy_diff_results_for_venn()
-    mock_draw_venn_args <- NULL
+    captured_args_env <- new.env()
     mock_draw_venn <- function(list_x, list_y, xtitle, ytitle, ...) {
-        mock_draw_venn_args <<- list(xtitle = xtitle, ytitle = ytitle)
+        captured_args_env$venn_args <- list(xtitle = xtitle, ytitle = ytitle)
         invisible(NULL)
     }
     local_mocked_bindings(draw.venn = mock_draw_venn, .package = "BioVenn")
 
     expect_no_error(plot_venn(diff_res, set_labels = NULL))
-    expect_true(!is.null(mock_draw_venn_args))
-    expect_equal(mock_draw_venn_args$xtitle, names(diff_res@cond)[1])
-    expect_equal(mock_draw_venn_args$ytitle, names(diff_res@cond)[2])
+    expect_true(!is.null(captured_args_env$venn_args))
+    expect_equal(captured_args_env$venn_args$xtitle, names(conditionNames(diff_res))[1])
+    expect_equal(captured_args_env$venn_args$ytitle, names(conditionNames(diff_res))[2])
 })

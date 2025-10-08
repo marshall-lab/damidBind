@@ -41,31 +41,31 @@ test_that("differential_accessibility returns expected structure and values", {
 
     # Check overall output structure
     expect_s4_class(res, "DamIDResults")
-    expect_s3_class(res@analysis, "data.frame")
-    expect_true(all(rownames(res@analysis) == rownames(dl_catada$occupancy)))
-    expect_true(all(c("logFC", "minuslogp", "gene_names", "gene_ids") %in% colnames(res@analysis)))
+    expect_s3_class(analysisTable(res), "data.frame")
+    expect_true(all(rownames(analysisTable(res)) == rownames(dl_catada$occupancy)))
+    expect_true(all(c("logFC", "minuslogp", "gene_names", "gene_ids") %in% colnames(analysisTable(res))))
 
     # Check gene annotations are transferred
-    expect_equal(res@analysis["peak1", "gene_names"], "GeneX")
-    expect_equal(res@analysis["peak3", "gene_names"], "")
+    expect_equal(analysisTable(res)["peak1", "gene_names"], "GeneX")
+    expect_equal(analysisTable(res)["peak3", "gene_names"], "")
 
-    expect_equal(nrow(res@upCond1), 2)
-    expect_true(all(c("peak1", "peak5") %in% rownames(res@upCond1)))
-    expect_equal(nrow(res@upCond2), 4)
-    expect_true(all(c("peak2", "peak3", "peak4", "peak6") %in% rownames(res@upCond2)))
+    expect_equal(nrow(enrichedCond1(res)), 2)
+    expect_true(all(c("peak1", "peak5") %in% rownames(enrichedCond1(res))))
+    expect_equal(nrow(enrichedCond2(res)), 4)
+    expect_true(all(c("peak2", "peak3", "peak4", "peak6") %in% rownames(enrichedCond2(res))))
 
     # Check calculated condition means
-    expect_equal(res@analysis["peak1", "CondA_mean"], mean(c(100, 110)))
-    expect_equal(res@analysis["peak1", "CondB_mean"], mean(c(20, 25)))
+    expect_equal(analysisTable(res)["peak1", "CondA_mean"], mean(c(100, 110)))
+    expect_equal(analysisTable(res)["peak1", "CondB_mean"], mean(c(20, 25)))
 
-    expect_equal(res@analysis["peak1", "logFC"], log2(105 / 22.5))
+    expect_equal(analysisTable(res)["peak1", "logFC"], log2(105 / 22.5))
     # In the real run, strong evidence leads to prob=1, which correctly becomes Inf.
-    expect_equal(res@analysis["peak1", "minuslogp"], Inf)
+    expect_equal(analysisTable(res)["peak1", "minuslogp"], Inf)
 
     # Check 'cond' mapping
-    expect_equal(res@cond, c("Condition_Alpha" = "CondA", "Condition_Beta" = "CondB"))
+    expect_equal(conditionNames(res), c("Condition_Alpha" = "CondA", "Condition_Beta" = "CondB"))
 
-    expect_equal(res@data$test_category, "accessible")
+    expect_equal(inputData(res)$test_category, "accessible")
 })
 
 
@@ -80,6 +80,6 @@ test_that("differential_accessibility handles cases with no significant results"
     # With no real difference, `noiseq` should not find anything significant.
     res <- differential_accessibility(dl_catada, cond, q = 0.8)
 
-    expect_equal(nrow(res@upCond1), 0)
-    expect_equal(nrow(res@upCond2), 0)
+    expect_equal(nrow(enrichedCond1(res)), 0)
+    expect_equal(nrow(enrichedCond2(res)), 0)
 })

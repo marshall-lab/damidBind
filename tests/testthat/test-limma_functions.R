@@ -32,34 +32,34 @@ test_that("differential_binding processes data and returns correct structure", {
 
     # Check overall object and slot structure
     expect_s4_class(res, "DamIDResults")
-    expect_s3_class(res@analysis, "data.frame")
+    expect_s3_class(analysisTable(res), "data.frame")
     expect_true(all(c("upCond1", "upCond2", "analysis", "cond", "data") %in% slotNames(res)))
 
     # Check that the analysis table contains all expected loci, regardless of order
     expected_loci <- c("loc1", "loc2", "loc3", "loc4")
-    expect_equal(sort(rownames(res@analysis)), sort(expected_loci))
-    expect_equal(nrow(res@analysis), 4)
+    expect_equal(sort(rownames(analysisTable(res))), sort(expected_loci))
+    expect_equal(nrow(analysisTable(res)), 4)
 
     #   Check essential columns are present and correctly derived
-    expect_true(all(c("logFC", "adj.P.Val", "minuslogp", "gene_names", "gene_ids", "CondA_mean", "CondB_mean") %in% colnames(res@analysis)))
+    expect_true(all(c("logFC", "adj.P.Val", "minuslogp", "gene_names", "gene_ids", "CondA_mean", "CondB_mean") %in% colnames(analysisTable(res))))
     # Check that minuslogp is correctly calculated from the adj.P.Val in the results of this specific run
-    expect_equal(res@analysis$minuslogp, -log10(res@analysis$adj.P.Val))
+    expect_equal(analysisTable(res)$minuslogp, -log10(analysisTable(res)$adj.P.Val))
 
     #  Check that significant sets contain the correct members, ignoring order
     # In this dataset, all 4 loci should be significant at FDR < 0.05
-    expect_equal(nrow(res@upCond1), 2)
-    expect_equal(sort(rownames(res@upCond1)), sort(c("loc1", "loc2")))
-    expect_equal(nrow(res@upCond2), 2)
-    expect_equal(sort(rownames(res@upCond2)), sort(c("loc3", "loc4")))
+    expect_equal(nrow(enrichedCond1(res)), 2)
+    expect_equal(sort(rownames(enrichedCond1(res))), sort(c("loc1", "loc2")))
+    expect_equal(nrow(enrichedCond2(res)), 2)
+    expect_equal(sort(rownames(enrichedCond2(res))), sort(c("loc3", "loc4")))
 
     # Check gene annotations and condition means
-    expect_equal(res@analysis["loc1", "gene_names"], "GeneA")
-    expect_equal(res@analysis["loc3", "gene_names"], "")
-    expect_equal(res@analysis["loc2", "CondA_mean"], mean(c(50, 52)))
-    expect_equal(res@analysis["loc4", "CondB_mean"], mean(c(40, 41)))
+    expect_equal(analysisTable(res)["loc1", "gene_names"], "GeneA")
+    expect_equal(analysisTable(res)["loc3", "gene_names"], "")
+    expect_equal(analysisTable(res)["loc2", "CondA_mean"], mean(c(50, 52)))
+    expect_equal(analysisTable(res)["loc4", "CondB_mean"], mean(c(40, 41)))
 
     # Check cond mapping
-    expect_equal(res@cond, c("CondA_display" = "CondA", "CondB_display" = "CondB"))
+    expect_equal(conditionNames(res), c("CondA_display" = "CondA", "CondB_display" = "CondB"))
 })
 
 
@@ -75,8 +75,8 @@ test_that("differential_binding handles cases with no significant results", {
     res <- suppressMessages(differential_binding(dl_no_diff, cond, fdr = 0.05))
 
     # With no real difference, upCond1 and upCond2 should be empty data frames.
-    expect_equal(nrow(res@upCond1), 0)
-    expect_equal(nrow(res@upCond2), 0)
+    expect_equal(nrow(enrichedCond1(res)), 0)
+    expect_equal(nrow(enrichedCond2(res)), 0)
 })
 
 
@@ -107,10 +107,10 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     expect_s4_class(res_unfiltered, "DamIDResults")
 
     # Check that both significant loci are found when not filtering.
-    expect_true("neg_sig" %in% rownames(res_unfiltered@upCond1))
-    expect_true("pos_sig" %in% rownames(res_unfiltered@upCond1))
-    expect_equal(nrow(res_unfiltered@upCond1), 2)
-    expect_equal(nrow(res_unfiltered@upCond2), 0)
+    expect_true("neg_sig" %in% rownames(enrichedCond1(res_unfiltered)))
+    expect_true("pos_sig" %in% rownames(enrichedCond1(res_unfiltered)))
+    expect_equal(nrow(enrichedCond1(res_unfiltered)), 2)
+    expect_equal(nrow(enrichedCond2(res_unfiltered)), 0)
 
     # Test with the filter (default)
     res_filtered <- suppressMessages(
@@ -119,17 +119,17 @@ test_that("differential_binding can optionally filter for positive enrichment", 
 
     expect_s4_class(res_filtered, "DamIDResults")
     # 'neg_sig' should now be filtered out from the final "enriched" set.
-    expect_false("neg_sig" %in% rownames(res_filtered@upCond1))
+    expect_false("neg_sig" %in% rownames(enrichedCond1(res_filtered)))
     # 'pos_sig' should remain.
-    expect_true("pos_sig" %in% rownames(res_filtered@upCond1))
-    expect_equal(nrow(res_filtered@upCond1), 1)
-    expect_equal(nrow(res_filtered@upCond2), 0)
+    expect_true("pos_sig" %in% rownames(enrichedCond1(res_filtered)))
+    expect_equal(nrow(enrichedCond1(res_filtered)), 1)
+    expect_equal(nrow(enrichedCond2(res_filtered)), 0)
 
     # Verify 'neg_sig' is still present in the full analysis table.
-    expect_true("neg_sig" %in% rownames(res_filtered@analysis))
+    expect_true("neg_sig" %in% rownames(analysisTable(res_filtered)))
     # Double-check that the means were negative.
-    expect_lt(res_filtered@analysis["neg_sig", "CondA_mean"], 0)
-    expect_lt(res_filtered@analysis["neg_sig", "CondB_mean"], 0)
+    expect_lt(analysisTable(res_filtered)["neg_sig", "CondA_mean"], 0)
+    expect_lt(analysisTable(res_filtered)["neg_sig", "CondB_mean"], 0)
 })
 
 

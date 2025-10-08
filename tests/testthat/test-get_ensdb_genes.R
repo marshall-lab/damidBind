@@ -1,5 +1,3 @@
-# FILE: tests/testthat/test-get_ensdb_genes.R
-
 library(testthat)
 library(damidBind)
 library(AnnotationHub)
@@ -10,8 +8,6 @@ library(S4Vectors)
 context("get_ensdb_genes")
 
 source(test_path("_test_helper.R"))
-
-# --- Mock AnnotationHub and related functions for isolated testing ---
 
 # This helper function creates a mock DataFrame that mimics the result of an AnnotationHub query.
 create_mock_query_result <- function() {
@@ -31,13 +27,11 @@ create_mock_query_result <- function() {
 }
 
 test_that("get_ensdb_genes can retrieve Drosophila EnsDb and filter biotypes", {
-    # Mock the necessary functions using testthat's local_mocked_bindings
     local_mocked_bindings(
         # Mock the main AnnotationHub constructor to return a dummy object
         AnnotationHub = function(...) new("AnnotationHub"),
         # Mock the query function
         query = function(ah_obj, search_terms) {
-            # This part creates the raw data.frame
             df <- S4Vectors::DataFrame(
                 ah_id = c("AH_Dm_113", "AH_Dm_112", "AH_Hs_113"),
                 title = c(
@@ -51,16 +45,13 @@ test_that("get_ensdb_genes can retrieve Drosophila EnsDb and filter biotypes", {
             if (any(grepl("drosophila melanogaster", search_terms, ignore.case = TRUE))) {
                 # Filter the DataFrame
                 res_df <- df[grepl("Drosophila melanogaster", df$species), ]
-                # Return the DataFrame wrapped in our mock S4 object
                 return(new("MockHubResult", data = res_df))
             }
             # For no matches, return the S4 object with a zero-row DataFrame
             return(new("MockHubResult", data = df[FALSE, ]))
         },
-        # Mock the ensembldb functions to return mock data directly
-        # This avoids the need to mock the `[[` operator
+        # Mock the ensembldb functions
         genes = function(x, ...) {
-            # This mock now simply returns the genes from our helper, ignoring the input 'x'
             create_mock_ensdb_object()$genes()
         },
         metadata = function(x, ...) {

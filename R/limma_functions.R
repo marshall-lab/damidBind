@@ -18,7 +18,7 @@
 #'   genuine binding enrichment, rather than changes between two states of
 #'   depletion. Set to `FALSE` to include all statistically significant changes.
 #' @return A `DamIDResults` object containing the results. Access slots using
-#'   the `@` accessor (e.g., `results@analysis`). The object includes:
+#'   the `@` accessor (e.g., `analysisTable(results)`). The object includes:
 #'   \item{upCond1}{data.frame of regions enriched in condition 1}
 #'   \item{upCond2}{data.frame of regions enriched in condition 2}
 #'   \item{analysis}{data.frame of full results for all tested regions}

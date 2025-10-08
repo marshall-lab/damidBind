@@ -128,9 +128,16 @@ test_that("analyse_go_enrichment runs without error and returns expected structu
 
 
 test_that("analyse_go_enrichment handles cases with no significant genes", {
-    diff_res_no_sig <- make_dummy_diff_results_for_go()
-    diff_res_no_sig@upCond1 <- diff_res_no_sig@upCond1[FALSE, ] # No significant genes
-    diff_res_no_sig@upCond2 <- diff_res_no_sig@upCond2[FALSE, ]
+    base_results <- make_dummy_diff_results_for_go()
+
+    # dummy results object with no significant hits
+    diff_res_no_sig <- new("DamIDResults",
+                           upCond1 = analysisTable(base_results)[FALSE, ],
+                           upCond2 = analysisTable(base_results)[FALSE, ],
+                           analysis = analysisTable(base_results),
+                           cond = conditionNames(base_results),
+                           data = inputData(base_results)
+    )
 
     # Mock enrichGO to return NULL (no enrichment found, or no genes passed)
     local_mocked_bindings(
@@ -142,7 +149,7 @@ test_that("analyse_go_enrichment handles cases with no significant genes", {
     expect_message(
         res <- analyse_go_enrichment(diff_res_no_sig, org_db = dummy_org_db),
         "No significant genes found for direction 'cond1'"
-    ) # First message
+    )
     expect_null(res)
 })
 

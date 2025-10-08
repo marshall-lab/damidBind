@@ -61,12 +61,12 @@ plot_venn <- function(
     stopifnot(is(diff_results, "DamIDResults"))
 
     if (is.null(set_labels)) {
-        set_labels <- names(diff_results@cond)
+        set_labels <- names(conditionNames(diff_results))
     }
 
-    upCond1 <- rownames(diff_results@upCond1)
-    upCond2 <- rownames(diff_results@upCond2)
-    all_ids <- rownames(diff_results@analysis)
+    upCond1 <- rownames(enrichedCond1(diff_results))
+    upCond2 <- rownames(enrichedCond2(diff_results))
+    all_ids <- rownames(analysisTable(diff_results))
     # Defensive: remove NAs or empty
     upCond1 <- upCond1[!is.na(upCond1) & nchar(upCond1) > 0]
     upCond2 <- upCond2[!is.na(upCond2) & nchar(upCond2) > 0]
