@@ -14,7 +14,7 @@ output:
     toc_float: true 
     number_sections: true
     self_contained: true
-bibliography: damidbind.bib
+bibliography: damidBind.bib
 csl: embo.csl
 abstract: |
   The damidBind package provides a means of determining differential binding/gene transcription/chromatin accessibility for DamID-seq data (differential binding = conventional DamID / TaDa for TFs; differential transcription = TaDa for RNA polymerase occupancy; chromatin accessibility = CATaDa).  The package loads processed bedgraphs and peaks files, processes these, uses limma (for DamID log2 ratios) or NOIseq (for CATaDa counts data) to determine differentially bound/transcribed/accessible loci, and then provides visualisation via volcano plots, GSEA lollipop plots, Venn diagrams, and an igvShiny interface to quickly view each differentially bound locus in an IGV browser, with the ranked, sorted differentially bound loci listed in an adjacent interactable table.
@@ -37,15 +37,28 @@ library(DT)
 
 DamID [@Steensel2000; @Steensel2001] is a highly-sensitive means to profile the genome-wide association of proteins with chromatin in living eukaryotic cells, without fixation or the use of antibodies. Cell-type specific techniques such as Targeted DamID [@Southall2013; @Marshall2016] to profile protein binding, and CATaDA [@Aughey2018] to profile chromatin accessibility, have made the technique an extremely powerful tool to understand the binding of transcription factors, chromatin proteins, RNA polymerase and chromatin changes during development and disease.
 
-Despite the technique's growing popularity and adoption, no formal analysis pipeline or R package exists to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The `r Githubpkg("marshall-lab/damidbind")` package provides this functionality.
+Despite the technique's growing popularity and adoption, no formal analysis pipeline or R package exists to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The `r Biocpkg('damidBind')` package provides this functionality.
 
-`r Githubpkg("marshall-lab/damidbind")` imports processed data from DamID-seq experiments in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `r Biocpkg("limma")` (for conventional log2 ratio DamID binding data) or `r Biocpkg("NOIseq")` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots, Venn diagrams) for downstream data exploration and analysis. An interactive IGV genome browser interface (powered by `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`) allows users to rapidly and intuitively assess significant differentially-bound regions.
+`r Biocpkg('damidBind')` imports processed data from DamID-seq experiments in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `r Biocpkg("limma")` (for conventional log2 ratio DamID binding data) or `r Biocpkg("NOIseq")` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots, Venn diagrams) for downstream data exploration and analysis. An interactive IGV genome browser interface (powered by `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`) allows users to rapidly and intuitively assess significant differentially-bound regions.
 
-Although extensive customisation options are available if required, much of the data handling by `r Githubpkg("marshall-lab/damidbind")` is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.
+Although extensive customisation options are available if required, much of the data handling by `r Biocpkg('damidBind')` is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.
+
+# Installation
+
+To install from github, use:
+
+``` r
+# Install Bioconductor
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# Then install the damidBind package
+BiocManager::install("marshall-lab/damidBind")
+```
 
 # Quick start guide
 
-Using `r Githubpkg("marshall-lab/damidbind")`, in eight easy steps:
+Using `r Biocpkg('damidBind')`, in eight easy steps:
 
 ```{r quickstart, eval=FALSE, echo=TRUE}
 ## Example code only, not run:
@@ -93,11 +106,11 @@ my_custom_function(analysisTable(input.diff))
 
 ## Sample input data (provided within the package)
 
-`r Githubpkg("marshall-lab/damidbind")` provides a simple, truncated dataset with the package for immediate testing. Owing to package space, this sample dataset uses only *Drosophila melanogaster* chromosome 2L binding, and should not be used for any actual analysis.
+`r Biocpkg('damidBind')` provides a simple, truncated dataset with the package for immediate testing. Owing to package space, this sample dataset uses only *Drosophila melanogaster* chromosome 2L binding, and should not be used for any actual analysis.
 
 ## Sample input data (provided online through a Zenodo repository)
 
-[Three previously-published sample datasets](https://doi.org/10.5281/zenodo.16649477) have been deposited in Zenodo and made available for fully exploring the features and capabilities of `r Githubpkg("marshall-lab/damidbind")`:
+[Three previously-published sample datasets](https://doi.org/10.5281/zenodo.16649477) have been deposited in Zenodo and made available for fully exploring the features and capabilities of `r Biocpkg('damidBind')`:
 
 -   Bsh transcription factor binding in L4 and L5 neurons of the *Drosophila* lamina [@Xu2024]
 -   CATaDa chromatin accessibility data in L4 and L5 neurons [@Xu2024]
@@ -109,7 +122,7 @@ Processed files (incl. binding profiles and peaks files) are provided for all da
 
 ## Input data format
 
-`r Githubpkg("marshall-lab/damidbind")` takes as input:
+`r Biocpkg('damidBind')` takes as input:
 
 -   Genome-wide binding profile tracks in BEDGRAPH format (external files) or `r Biocpkg("GenomicRanges")` format (internal)
     -   For standard DamID binding datasets, the score column is expected to be a log2 ratio
@@ -121,7 +134,7 @@ All external data files are read using `r Biocpkg("rtracklayer")` and can be gzi
 
 ## Input data generation
 
-`r Githubpkg("marshall-lab/damidbind")` can work with either raw data files or preprocessed data in `r Biocpkg("GenomicRanges")` format.
+`r Biocpkg('damidBind')` can work with either raw data files or preprocessed data in `r Biocpkg("GenomicRanges")` format.
 
 ### BEDGRAPH binding / accessibility profiles
 
@@ -146,7 +159,7 @@ library(damidBind)
 
 ## Loading data
 
-A small example dataset is provided with `r Githubpkg("marshall-lab/damidbind")`. The dataset is derived from the binding of Bsh in L4 and L5 neurons of the *Drosophila melanogaster* lamina [@Xu2024], truncated to chromosome 2L. The raw data was processed using `damidseq_pipeline` and peaks called using `find_peaks` (see the publication Methods for more details).
+A small example dataset is provided with `r Biocpkg('damidBind')`. The dataset is derived from the binding of Bsh in L4 and L5 neurons of the *Drosophila melanogaster* lamina [@Xu2024], truncated to chromosome 2L. The raw data was processed using `damidseq_pipeline` and peaks called using `find_peaks` (see the publication Methods for more details).
 
 To load up the data, we only need to know the path to the installed example datafiles:
 
@@ -158,7 +171,7 @@ files <- list.files(data_dir)
 print(files)
 ```
 
-And then we can use `r Githubpkg("marshall-lab/damidbind")` on the data. First, we load up the data. There are two potential commands that can be used for data loading, depending on the data being analysed:
+And then we can use `r Biocpkg('damidBind')` on the data. First, we load up the data. There are two potential commands that can be used for data loading, depending on the data being analysed:
 
 `load_data_peaks()`
 
@@ -228,7 +241,7 @@ All downstream visualisation / data exploration functions take the `DamIDResults
 
 ### Venn diagrams of differentially bound loci
 
-Venn diagrams are a simple means of visualising the proportion of loci that are differentially bound between the two tested conditions.  To provide this, `r Githubpkg("marshall-lab/damidbind")` uses `r CRANpkg("BioVenn")` to generate proportional Venn diagrams of the two conditions.  The set union represents significant binding peaks that fail to show significant differences in occupancy; the exclusive regions of each set represent regions with enriched differential binding in that condition.
+Venn diagrams are a simple means of visualising the proportion of loci that are differentially bound between the two tested conditions.  To provide this, `r Biocpkg('damidBind')` uses `r CRANpkg("BioVenn")` to generate proportional Venn diagrams of the two conditions.  The set union represents significant binding peaks that fail to show significant differences in occupancy; the exclusive regions of each set represent regions with enriched differential binding in that condition.
 
 ```{r venn, fig.cap="A venn diagram of significantly bound loci by Bsh in L4 and L5 neurons.  The exclusive parts of each set represent regions that are differentially bound between the two conditions.", fig.small=TRUE, message=FALSE}
 plot_venn(diff.bsh)
@@ -236,7 +249,7 @@ plot_venn(diff.bsh)
 
 ### Volcano plots
 
-`r Githubpkg("marshall-lab/damidbind")` comes with a comprehensive volcano plot function. The following gives some idea as to the capabilities.
+`r Biocpkg('damidBind')` comes with a comprehensive volcano plot function. The following gives some idea as to the capabilities.
 
 #### The default volcano plot
 
@@ -307,7 +320,7 @@ Here, the L5-specific Bsh peaks show no clear link with upregulated or downregul
 
 ### Browsing differentially-bound regions with an igvShiny browser window
 
-A volcano plot, while useful, still does not put the binding data into a genomic context. For this `r Githubpkg("marshall-lab/damidbind")` provides an interactive Shiny browser window (via `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`), where an interactive table of enriched loci allows quick exploration of these in the genome browser.
+A volcano plot, while useful, still does not put the binding data into a genomic context. For this `r Biocpkg('damidBind')` provides an interactive Shiny browser window (via `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`), where an interactive table of enriched loci allows quick exploration of these in the genome browser.
 
 ```{r igv_shiny}
 ## Interactive, blocking session, uncomment to run
@@ -322,7 +335,7 @@ The table on the left side of the window can be sorted by clicking on the column
 
 ### GSEA plots
 
-Gene ontology is a powerful means of understanding which biological processes may be changing between two sets of data. Using `r Biocpkg("ClusterProfiler")` as the backend, `r Githubpkg("marshall-lab/damidbind")` provides the function `analyse_go_enrichment()` to explore enrichment of genes associated with bound peaks, accessible regions, or differential expression. In all cases, the underlying gene IDs, rather than gene names, are used for enrichment analysis.
+Gene ontology is a powerful means of understanding which biological processes may be changing between two sets of data. Using `r Biocpkg("clusterProfiler")` as the backend, `r Biocpkg('damidBind')` provides the function `analyse_go_enrichment()` to explore enrichment of genes associated with bound peaks, accessible regions, or differential expression. In all cases, the underlying gene IDs, rather than gene names, are used for enrichment analysis.
 
 ```{r gsea, fig.cap="Enriched GO terms for genes associated with differential Bsh binding in L4 neuron.  Dataset from chromosome 2L only."}
 go.bsh_l4 <- analyse_go_enrichment(
