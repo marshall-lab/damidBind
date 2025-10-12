@@ -54,6 +54,8 @@ setMethod(
 #'   \item `enrichedCond1(object)`: returns a data.frame of regions enriched in condition 1.
 #'   \item `enrichedCond2(object)`: returns a data.frame of regions enriched in condition 2.
 #'   \item `conditionNames(object)`: returns a named character vector mapping display names to internal condition identifiers.
+#'   \item `inputData(object)`: returns a list containing the initial input data used for the analysis,
+#'                              including the occupancy data.frame and other metadata.
 #' }
 #' @export
 #' @examples
