@@ -2,7 +2,7 @@
 
 DamID is a highly-sensitive means to profile the genome-wide association of proteins with chromatin in living eukaryotic cells, without fixation or the use of antibodies. Cell-type specific techniques such as Targeted DamID to profile protein binding, and CATaDA to profile chromatin accessibility, have made the technique an extremely powerful tool to understand the binding of transcription factors, chromatin proteins, RNA polymerase and chromatin changes during development and disease.
 
-The `damidBind` package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `limma` (for conventional log2 ratio DamID binding data) or `NOIseq` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots via `ClusterProfiler` and proportional Venn diagrams via `BioVenn` for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by `Shiny` and `igvShiny`) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.
+The `damidBind` package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `limma` (for conventional log2 ratio DamID binding data) or `NOIseq` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots via `clusterProfiler` and proportional Venn diagrams via `BioVenn` for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by `Shiny` and `igvShiny`) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.
 
 Although extensive customisation options are available if required, much of the data handling by `damidBind` is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.
 
@@ -14,7 +14,6 @@ To install from github, use:
 # Install Bioconductor
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install(version = "3.21")
 
 # Then install the damidBind package
 BiocManager::install("marshall-lab/damidBind")
