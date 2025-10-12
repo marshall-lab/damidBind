@@ -28,7 +28,7 @@ the two conditions in outputs/plots. Order maps to `cond`.}
 }
 \value{
 A `DamIDResults` object containing the results. Access slots using the `@`
-  accessor (e.g., `results@analysis`). The object includes:
+  accessor (e.g., `analysisTable(results)`). The object includes:
   \item{upCond1}{data.frame of regions enriched in condition 1}
   \item{upCond2}{data.frame of regions enriched in condition 2}
   \item{analysis}{data.frame of full results for all tested regions}

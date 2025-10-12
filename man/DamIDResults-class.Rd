@@ -12,6 +12,8 @@
 \alias{enrichedCond2,DamIDResults-method}
 \alias{conditionNames}
 \alias{conditionNames,DamIDResults-method}
+\alias{inputData}
+\alias{inputData,DamIDResults-method}
 \alias{plot,DamIDResults,missing-method}
 \title{The DamIDResults Class}
 \usage{
@@ -33,6 +35,10 @@ conditionNames(object)
 
 \S4method{conditionNames}{DamIDResults}(object)
 
+inputData(object)
+
+\S4method{inputData}{DamIDResults}(object)
+
 \S4method{plot}{DamIDResults,missing}(x, y, ...)
 }
 \arguments{
@@ -50,6 +56,8 @@ conditionNames(object)
   \item `enrichedCond1(object)`: returns a data.frame of regions enriched in condition 1.
   \item `enrichedCond2(object)`: returns a data.frame of regions enriched in condition 2.
   \item `conditionNames(object)`: returns a named character vector mapping display names to internal condition identifiers.
+  \item `inputData(object)`: returns a list containing the initial input data used for the analysis,
+                             including the occupancy data.frame and other metadata.
 }
 }
 \description{

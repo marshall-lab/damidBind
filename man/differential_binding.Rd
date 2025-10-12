@@ -4,7 +4,13 @@
 \alias{differential_binding}
 \title{Differential Binding/Expression Analysis (limma)}
 \usage{
-differential_binding(data_list, cond, cond_names = NULL, fdr = 0.05)
+differential_binding(
+  data_list,
+  cond,
+  cond_names = NULL,
+  fdr = 0.05,
+  filter_positive_enrichment = TRUE
+)
 }
 \arguments{
 \item{data_list}{List. Output from load_data_peaks or load_data_genes.}
@@ -16,15 +22,23 @@ The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.}
 the two conditions in outputs/plots. Order maps to `cond`.}
 
 \item{fdr}{Numeric. FDR threshold for significance (default 0.05).}
+
+\item{filter_positive_enrichment}{Logical. If `TRUE` (default), regions
+are only considered significantly enriched if the mean score in the
+enriched condition is greater than zero. For example, for a region to be
+in `upCond1`, its logFC must be positive and its mean score in condition 1
+must be > 0. This is a common biological filter to focus on regions with
+genuine binding enrichment, rather than changes between two states of
+depletion. Set to `FALSE` to include all statistically significant changes.}
 }
 \value{
 A `DamIDResults` object containing the results. Access slots using
-  the `@` accessor (e.g., `results@analysis`). The object includes:
-  \item{upCond1}{data.frame of regions enriched in condition 1}
-  \item{upCond2}{data.frame of regions enriched in condition 2}
-  \item{analysis}{data.frame of full results for all tested regions}
-  \item{cond}{A named character vector mapping display names to internal condition names}
-  \item{data}{The original `data_list` input}
+  accessors:
+  \item{enrichedCond1()}{data.frame of regions enriched in condition 1}
+  \item{enrichedCond2()}{data.frame of regions enriched in condition 2}
+  \item{analysisTable()}{data.frame of full results for all tested regions}
+  \item{conditionNames()}{A named character vector mapping display names to internal condition names}
+  \item{inputData()}{The original `data_list` input}
 }
 \description{
 Setup and differential analysis for occupancy/binding experiments

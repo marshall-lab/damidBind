@@ -21,7 +21,7 @@ plot_volcano(
 colours, etc); see details.
 \itemize{
   \item \code{title}, \code{xlab}, \code{ylab} (character)
-  \item \code{ystat} (character): The column name from `diff_results@analysis`
+  \item \code{ystat} (character): The column name from `analysisTable(diff_results)`
     to use for the y-axis (e.g., "minuslogp" or "B"). Default is "B".
   \item \code{base_size} (integer): ggplot theme base font size.
   \item \code{sig_colour}, \code{nonsig_colour} (colours)
@@ -56,6 +56,9 @@ defaults are used.
     provided, a default hue palette is used.
   \item \code{label_size}: Numeric; label size (default: 4).
   \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
+  \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
+  \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
+  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the lgend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
 }}
 
 \item{save}{List or `NULL`. Controls saving the plot to a file.
