@@ -102,7 +102,7 @@ test_that("plot_volcano warns about invalid non-list plot_config inputs and proc
 
 test_that("plot_volcano throws error for invalid ystat", {
     diff_res <- make_dummy_diff_results()
-    expect_error(plot_volcano(diff_res, plot_config = list(ystat = "NonExistentCol"), save = FALSE), regexp = "is not a valid column in plot data")
+    expect_error(plot_volcano(diff_res, plot_config = list(ystat = "NonExistentCol"), save = FALSE), regexp = "is not a valid column name")
 })
 
 test_that("plot_volcano skips saving if save is NULL/FALSE/0", {
