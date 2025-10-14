@@ -40,10 +40,168 @@ check_list_input <- function(default_list, config_input) {
     }
 }
 
+
+#' @title Manage Volcano Plot Configurations
+#' @description Merges user-provided configurations with defaults and returns a
+#'   single list of all settings.
+#' @param diff_results A `DamIDResults` object.
+#' @param plot_config,label_config,highlight_config,save User-provided config lists.
+#' @return A list containing the final, merged configurations (`plot`, `label`,
+#'   `highlight`, `save`).
+#' @noRd
+.manage_volcano_configs <- function(diff_results, plot_config, label_config, highlight_config, save) {
+  cond_display <- names(conditionNames(diff_results))
+  test_category <- inputData(diff_results)$test_category
+
+  plot_defaults <- list(
+    title = sprintf("Differentially %s loci", test_category),
+    xlab = bquote(log[2] * "FC (" * .(cond_display[1]) * " / " * .(cond_display[2]) * ")"),
+    ylab = "",
+    ystat = ifelse(test_category == "accessible", "minuslogp", "B"),
+    base_size = 18,
+    sig_colour = "orange",
+    nonsig_colour = rgb(0.4, 0.4, 0.4),
+    sig_alpha = 0.4, sig_size = 1,
+    nonsig_alpha = 0.1, nonsig_size = 1
+  )
+  final_plot_config <- check_list_input(plot_defaults, plot_config)
+  if (final_plot_config$ylab == "") {
+    final_plot_config$ylab <- if (final_plot_config$ystat == "minuslogp") "-log(p)" else final_plot_config$ystat
+  }
+
+  label_defaults <- list(
+    genes = NULL, label_size = 3, clean_names = FALSE,
+    names_clean = "snoRNA|snRNA|^CR|tRNA|RNA", names_clean_extra = NULL,
+    max_overlaps = 20
+  )
+  final_label_config <- check_list_input(label_defaults, label_config)
+
+  highlight_defaults <- list(
+    alpha = 1, size = 2, label = TRUE, colour = NULL, label_size = 4,
+    max_overlaps = 10, legend = TRUE, legend_inside = TRUE,
+    legend_pos = list(
+      legend.position = c(0.97, 0.05),
+      legend.justification = c(1, 0)
+    )
+  )
+  final_highlight_config <- check_list_input(highlight_defaults, highlight_config)
+
+  save_defaults <- list(
+    filename = "damidBind_volcano_plot", format = "pdf",
+    width = 5, height = 4
+  )
+  final_save_config <- check_list_input(save_defaults, save)
+
+  list(
+    plot = final_plot_config,
+    label = final_label_config,
+    highlight = final_highlight_config,
+    save = final_save_config
+  )
+}
+
+
+#' @title Find indices of elements within comma-separated label strings
+#' @description Finds which `labels` (character vector of comma-separated strings)
+#' contain any of the given `elements`. It performs a whole-word match.
+#' @param labels Character vector of labels, e.g., `c("geneA,geneB", "geneC")`.
+#' @param elements Character vector of elements to search for, e.g., `c("geneA", "geneD")`.
+#' @return Integer vector of indices in `labels` that contain at least one of the `elements`.
+#' @noRd
+.find_element_indices <- function(labels, elements) {
+  if (is.null(elements) || length(elements) == 0) {
+    return(integer(0))
+  }
+  escaped_elements <- gsub("([[:punct:]])", "\\\\\\1", elements)
+  patt <- stringr::str_c(escaped_elements, collapse = "|")
+  which(stringr::str_detect(labels, sprintf("(^|,)(%s)(,|$)", patt)))
+}
+
+
+#' @title Prepare Data for Highlight and Label Layers
+#' @description Generates dataframes for ggplot highlight and label layers.
+#' @return A list with `highlight_df` (for geom_point), `label_df` (for ggrepel),
+#'   and `highlight_colours` (named vector).
+#' @noRd
+.prepare_highlight_and_label_data <- function(plot_df, gene_labels_all, highlight, configs) {
+  highlight_dfs <- list()
+  label_dfs <- list()
+  highlighted_ids <- character(0)
+  highlight_config <- configs$highlight
+  label_config <- configs$label
+
+  # Process highlight groups
+  if (!is.null(highlight) && length(highlight) > 0) {
+    num_groups <- length(highlight)
+    pal <- if (is.null(highlight_config$colour) || length(highlight_config$colour) < num_groups) {
+      scales::hue_pal()(num_groups)
+    } else {
+      highlight_config$colour
+    }
+    names(pal) <- names(highlight)
+
+    for (i in seq_along(highlight)) {
+      group_name <- names(highlight)[i]
+      indices <- .find_element_indices(gene_labels_all, highlight[[i]])
+
+      if (length(indices) > 0) {
+        group_df <- plot_df[indices, , drop = FALSE]
+        group_df$highlight_group_name <- group_name
+        split_labels <- strsplit(gene_labels_all[indices], split = ",")
+        group_df$label_to_display <- vapply(split_labels, function(vec) {
+          matched <- intersect(trimws(vec), highlight[[i]])
+          stringr::str_c(if (length(matched) == 0) vec else matched, collapse = ",")
+        }, FUN.VALUE = character(1L))
+
+        highlight_dfs[[group_name]] <- group_df
+        if (isTRUE(highlight_config$label)) {
+          label_dfs[[group_name]] <- group_df
+          highlighted_ids <- c(highlighted_ids, group_df$id)
+        }
+      }
+    }
+    highlight_colours <- pal
+  } else {
+    highlight_colours <- NULL
+  }
+
+  # Process general labels, avoid overlap with highlight labels
+  if (!is.null(label_config)) {
+    sig_indices <- which(plot_df$sig)
+    candidate_indices <- if (!is.null(label_config$genes)) {
+      intersect(sig_indices, .find_element_indices(gene_labels_all, label_config$genes))
+    } else { sig_indices }
+
+    final_indices <- setdiff(candidate_indices, which(plot_df$id %in% unique(highlighted_ids)))
+    if (length(final_indices) > 0) {
+      general_label_df <- plot_df[final_indices, , drop = FALSE]
+      general_label_df$label_to_display <- gene_labels_all[final_indices]
+      general_label_df$highlight_group_name <- NA_character_
+
+      if (isTRUE(label_config$clean_names)) {
+        clean_regex <- stringr::str_c(label_config$names_clean, label_config$names_clean_extra, sep = "|")
+        keep_indices <- which(!stringr::str_detect(general_label_df$label_to_display, clean_regex))
+        general_label_df <- general_label_df[keep_indices, , drop = FALSE]
+      }
+      if (nrow(general_label_df) > 0) label_dfs[["general"]] <- general_label_df
+    }
+  }
+
+  # Combine dataframes and return
+  final_highlight_df <- if (length(highlight_dfs) > 0) do.call(rbind, highlight_dfs) else NULL
+  final_label_df <- if (length(label_dfs) > 0) do.call(rbind, label_dfs) else NULL
+
+  list(highlight_df = final_highlight_df, label_df = final_label_df, highlight_colours = highlight_colours)
+}
+
+
 #' Volcano Plot of Differentially Bound/Expressed Loci
 #'
-#' Plots a volcano plot with optional layered highlights and overlays,
-#' given the results from `differential_binding()` or `differential_analysis()`.
+#' @description
+#' Creates a volcano plot from the results of a differential analysis. The plot
+#' shows the log-fold change against a measure of statistical significance.
+#' The function offers extensive customisation for point appearance, gene
+#' labelling, and highlighting specific groups of loci.
 #'
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
@@ -65,7 +223,7 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{label_size}: label size (numeric).
 #'     \item \code{clean_names}: logical; if `TRUE`, applies regex filtering to labels.
 #'     \item \code{names_clean}, \code{names_clean_extra}: regex to exclude from labels
-#'       when \code{clean_names} is `TRUE`.
+#'       when \\code{clean_names} is `TRUE`.
 #'     \item \code{max_overlaps}: integer; maximum ggrepel overlaps.
 #'   }
 #' @param highlight List. A simple list where each element is a character vector
@@ -85,7 +243,7 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
 #'     \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
 #'     \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
-#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the lgend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
 #'   }
 #' @param save List or `NULL`. Controls saving the plot to a file.
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
@@ -148,347 +306,70 @@ plot_volcano <- function(
     highlight = NULL,
     highlight_config = list(),
     save = NULL) {
-    stopifnot(is(diff_results, "DamIDResults"))
 
-    analysis_table <- analysisTable(diff_results)
-    upCond1 <- rownames(enrichedCond1(diff_results))
-    upCond2 <- rownames(enrichedCond2(diff_results))
-    all_sig <- unique(c(upCond1, upCond2))
-    plot_data <- analysis_table
-    gene_labels_all <- if ("gene_names" %in% names(plot_data)) plot_data$gene_names else rownames(plot_data)
+  stopifnot(is(diff_results, "DamIDResults"))
 
-    # Get custom condition names from conditionNames(diff_results)
-    cond_display <- names(conditionNames(diff_results))
-    test_category <- inputData(diff_results)$test_category
+  # Prepare data and configurations
+  analysis_table <- analysisTable(diff_results)
+  configs <- .manage_volcano_configs(diff_results, plot_config, label_config, highlight_config, save)
+  plot_cfg <- configs$plot
+  if (!plot_cfg$ystat %in% names(analysis_table)) {
+    stop(sprintf("ystat ('%s') is not a valid column name. Valid columns are: %s",
+                 plot_cfg$ystat, stringr::str_c(names(analysis_table), collapse = ", ")))
+  }
 
-    # Set up base plotting config as before, e.g.:
-    plot_defaults <- list(
-        title = sprintf("Differentially %s loci", test_category),
-        xlab = bquote(log[2] * "FC (" * .(cond_display[1]) * " / " * .(cond_display[2]) * ")"),
-        ylab = "",
-        ystat = ifelse(test_category == "accessible", "minuslogp", "B"),
-        base_size = 18,
-        sig_colour = "orange",
-        nonsig_colour = rgb(0.4, 0.4, 0.4),
-        sig_alpha = 0.4,
-        sig_size = 1,
-        nonsig_alpha = 0.1,
-        nonsig_size = 1
-    )
+  plot_df <- analysis_table
+  plot_df$id <- rownames(plot_df)
+  plot_df$sig <- plot_df$id %in% c(rownames(enrichedCond1(diff_results)), rownames(enrichedCond2(diff_results)))
+  gene_labels_all <- if ("gene_names" %in% names(plot_df)) plot_df$gene_names else plot_df$id
+  layer_data <- .prepare_highlight_and_label_data(plot_df, gene_labels_all, highlight, configs)
 
-    plot_config <- check_list_input(plot_defaults, plot_config)
-    if (is.null(plot_config)) {
-        # should not occur!
-        plot_config <- plot_defaults
-    }
+  # Build plot layers
+  p <- ggplot(plot_df, aes(x = .data$logFC, y = .data[[plot_cfg$ystat]])) +
+    geom_point(data = ~ subset(., !sig), colour = plot_cfg$nonsig_colour, alpha = plot_cfg$nonsig_alpha, size = plot_cfg$nonsig_size) +
+    geom_point(data = ~ subset(., sig), colour = plot_cfg$sig_colour, alpha = plot_cfg$sig_alpha, size = plot_cfg$sig_size)
 
-    label_defaults <- list(
-        genes = NULL,
-        label_size = 3,
-        clean_names = FALSE,
-        names_clean = "snoRNA|snRNA|^CR|tRNA|RNA",
-        names_clean_extra = NULL,
-        max_overlaps = 20
-    )
-    label_config <- check_list_input(label_defaults, label_config)
+  if (!is.null(layer_data$highlight_df)) {
+    p <- p + geom_point(data = layer_data$highlight_df, aes(colour = .data$highlight_group_name), alpha = configs$highlight$alpha, size = configs$highlight$size) +
+      scale_colour_manual(name = NULL, values = layer_data$highlight_colours, guide = if (isTRUE(configs$highlight$legend)) "legend" else "none")
+  }
 
-    highlight_defaults <- list(
-        alpha = 1,
-        size = 2,
-        label = TRUE,
-        colour = NULL,
-        label_size = 4,
-        max_overlaps = 10,
-        legend = TRUE,
-        legend_inside = TRUE,
-        legend_pos = list(
-            legend.position = c(0.97, 0.05),
-            legend.justification = c(1, 0)
-        )
-    )
-    highlight_config <- check_list_input(highlight_defaults, highlight_config)
+  if (!is.null(layer_data$label_df)) {
+    label_size <- if (!is.null(configs$label)) configs$label$label_size else configs$highlight$label_size
+    max_overlaps <- if (!is.null(configs$label)) configs$label$max_overlaps else configs$highlight$max_overlaps
+    p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0.1, box.padding = 0.2, point.padding = 0.3)
+  }
 
-    save_defaults <- list(
-        filename = "damidBind_volcano_plot",
-        format = "pdf",
-        width = 5,
-        height = 4
-    )
-    save_config <- check_list_input(save_defaults, save)
-
-
-    # Plot dataframe
-    plot_df <- as.data.frame(plot_data, stringsAsFactors = FALSE)
-    plot_df$id <- rownames(plot_data)
-    plot_df$sig <- rownames(plot_data) %in% all_sig
-
-    # Helper functions
-    clean_names <- function(x, clean, clean_extra = NULL) {
-        if (is.null(x)) {
-            return(character(0))
-        }
-        regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
-        x[!grepl(regex, x, ignore.case = FALSE)]
-    }
-
-    indices_to_clean <- function(x, clean, clean_extra = NULL) {
-        if (is.null(x)) {
-            return(integer(0))
-        }
-        regex <- if (is.null(clean_extra)) clean else paste0(clean, "|", clean_extra)
-        regex <- gsub("\\|\\|", "|", x = regex) # Clean up potential double pipes
-        grep(regex, x, ignore.case = FALSE)
-    }
-
-    find_element_indices <- function(labels, elements) {
-        if (is.null(elements) || length(elements) == 0) {
-            return(integer())
-        }
-        # Escape special regex characters in the element names to prevent unintended regex patterns
-        escaped_elements <- gsub("([[:punct:]])", "\\\\\\1", elements)
-        patt <- paste(escaped_elements, collapse = "|")
-        which(
-            grepl(sprintf("(^|,)(%s)(,|$)", patt), labels, perl = TRUE, ignore.case = TRUE)
-        )
-    }
-
-    # Store IDs of genes already labelled by highlight groups
-    highlight_labelled_gene_ids <- character(0)
-
-    # Data for highlight point layers and all labels
-    highlight_layers <- list()
-    all_label_data <- list() # To collect all data for a single ggrepel call
-    all_highlight_colours <- NULL
-
-    if (!is.null(highlight) && length(highlight) > 0) {
-      # Generate default colours if not provided or insufficient
-      if (is.null(highlight_config$colour) || length(highlight_config$colour) < length(highlight)) {
-        highlight_default_pal <- scales::hue_pal(l = 50)(length(highlight))
-      } else {
-        highlight_default_pal <- highlight_config$colour
-      }
-
-      # Create names for highlight groups for legend and messaging
-      highlight_names <- names(highlight)
-      if (is.null(highlight_names)) {
-        highlight_names <- paste0("Highlight Group ", seq_along(highlight))
-      }
-
-      # Ensure highlight_config$colour is a list if it contains multiple colours
-      if (!is.list(highlight_config$colour) && length(highlight_config$colour) > 1) {
-        highlight_config$colour <- as.list(highlight_config$colour)
-      }
-
-      all_highlight_colours <- character(length(highlight_names))
-      names(all_highlight_colours) <- highlight_names
-
-      for (i in seq_along(highlight)) {
-        group_elements <- highlight[[i]]
-        indices <- find_element_indices(gene_labels_all, group_elements)
-
-        if (length(indices) > 0) {
-          layer_df <- plot_df[indices, , drop = FALSE]
-          layer_df$highlight_group_name <- highlight_names[i]
-
-          # Split each locus label string by commas, trim whitespace
-          split_labels <- strsplit(gene_labels_all[indices], split = ",")
-
-          # For each split label vector, intersect with the highlight group genes (group_elements)
-          # and paste back together (could be more than one gene)
-          matched_labels <- vapply(
-            split_labels,
-            function(lab_vec) {
-              matched <- intersect(trimws(lab_vec), group_elements)
-              if (length(matched) == 0) {
-                # fallback: use full label
-                paste(lab_vec, collapse = ",")
-              } else {
-                paste(matched, collapse = ",")
-              }
-            },
-            FUN.VALUE = character(1L)
-          )
-          layer_df$label_to_display <- matched_labels # Use consistent name
-
-          # Determine colour for this group and store it
-          group_colour <- if (!is.null(highlight_config$colour) && i <= length(highlight_config$colour)) {
-            if (is.list(highlight_config$colour)) highlight_config$colour[[i]] else highlight_config$colour[i]
-          } else {
-            highlight_default_pal[i]
-          }
-          all_highlight_colours[i] <- group_colour
-
-          highlight_layers[[i]] <- geom_point(
-            data = layer_df,
-            aes(x = logFC, y = .data[[plot_config$ystat]], colour = highlight_group_name),
-            alpha = highlight_config$alpha,
-            size = highlight_config$size
-          )
-
-          if (isTRUE(highlight_config$label)) {
-            message(sprintf("Highlight group '%s' will label: %s", highlight_names[i], paste(gene_labels_all[indices], collapse = ", ")))
-            all_label_data[[length(all_label_data) + 1]] <- layer_df
-            highlight_labelled_gene_ids <- unique(c(highlight_labelled_gene_ids, rownames(layer_df)))
-          }
-        }
-      }
-    }
-
-    # Y-stat logic
-    if (plot_config$ystat %in% names(plot_df)) {
-      if (plot_config$ylab == "") {
-        plot_config$ylab <- if (plot_config$ystat == "minuslogp") "-log(p)" else plot_config$ystat
-      }
-    } else {
-      stop(sprintf("ystat ('%s') is not a valid column in plot data. Valid columns are: %s", plot_config$ystat, paste(names(plot_df), collapse = ", ")))
-    }
-
-    # Volcano plot construction
-    p <- ggplot(plot_df, aes(x = logFC, y = .data[[plot_config$ystat]])) +
-      theme_bw(base_size = plot_config$base_size) +
-      geom_point(
-        data = subset(plot_df, !sig),
-        colour = plot_config$nonsig_colour,
-        alpha = plot_config$nonsig_alpha,
-        size = plot_config$nonsig_size,
-        shape = 16
-      ) +
-      geom_point(
-        data = subset(plot_df, sig),
-        colour = plot_config$sig_colour,
-        alpha = plot_config$sig_alpha,
-        size = plot_config$sig_size,
-        shape = 16
-      ) +
-      labs(
-        title = plot_config$title,
-        x = plot_config$xlab,
-        y = plot_config$ylab
-      )
-
-    # Add highlight layers
-    if (length(highlight_layers) > 0) {
-      for (hl_layer in highlight_layers) p <- p + hl_layer
-
-      # Add highlight colour scales, controlling legend visibility
-      p <- p + scale_colour_manual(
-        name = NULL,
-        values = all_highlight_colours,
-        guide = if (isTRUE(highlight_config$legend)) "legend" else "none"
-      )
-
-      # Adjust legend appearance for highlights if the legend is visible
-      if (isTRUE(highlight_config$legend)) {
-        if (isTRUE(highlight_config$legend_inside)) {
-            p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3),position="inside"))
-            p <- p + theme(legend.position.inside = highlight_config$legend_pos$legend.position,
-                           legend.justification = highlight_config$legend_pos$legend.justification,
-                           legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
-                           legend.key.width  = unit(0, "lines"),
-                           legend.key = element_rect(fill = "transparent", colour = NA))
-        } else {
-            p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
-        }
-      }
-    }
-
-    # Collect general labels for the unified repulsion layer
-    if (!is.null(label_config)) {
-      candidate_general_label_indices <-
-        if (!is.null(label_config$genes)) {
-          restricted_genes_indices <- find_element_indices(gene_labels_all, label_config$genes)
-          intersect(which(plot_df$sig), restricted_genes_indices)
-        } else {
-          which(plot_df$sig)
-        }
-
-      # Get the IDs of genes for potential general labelling
-      candidate_general_labels_ids <- plot_df$id[candidate_general_label_indices]
-
-      # Filter out any IDs that were already labelled by highlights
-      filtered_general_labels_ids <- setdiff(candidate_general_labels_ids, highlight_labelled_gene_ids)
-
-      # Convert back to indices in plot_df
-      final_general_label_indices <- which(plot_df$id %in% filtered_general_labels_ids)
-
-      label_df_general <- plot_df[final_general_label_indices, , drop = FALSE]
-      if (nrow(label_df_general) > 0) {
-        label_df_general$label_to_display <- gene_labels_all[final_general_label_indices]
-
-        # add highlight_group_name to allow general + highlight labels
-        label_df_general$highlight_group_name <- NA_character_
-
-        # Apply cleaning filter
-        if (isTRUE(label_config$clean_names) && nrow(label_df_general) > 0) {
-          indices_to_remove <- indices_to_clean(
-            label_df_general$label_to_display,
-            label_config$names_clean,
-            label_config$names_clean_extra
-          )
-          if (length(indices_to_remove) > 0) {
-            label_df_general <- label_df_general[seq_len(nrow(label_df_general))[-indices_to_remove], , drop = FALSE]
-          }
-        }
-
-        # Add the general labels to the list for final plotting
-        if (nrow(label_df_general) > 0) {
-          all_label_data[[length(all_label_data) + 1]] <- label_df_general
-        }
-      }
-    }
-
-    # Add the single, unified geom_text_repel layer if any labels were collected
-    if (length(all_label_data) > 0) {
-      # Final label configs
-      if (is.null(label_config)) {
-        # Must be using highlights
-        combined_label_config <- highlight_config
-      } else {
-        # Use labels
-        combined_label_config <- label_config
-      }
-
-      combined_label_df <- do.call(rbind, all_label_data)
-
-      # Plot if the combined dataframe is not empty
-      if (nrow(combined_label_df) > 0 && "label_to_display" %in% names(combined_label_df)) {
+  # Finalise labels and legend
+  p <- p + labs(title = plot_cfg$title, x = plot_cfg$xlab, y = plot_cfg$ylab) + theme_bw(base_size = plot_cfg$base_size)
+  if (!is.null(layer_data$highlight_df)) {
+    if ( isTRUE(configs$highlight$legend) ) {
+      if ( isTRUE(configs$highlight$legend_inside) ) {
+        p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3), position="inside"))
         p <- p +
-          ggrepel::geom_text_repel(
-            data = combined_label_df,
-            aes(label = label_to_display),
-            size = combined_label_config$label_size,
-            box.padding = 0.2,
-            point.padding = 0.3,
-            max.time = 5,
-            max.iter = 10000,
-            min.segment.length = 0.1,
-            force = 0.5,
-            force_pull = 3,
-            max.overlaps = combined_label_config$max_overlaps
+          theme(
+            legend.position.inside = configs$highlight$legend_pos$legend.position,
+            legend.justification = configs$highlight$legend_pos$legend.justification,
+            legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
+            legend.key = element_rect(fill = "transparent", colour = NA)
           )
+      } else {
+        p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
       }
     }
+  }
 
-
-    # Save to file if requested
-    if (!is.null(save_config)) {
-        tryCatch(
-            {
-                full_filename <- paste0(save_config$filename, ".", save_config$format)
-                ggsave(
-                    filename = full_filename,
-                    plot = p,
-                    width = save_config$width,
-                    height = save_config$height,
-                    units = "in",
-                    device = save_config$format
-                )
-            },
-            error = function(e) {
-                warning("Failed to save the volcano plot: ", conditionMessage(e))
-            }
-        )
-    }
-
-    p
+  # Save plot if requested
+  if (!is.null(configs$save)) {
+    sc <- configs$save
+    fn <- sprintf("%s.%s", sc$filename, sc$format)
+    tryCatch(
+      {
+        ggsave(fn, p, width = sc$width, height = sc$height, units = "in", device = sc$format)
+        message(sprintf("Volcano plot saved to: %s", fn))
+      },
+      error = function(e) warning(sprintf("Failed to save volcano plot: %s", conditionMessage(e))))
+  }
+  p
 }
+
