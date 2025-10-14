@@ -10,7 +10,8 @@ importFrom(tools, file_path_sans_ext)
 importFrom(rlang, .data)
 importFrom(stats, na.omit, weighted.mean, model.matrix, p.adjust, setNames)
 importFrom(BiocParallel, bpparam, bplapply)
-importFrom(GenomicRanges, GRanges, findOverlaps, reduce, trim, resize, width, start, end, seqnames)
+importFrom(GenomicRanges, GRanges, findOverlaps, reduce, trim, resize, width,
+           start, end, seqnames)
 importFrom(IRanges, IRanges, ranges)
 importFrom(AnnotationHub, AnnotationHub, query, dbconn)
 importFrom(ensembldb, genes, metadata)
@@ -29,9 +30,11 @@ importFrom(forcats, fct_reorder)
 importFrom(scales, hue_pal, scientific_format, number_format)
 importFrom(methods, is, new)
 importFrom(DT, datatable, DTOutput, formatRound, renderDT)
-importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack, parseAndValidateGenomeSpec, renderIgvShiny, showGenomicRegion)
-importFrom(shiny, fluidPage, h4, hr, mainPanel, observeEvent, p, runApp, shinyApp, sidebarLayout, sidebarPanel, titlePanel)
-
+importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack,
+           parseAndValidateGenomeSpec, renderIgvShiny, showGenomicRegion)
+importFrom(shiny, fluidPage, h4, hr, mainPanel, observeEvent, p, runApp,
+           shinyApp, sidebarLayout, sidebarPanel, titlePanel, actionButton,
+           icon, HTML, tags, numericInput)
 
 export(load_data_peaks)
 export(load_data_genes)
