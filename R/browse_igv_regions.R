@@ -18,8 +18,7 @@
 #' Prepare Data for IGV Shiny App helper function
 #' @description This internal function extracts and transforms data from the
 #' `DamIDResults` object into the formats needed by the Shiny app, including
-#' the main region table, peak data, and sample information. It is robust to
-#' row names that may have been altered by `make.unique`.
+#' the main region table, peak data, and sample information.
 #' @param diff_results A `DamIDResults` object.
 #' @param samples Character vector of specific samples to include.
 #' @return A list containing prepared data frames and vectors.
@@ -49,8 +48,7 @@
   # Use the original row names as the definitive region identifier
   occ_tab$region_name <- rownames(occ_tab)
 
-  # Parse coordinates from the region name. This is made robust to potential
-  # suffixes (e.g., ".1") added by `make.unique()` during analysis.
+  # Parse coordinates from the region name.
   base_region_name <- sub("\\.\\d+$", "", occ_tab$region_name)
   matches <- str_match(base_region_name, "^(.*?):(\\d+)-(\\d+)")
 
@@ -170,7 +168,7 @@
 #' BED, bedGraph, and annotation tracks into the IGV browser.
 #' @param session The Shiny server session object.
 #' @param prepped_data,track_scales,colours Data and configuration objects.
-#' @return `NULL` invisibly (called for side effects).
+#' @return `NULL` invisibly
 #' @noRd
 .load_igv_tracks <- function(session, prepped_data, track_scales, colours) {
   message("IGV browser initialized. Loading tracks...")
@@ -333,8 +331,6 @@ browse_igv_regions <- function(
 
   # Prepare data structures
   prepped_data <- .prepare_igv_data(diff_results, samples)
-
-  # Determine genome and configure Shiny/IGV options
 
   # Determine IGV genome name from peak object, or use argument, or fallback to Drosophila dm6 by default
   final_genome <- use_genome
