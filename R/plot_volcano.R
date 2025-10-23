@@ -223,7 +223,7 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{label_size}: label size (numeric).
 #'     \item \code{clean_names}: logical; if `TRUE`, applies regex filtering to labels.
 #'     \item \code{names_clean}, \code{names_clean_extra}: regex to exclude from labels
-#'       when \\code{clean_names} is `TRUE`.
+#'       when \code{clean_names} is `TRUE`.
 #'     \item \code{max_overlaps}: integer; maximum ggrepel overlaps.
 #'   }
 #' @param highlight List. A simple list where each element is a character vector
@@ -350,8 +350,8 @@ plot_volcano <- function(
           theme(
             legend.position.inside = configs$highlight$legend_pos$legend.position,
             legend.justification = configs$highlight$legend_pos$legend.justification,
-            legend.background = element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
-            legend.key = element_rect(fill = "transparent", colour = NA)
+            legend.background = ggplot2::element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth=0.3),
+            legend.key = ggplot2::element_rect(fill = "transparent", colour = NA)
           )
       } else {
         p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3)))
