@@ -362,7 +362,6 @@ all_overlaps_to_original <- function(query, subject, maxgap = 0) {
         }
     }
 
-
     gene_id_out <- character(length(query))
     if (!is.null(mcols(subject)$gene_id)) {
         by_query <- split(subject$gene_id[hits$subjectHits], hits$queryHits)
