@@ -128,3 +128,23 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
         test_category = data_list$test_category
     ))
 }
+
+
+#' @title Report differential analysis results summary
+#' @description An internal helper to report analysis results on console output
+#'
+#' @param ctype_name The condition name to display.
+#' @param loci Differentially-enriched loci for the condition.
+#'
+#' @return (Returns NULL invisibly; not used)
+#' @noRd
+._report_results <- function(ctype_name, loci) {
+  num <- nrow(loci)
+  num.adj <- sum(loci$gene_names != "" & !is.na(loci$gene_names))
+  message(sprintf("\n%d loci enriched in %s", num, ctype_name))
+  if (num.adj > 0) {
+    top_genes <- loci$gene_names[loci$gene_names != "" & !is.na(loci$gene_names)]
+    message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
+  }
+  invisible(NULL)
+}

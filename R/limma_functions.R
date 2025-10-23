@@ -169,18 +169,9 @@ differential_binding <- function(
     # Prepare mapping for output
     mapping_cond <- setNames(cond_internal, cond_display)
 
-    # Report based on custom names
-    report_results <- function(ctype_name, loci) {
-        num <- nrow(loci)
-        num.adj <- sum(loci$gene_names != "" & !is.na(loci$gene_names))
-        message(sprintf("\n%d loci enriched in %s", num, ctype_name))
-        if (num.adj > 0) {
-            top_genes <- loci$gene_names[loci$gene_names != "" & !is.na(loci$gene_names)]
-            message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
-        }
-    }
-    report_results(cond_display[1], upCond1) # Use display names
-    report_results(cond_display[2], upCond2) # Use display names
+    # User-friendly output summary and top genes
+    ._report_results(cond_display[1], upCond1)
+    ._report_results(cond_display[2], upCond2)
 
     # Return a formal S4 object
     new("DamIDResults",
