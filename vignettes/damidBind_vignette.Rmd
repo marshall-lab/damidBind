@@ -14,7 +14,7 @@ output:
     toc_float: true 
     number_sections: true
     self_contained: true
-bibliography: damidBind.bib
+bibliography: damidbind.bib
 csl: embo.csl
 abstract: |
   The damidBind package provides a means of determining differential binding/gene transcription/chromatin accessibility for DamID-seq data (differential binding = conventional DamID / TaDa for TFs; differential transcription = TaDa for RNA polymerase occupancy; chromatin accessibility = CATaDa).  The package loads processed bedgraphs and peaks files, processes these, uses limma (for DamID log2 ratios) or NOIseq (for CATaDa counts data) to determine differentially bound/transcribed/accessible loci, and then provides visualisation via volcano plots, GSEA lollipop plots, Venn diagrams, and an igvShiny interface to quickly view each differentially bound locus in an IGV browser, with the ranked, sorted differentially bound loci listed in an adjacent interactable table.
