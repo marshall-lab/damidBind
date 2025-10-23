@@ -12,8 +12,8 @@
 #' @slot data A list containing the initial input data used for the analysis,
 #'   including the occupancy data.frame and other metadata.
 #'
-#' @name DamIDResults
-#' @rdname DamIDResults-class
+#' @name DamIDResults-class
+#' @aliases DamIDResults
 #' @exportClass DamIDResults
 setClass("DamIDResults",
     slots = c(
