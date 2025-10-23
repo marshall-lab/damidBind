@@ -25,19 +25,20 @@ browse_igv_regions(
 
 \item{use_genome}{IGV genome name (inferred from peak annotations if not given).}
 
-\item{padding_width}{Width to pad browser viewbox on either side of the peak}
+\item{padding_width}{Width to pad browser viewbox on either side of the peak.}
 
-\item{host}{Hostname for the server location (defaults to localhost)}
+\item{host}{Hostname for the server location (defaults to localhost).}
 
-\item{port}{Port for connection (if NULL (default) the port is assigned by Shiny)}
+\item{port}{Port for connection (if NULL (default) the port is assigned by Shiny).}
 }
 \value{
 Invisibly returns the Shiny app object created by `shinyApp()`.
 }
 \description{
 Launches a Shiny app with an embedded IGV browser and an interactive table listing
-differentially-bound regions (from `differential_binding()` or `differential_acccessibility()` results).
+differentially-bound regions (from `differential_binding()` or `differential_accessibility()` results).
 Clicking on a region in the table will pan IGV to that locus. Sample coverage and region tracks are loaded as quantitative/annotation tracks.
+A dedicated "Save as SVG" button is provided to export the current IGV view.
 }
 \examples{
 \donttest{

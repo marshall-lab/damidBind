@@ -58,7 +58,7 @@ defaults are used.
   \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
   \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
   \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
-  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the lgend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
 }}
 
 \item{save}{List or `NULL`. Controls saving the plot to a file.
@@ -77,8 +77,10 @@ If a `list`, it specifies saving parameters:
 A `ggplot` object
 }
 \description{
-Plots a volcano plot with optional layered highlights and overlays,
-given the results from `differential_binding()` or `differential_analysis()`.
+Creates a volcano plot from the results of a differential analysis. The plot
+shows the log-fold change against a measure of statistical significance.
+The function offers extensive customisation for point appearance, gene
+labelling, and highlighting specific groups of loci.
 }
 \examples{
 # Helper function to create a sample DamIDResults object

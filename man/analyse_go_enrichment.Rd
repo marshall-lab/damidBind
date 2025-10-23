@@ -18,7 +18,8 @@ analyse_go_enrichment(
   save = NULL,
   save_results_path = NULL,
   maxGSSize = 1000,
-  minGSSize = 10
+  minGSSize = 10,
+  clean_gene_symbols = TRUE
 )
 }
 \arguments{
@@ -61,6 +62,9 @@ enrichment results table will be saved to this CSV file.}
 \item{maxGSSize}{Integer. Maximum size of gene sets to consider. Default: 1000.}
 
 \item{minGSSize}{Integer. Minimum size of gene sets to consider. Default: 10.}
+
+\item{clean_gene_symbols}{Logical. Removes snoRNAs and tRNAs (common sources of accidental bias
+between different NGS methods) from the gene lists prior to enrichment analysis. Default: TRUE.}
 }
 \value{
 A list containing:
@@ -71,7 +75,7 @@ A list containing:
 }
 \description{
 This function performs Gene Ontology (GO) enrichment analysis using `clusterProfiler`
-for either the upCond1ulated or upCond2ulated regions/genes identified by
+for either the up-regulated or down-regulated regions/genes identified by
 `differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant Flybase IDs (FBgnIDs)
 and the background universe from the input `DamIDResults` object.
 }
@@ -80,7 +84,7 @@ This function assumes that the `analysis` slot in the `diff_results`
 object contains a `gene_ids` column.
 If this column is not present, or cannot be processed, the function will return NULL.
 
-The function includes an internal helper `clean_gene_symbols` which filters common ambiguous
+The function includes an internal helper `._clean_gene_symbols` which filters common ambiguous
 gene symbols (snoRNA, snRNA, tRNA) that may not be useful for GO enrichment.
 }
 \examples{
