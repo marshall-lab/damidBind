@@ -4,7 +4,7 @@ importFrom(ggplot2, aes, element_text, expansion, geom_point, geom_segment,
            ggplot, ggsave, guide_colorbar, guide_legend, guides, labs,
            scale_color_gradientn, scale_colour_manual,
            scale_size_continuous, scale_x_continuous, scale_y_discrete,
-           theme, theme_bw)
+           theme, theme_bw, element_rect, waiver)
 importFrom(dplyr, rename, select, "%>%")
 importFrom(tools, file_path_sans_ext)
 importFrom(rlang, .data)
@@ -27,7 +27,7 @@ importFrom(utils, write.csv, modifyList, head, globalVariables, capture.output)
 importFrom(grDevices, pdf, dev.off, png, rgb)
 importFrom(clusterProfiler, bitr, enrichGO, dotplot)
 importFrom(forcats, fct_reorder)
-importFrom(scales, hue_pal, scientific_format, number_format)
+importFrom(scales, hue_pal, scientific_format, number_format, alpha)
 importFrom(methods, is, new)
 importFrom(DT, datatable, DTOutput, formatRound, renderDT)
 importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack,
