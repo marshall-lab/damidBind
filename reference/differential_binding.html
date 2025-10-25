@@ -11,7 +11,7 @@ prepares experiment matrix, fits linear models, and returns DE loci."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,13 @@ prepares experiment matrix, fits linear models, and returns DE loci.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">differential_binding</span><span class="op">(</span><span class="va">data_list</span>, <span class="va">cond</span>, cond_names <span class="op">=</span> <span class="cn">NULL</span>, fdr <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">differential_binding</span><span class="op">(</span></span>
+<span>  <span class="va">data_list</span>,</span>
+<span>  <span class="va">cond</span>,</span>
+<span>  cond_names <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fdr <span class="op">=</span> <span class="fl">0.05</span>,</span>
+<span>  filter_positive_enrichment <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -73,24 +79,34 @@ the two conditions in outputs/plots. Order maps to `cond`.</p></dd>
 <dt id="arg-fdr">fdr<a class="anchor" aria-label="anchor" href="#arg-fdr"></a></dt>
 <dd><p>Numeric. FDR threshold for significance (default 0.05).</p></dd>
 
+
+<dt id="arg-filter-positive-enrichment">filter_positive_enrichment<a class="anchor" aria-label="anchor" href="#arg-filter-positive-enrichment"></a></dt>
+<dd><p>Logical. If `TRUE` (default), regions
+are only considered significantly enriched if the mean score in the
+enriched condition is greater than zero. For example, for a region to be
+in `upCond1`, its logFC must be positive and its mean score in condition 1
+must be &gt; 0. This is a common biological filter to focus on regions with
+genuine binding enrichment, rather than changes between two states of
+depletion. Set to `FALSE` to include all statistically significant changes.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A `DamIDResults` object containing the results. Access slots using
-  the `@` accessor (e.g., `results@analysis`). The object includes:</p>
-<dl><dt>upCond1</dt>
+  accessors:</p>
+<dl><dt>enrichedCond1()</dt>
 <dd><p>data.frame of regions enriched in condition 1</p></dd>
 
-  <dt>upCond2</dt>
+  <dt>enrichedCond2()</dt>
 <dd><p>data.frame of regions enriched in condition 2</p></dd>
 
-  <dt>analysis</dt>
+  <dt>analysisTable()</dt>
 <dd><p>data.frame of full results for all tested regions</p></dd>
 
-  <dt>cond</dt>
+  <dt>conditionNames()</dt>
 <dd><p>A named character vector mapping display names to internal condition names</p></dd>
 
-  <dt>data</dt>
+  <dt>inputData()</dt>
 <dd><p>The original `data_list` input</p></dd>
 
 </dl></div>
@@ -147,6 +163,8 @@ the two conditions in outputs/plots. Order maps to `cond`.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4-L5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 277 loci enriched in L4 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>

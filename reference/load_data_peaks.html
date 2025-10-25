@@ -15,7 +15,7 @@ For peak discovery, use an external peak caller (e.g. 'find_peaks')."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,6 +60,7 @@ For peak discovery, use an external peak caller (e.g. 'find_peaks').</p>
 <span>  peaks_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  binding_profiles <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  peaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  maxgap_loci <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  quantile_norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  organism <span class="op">=</span> <span class="st">"drosophila melanogaster"</span>,</span>
 <span>  ensdb_genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -89,12 +90,16 @@ the peak calls in GFF or BED format.</p></dd>
 <dd><p>List of GRanges objects representing peak regions.</p></dd>
 
 
+<dt id="arg-maxgap-loci">maxgap_loci<a class="anchor" aria-label="anchor" href="#arg-maxgap-loci"></a></dt>
+<dd><p>Integer, the maximum bp distance between a peak boundary and a gene to associate that peak with the gene. Default: 1000.</p></dd>
+
+
 <dt id="arg-quantile-norm">quantile_norm<a class="anchor" aria-label="anchor" href="#arg-quantile-norm"></a></dt>
 <dd><p>Logical (default: FALSE). If TRUE, quantile-normalise the signal columns across all datasets.</p></dd>
 
 
 <dt id="arg-organism">organism<a class="anchor" aria-label="anchor" href="#arg-organism"></a></dt>
-<dd><p>Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Defautls to "drosophila melanogaster".</p></dd>
+<dd><p>Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Default: "drosophila melanogaster".</p></dd>
 
 
 <dt id="arg-ensdb-genes">ensdb_genes<a class="anchor" aria-label="anchor" href="#arg-ensdb-genes"></a></dt>

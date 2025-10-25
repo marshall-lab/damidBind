@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,9 +109,9 @@ disease.</p>
 <p>Despite the technique’s growing popularity and adoption, no formal
 analysis pipeline or R package exists to analyse and explore
 differential DamID binding, gene transcription or chromatin
-accessibility between two conditions. The <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+accessibility between two conditions. The <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 package provides this functionality.</p>
-<p><em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 imports processed data from DamID-seq experiments in the form of binding
 bedgraphs and GFF peak calls. After optionally normalising data,
 combining peaks across replicates and determining per-replicate peak
@@ -127,18 +127,30 @@ interactive IGV genome browser interface (powered by <em><a href="https://CRAN.R
 allows users to rapidly and intuitively assess significant
 differentially-bound regions.</p>
 <p>Although extensive customisation options are available if required,
-much of the data handling by <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em> is
-taken care of automatically, with sensible defaults assumed. To move
+much of the data handling by <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+is taken care of automatically, with sensible defaults assumed. To move
 from loading raw data to visualising differentially-enriched regions on
 a volcano plot or browsing enriched regions in an interactive IGV window
 is a simple three command procedure.</p>
 </div>
 <div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>To install from github, use:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Install Bioconductor</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Then install the damidBind package</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"marshall-lab/damidBind"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="quick-start-guide">Quick start guide<a class="anchor" aria-label="anchor" href="#quick-start-guide"></a>
 </h2>
-<p>Using <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>, in
-eight easy steps:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<p>Using <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>,
+in eight easy steps:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Example code only, not run:</span></span>
 <span></span>
 <span><span class="co"># Load up the data (use load_data_genes() for RNA Polymerase occupancy data)</span></span>
@@ -184,7 +196,7 @@ eight easy steps:</p>
 <div class="section level3">
 <h3 id="sample-input-data-provided-within-the-package">Sample input data (provided within the package)<a class="anchor" aria-label="anchor" href="#sample-input-data-provided-within-the-package"></a>
 </h3>
-<p><em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 provides a simple, truncated dataset with the package for immediate
 testing. Owing to package space, this sample dataset uses only
 <em>Drosophila melanogaster</em> chromosome 2L binding, and should not
@@ -196,7 +208,7 @@ be used for any actual analysis.</p>
 <p><a href="https://doi.org/10.5281/zenodo.16649477" class="external-link">Three
 previously-published sample datasets</a> have been deposited in Zenodo
 and made available for fully exploring the features and capabilities of
-<em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>:</p>
+<em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>:</p>
 <ul>
 <li>Bsh transcription factor binding in L4 and L5 neurons of the
 <em>Drosophila</em> lamina <span class="citation">(Xu <em>et al</em>,
@@ -219,7 +231,7 @@ for all datasets.</p>
 <div class="section level3">
 <h3 id="input-data-format">Input data format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
 </h3>
-<p><em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 takes as input:</p>
 <ul>
 <li>Genome-wide binding profile tracks in BEDGRAPH format (external
@@ -247,8 +259,8 @@ and can be gzip compressed or uncompressed as required.</p>
 <div class="section level3">
 <h3 id="input-data-generation">Input data generation<a class="anchor" aria-label="anchor" href="#input-data-generation"></a>
 </h3>
-<p><em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em> can
-work with either raw data files or preprocessed data in <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+can work with either raw data files or preprocessed data in <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format.</p>
 <div class="section level4">
 <h4 id="bedgraph-binding-accessibility-profiles">BEDGRAPH binding / accessibility profiles<a class="anchor" aria-label="anchor" href="#bedgraph-binding-accessibility-profiles"></a>
@@ -278,22 +290,22 @@ generate peak files on each DamID / CATaDa BEDGRAPH file replicate:</p>
 <h2 id="using-damidbind">Using damidBind<a class="anchor" aria-label="anchor" href="#using-damidbind"></a>
 </h2>
 <p>Load the library</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://marshall-lab.org/damidBind" class="external-link">damidBind</a></span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span></code></pre>
 <div class="section level3">
 <h3 id="loading-data">Loading data<a class="anchor" aria-label="anchor" href="#loading-data"></a>
 </h3>
-<p>A small example dataset is provided with <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>. The
-dataset is derived from the binding of Bsh in L4 and L5 neurons of the
-<em>Drosophila melanogaster</em> lamina <span class="citation">(Xu
+<p>A small example dataset is provided with <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>.
+The dataset is derived from the binding of Bsh in L4 and L5 neurons of
+the <em>Drosophila melanogaster</em> lamina <span class="citation">(Xu
 <em>et al</em>, 2024)</span>, truncated to chromosome 2L. The raw data
 was processed using <code>damidseq_pipeline</code> and peaks called
 using <code>find_peaks</code> (see the publication Methods for more
 details).</p>
 <p>To load up the data, we only need to know the path to the installed
 example datafiles:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"damidBind"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Show the files present for clarity in this vignette example:</span></span>
@@ -307,9 +319,9 @@ example datafiles:</p>
 <span><span class="co">## [6] "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm.gatc.2L.bedgraph.gz"         </span></span>
 <span><span class="co">## [7] "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm.gatc-FDR0.01.peaks.2L.bed.gz"</span></span>
 <span><span class="co">## [8] "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm.gatc.2L.bedgraph.gz"</span></span></code></pre>
-<p>And then we can use <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em> on
-the data. First, we load up the data. There are two potential commands
-that can be used for data loading, depending on the data being
+<p>And then we can use <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+on the data. First, we load up the data. There are two potential
+commands that can be used for data loading, depending on the data being
 analysed:</p>
 <dl>
 <dt><code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code></dt>
@@ -330,7 +342,7 @@ factor Bsh, so we’ll use the <code><a href="../reference/load_data_peaks.html"
 the same transcription factor being profiled in two different cell
 types, and we’d expect the binding distribution to be similar, we’ll use
 quantile normalisation on the datasets.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input.bsh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
 <span>    peaks_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
@@ -350,6 +362,69 @@ quantile normalisation on the datasets.</p>
 <pre><code><span><span class="co">## Locating peak files</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating average occupancy per region ...</span></span></code></pre>
+<div class="section level4">
+<h4 id="loading-data-from-granges-objects">Loading data from GRanges objects<a class="anchor" aria-label="anchor" href="#loading-data-from-granges-objects"></a>
+</h4>
+<p>In some workflows, you may already have your binding profiles and
+peak regions loaded as <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+objects. <code>damidBind</code> supports this directly, bypassing the
+need to read from file paths.</p>
+<p>The <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code> and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>
+functions accept <code>GRanges</code> objects via the
+<code>binding_profiles</code> and <code>peaks</code> arguments, when
+used in place of <code>binding_profiles_paths</code> and
+<code>peaks_paths</code>. These inputs must be provided as <strong>named
+lists</strong> of <code>GRanges</code> objects, where the names
+correspond to your sample identifiers. For binding profiles, each
+<code>GRanges</code> object must contain exactly one numeric metadata
+column (e.g., <code>score</code>) representing the signal.</p>
+<p>The following example first loads the provided sample data files to
+generate <code>GRanges</code> objects, and then loads these into
+<code>damidBind</code> to generate an input object ready for downstream
+analysis.</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Locate bedGraph and peaks example files</span></span>
+<span><span class="va">bedgraph_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">data_dir</span>, pattern <span class="op">=</span> <span class="st">"\\.bedgraph\\.gz$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">peak_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">data_dir</span>, pattern <span class="op">=</span> <span class="st">"\\.bed\\.gz$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Obtain unique sample names from the filenames (specific to these example files)</span></span>
+<span><span class="va">sample_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"-ext300-vs-Dam.kde-norm.gatc.*"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">bedgraph_files</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load the bedgraph files into a named list of GRanges objects</span></span>
+<span><span class="va">binding_gr_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bedgraph_files</span>, <span class="fu">rtracklayer</span><span class="fu">::</span><span class="va">import</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">binding_gr_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">sample_names</span></span>
+<span></span>
+<span><span class="co"># Similarly, load the peak files into a named list of GRanges objects</span></span>
+<span><span class="va">peak_gr_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">peak_files</span>, <span class="fu">rtracklayer</span><span class="fu">::</span><span class="va">import</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">peak_gr_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">sample_names</span></span>
+<span></span>
+<span><span class="co"># Now, call load_data_peaks() using the GRanges lists instead of file paths</span></span>
+<span><span class="va">input.bsh_from_gr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
+<span>    binding_profiles <span class="op">=</span> <span class="va">binding_gr_list</span>,</span>
+<span>    peaks <span class="op">=</span> <span class="va">peak_gr_list</span>,</span>
+<span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
+<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 112 EnsDb for Drosophila melanogaster'</span></span></code></pre>
+<pre><code><span><span class="co">## loading from cache</span></span></code></pre>
+<pre><code><span><span class="co">## Building binding profile dataframe from supplied GRanges objects ...</span></span></code></pre>
+<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
+<pre><code><span><span class="co">## Using supplied peaks GRanges list.</span></span></code></pre>
+<pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
+<pre><code><span><span class="co">## Calculating average occupancy per region ...</span></span></code></pre>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># The resulting object can now be used for differential analysis,</span></span>
+<span><span class="co"># just as in the examples below.</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="gene-locus-assignment-to-peaks">Gene locus assignment to peaks<a class="anchor" aria-label="anchor" href="#gene-locus-assignment-to-peaks"></a>
+</h4>
+<p><code>damidBind</code> automatically assigns peaks to genes within
+1kb of the peak boundary. This value (in bp) can be changed using the
+<code>maxgap_loci</code> parameter of <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code>.
+Note that more than one gene locus can be assigned to a peak (especially
+within the gene-dense <em>Drosophila</em> genome).</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="analysing-differential-binding">Analysing differential binding<a class="anchor" aria-label="anchor" href="#analysing-differential-binding"></a>
@@ -382,7 +457,7 @@ used as the analysis backend.</p>
 <p>Here, we’re not dealing with CATaDa data, so we’ll use
 <code><a href="../reference/differential_binding.html">differential_binding()</a></code> to find the significant,
 differentially-bound loci between the two conditions:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diff.bsh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
 <span>    <span class="va">input.bsh</span>,</span>
 <span>    cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4"</span>, <span class="st">"L5"</span><span class="op">)</span>,</span>
@@ -398,6 +473,8 @@ differentially-bound loci between the two conditions:</p>
 <span><span class="co">##     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span></span>
 <span><span class="co">##     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span></span></code></pre>
 <pre><code><span><span class="co">## limma contrasts: L4-L5</span></span></code></pre>
+<pre><code><span><span class="co">## </span></span>
+<span><span class="co">## Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## 277 loci enriched in L4 neurons</span></span></code></pre>
 <pre><code><span><span class="co">## Highest-ranked genes:</span></span>
@@ -430,7 +507,7 @@ beyond that.</p>
 <code>DamIDResults</code> S4 object, that forms the basis of downstream
 analysis. Printing the object will provide a simple summary of the
 analysis results.</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># See a summary of the results object</span></span>
 <span><span class="va">diff.bsh</span></span></code></pre></div>
 <pre><code><span><span class="co">## An object of class 'DamIDResults'</span></span>
@@ -456,13 +533,13 @@ visualisation functions below.</p>
 </h4>
 <p>Venn diagrams are a simple means of visualising the proportion of
 loci that are differentially bound between the two tested conditions. To
-provide this, <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em> uses
-<em><a href="https://CRAN.R-project.org/package=BioVenn" class="external-link">BioVenn</a></em> to
+provide this, <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+uses <em><a href="https://CRAN.R-project.org/package=BioVenn" class="external-link">BioVenn</a></em> to
 generate proportional Venn diagrams of the two conditions. The set union
 represents significant binding peaks that fail to show significant
 differences in occupancy; the exclusive regions of each set represent
 regions with enriched differential binding in that condition.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">diff.bsh</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/venn-1.png" alt="A venn diagram of significantly bound loci by Bsh in L4 and L5 neurons.  The exclusive parts of each set represent regions that are differentially bound between the two conditions." width="700"><p class="caption">
@@ -475,7 +552,7 @@ differentially bound between the two conditions.
 <div class="section level4">
 <h4 id="volcano-plots">Volcano plots<a class="anchor" aria-label="anchor" href="#volcano-plots"></a>
 </h4>
-<p><em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 comes with a comprehensive volcano plot function. The following gives
 some idea as to the capabilities.</p>
 <div class="section level5">
@@ -483,7 +560,7 @@ some idea as to the capabilities.</p>
 </h5>
 <p>The simple volcano plot already gives a clear picture of
 differentially bound loci and their associated genes.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -503,7 +580,7 @@ limitations of label overlaps means that only outliers are labelled.
 uninformative snoRNA / tRNA genes. We can optionally remove these from
 the plot using the <code>clean_names=TRUE</code> parameter, to show more
 potentially informative labels.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span>,</span>
 <span>    label_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>clean_names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -517,6 +594,11 @@ chromosome 2L only)
 </p>
 </div>
 <p>Already, that’s becoming a lot clearer.</p>
+<p>Note that the relative absence of labels on the L4 side of the plot
+does not reflect a paucity of loci, but rather the density of loci on
+the plot that prevents labels being drawn without overlaps. To increase
+the allowed label overlaps, set the <code>max_overlaps</code> parameter
+in the <code>label_config</code> parameter list.</p>
 </div>
 <div class="section level5">
 <h5 id="highlighting-gene-groups">Highlighting gene groups<a class="anchor" aria-label="anchor" href="#highlighting-gene-groups"></a>
@@ -525,7 +607,7 @@ chromosome 2L only)
 only expressed in L4 neurons? (data from scRNA-seq data, provided in
 Supplementary Files 2 &amp; 3 of <span class="citation">(Xu <em>et
 al</em>, 2024)</span>). This is straightforward to do:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L4_only_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mp"</span>, <span class="st">"tnc"</span>, <span class="st">"grn"</span>, <span class="st">"rut"</span>, <span class="st">"mtd"</span>, <span class="st">"rdgB"</span>, <span class="st">"Octbeta2R"</span>, <span class="st">"msi"</span>, <span class="st">"Octbeta3R"</span>, <span class="st">"beat-IIIb"</span>, <span class="st">"ap"</span>, <span class="st">"Fili"</span>, <span class="st">"LRP1"</span>, <span class="st">"CG7378"</span>, <span class="st">"CG13698"</span>, <span class="st">"twit"</span>, <span class="st">"CG9336"</span>, <span class="st">"tok"</span>, <span class="st">"CG12991"</span>, <span class="st">"dpr1"</span>, <span class="st">"CG42339"</span>, <span class="st">"beat-IIb"</span>, <span class="st">"mav"</span>, <span class="st">"CG34377"</span>, <span class="st">"alpha-Man-IIb"</span>, <span class="st">"Pli"</span>, <span class="st">"CG32428"</span>, <span class="st">"osp"</span>, <span class="st">"Pka-R2"</span>, <span class="st">"CG15202"</span>, <span class="st">"CG8916"</span>, <span class="st">"CG15894"</span>, <span class="st">"side"</span>, <span class="st">"CG42258"</span>, <span class="st">"CHES-1-like"</span>, <span class="st">"SP2353"</span>, <span class="st">"CG44838"</span>, <span class="st">"Atg1"</span>, <span class="st">"Traf4"</span>, <span class="st">"DIP-beta"</span>, <span class="st">"KCNQ"</span>, <span class="st">"metro"</span>, <span class="st">"nAChRalpha1"</span>, <span class="st">"path"</span>, <span class="st">"CG10527"</span>, <span class="st">"Pde8"</span>, <span class="st">"CG30116"</span>, <span class="st">"CG7985"</span>, <span class="st">"CG1688"</span>, <span class="st">"dpr12"</span>, <span class="st">"pigs"</span>, <span class="st">"Eip63F-1"</span>, <span class="st">"CG14795"</span>, <span class="st">"2mit"</span>, <span class="st">"CG42340"</span>, <span class="st">"BicD"</span>, <span class="st">"CG18265"</span>, <span class="st">"hppy"</span>, <span class="st">"5-HT1A"</span>, <span class="st">"Chd64"</span>, <span class="st">"CG33090"</span>, <span class="st">"Dyb"</span>, <span class="st">"Btk29A"</span>, <span class="st">"Apc"</span>, <span class="st">"Rox8"</span>, <span class="st">"nAChRalpha5"</span>, <span class="st">"CG42748"</span>, <span class="st">"CG3257"</span>, <span class="st">"CG2269"</span>, <span class="st">"beat-IV"</span>, <span class="st">"CG8086"</span>, <span class="st">"glec"</span>, <span class="st">"CG31688"</span>, <span class="st">"oaf"</span>, <span class="st">"Drl-2"</span>, <span class="st">"CG8188"</span>, <span class="st">"aos"</span>, <span class="st">"CG31676"</span>, <span class="st">"REPTOR"</span>, <span class="st">"RabX4"</span>, <span class="st">"alt"</span>, <span class="st">"Pura"</span>, <span class="st">"DIP1"</span>, <span class="st">"ewg"</span>, <span class="st">"side-VIII"</span>, <span class="st">"nAChRalpha7"</span>, <span class="st">"Alh"</span>, <span class="st">"kug"</span>, <span class="st">"Ca-Ma2d"</span>, <span class="st">"bru2"</span>, <span class="st">"CG43737"</span>, <span class="st">"lncRNA:CR44024"</span>, <span class="st">"lncRNA:CR46006"</span>, <span class="st">"Had1"</span>, <span class="st">"CG3961"</span>, <span class="st">"comm"</span>, <span class="st">"Toll-6"</span>, <span class="st">"CG13685"</span>, <span class="st">"tow"</span>, <span class="st">"CG10019"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
@@ -535,11 +617,9 @@ al</em>, 2024)</span>). This is straightforward to do:</p>
 <span>        <span class="st">"L4 specific"</span> <span class="op">=</span> <span class="va">L4_only_genes</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    highlight_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        size <span class="op">=</span> <span class="fl">1.5</span>,</span>
-<span>        label <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>        size <span class="op">=</span> <span class="fl">2</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Highlight group 'L4 specific' will label: oaf,Slh, osp, CG10019, Adh,Adhr,lncRNA:CR43411,osp, oaf, CG31688, ,Btk,CG8086,mir-2b-1, Ca-Ma2d, CG14402,twit, CG42748, BicD,Sgt, lncRNA:CR45363,Traf4, bru2, lncRNA:CR45363,Traf4, bru2, CG33090,ms(2)34Fe, bru2, CG10019, CG14400,CG9336,twit, osp, CG31688,lncRNA:CR43607, Adh,Adhr,osp, CG42748,CycK,lncRNA:CR43241, beat-IIIb, nAChRalpha5, bru2, CG9336, lncRNA:CR45363,Traf4, Traf4, Traf4, nAChRalpha5,NimC4, osp, lncRNA:CR45363,Traf4, osp, beat-IIIb, CG31676, osp</span></span></code></pre>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/volcanoPlotHighlightedGenes-1.png" alt="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in L4 neurons are highlighted.  (Dataset from chromosome 2L only)" width="700"><p class="caption">
 Differential binding of Bsh in L4 and L5 neuronal subtypes. Genes that
@@ -549,11 +629,13 @@ chromosome 2L only)
 </div>
 <p>Although this is just a truncated sample from chr 2L, the link
 between a subset of Bsh binding and potential upregulation in this
-lineage is apparent.</p>
+lineage is apparent. (Why do some gene loci label multiple peaks? This
+is because a gene may have more than one discrete binding peak
+associated with it.)</p>
 <p>We could also compare this against genes bound by Bsh and only
 expressed in L5 neurons. For clarity, we’ll drop gene labels from this
 plot.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L5_only_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptth"</span>, <span class="st">"Nep2"</span>, <span class="st">"kek1"</span>, <span class="st">"CG4168"</span>, <span class="st">"kek3"</span>, <span class="st">"CG6959"</span>, <span class="st">"Dtg"</span>, <span class="st">"ND-23"</span>, <span class="st">"Scp2"</span>, <span class="st">"Octalpha2R"</span>, <span class="st">"Hs6st"</span>, <span class="st">"CG16791"</span>, <span class="st">"SKIP"</span>, <span class="st">"LpR1"</span>, <span class="st">"RpL34a"</span>, <span class="st">"Ald1"</span>, <span class="st">"CG10011"</span>, <span class="st">"heph"</span>, <span class="st">"nolo"</span>, <span class="st">"Act42A"</span>, <span class="st">"Fkbp12"</span>, <span class="st">"Pkc53E"</span>, <span class="st">"AstC-R1"</span>, <span class="st">"Muc14A"</span>, <span class="st">"CG33543"</span>, <span class="st">"ChAT"</span>, <span class="st">"Act5C"</span>, <span class="st">"Ptpmeg2"</span>, <span class="st">"fabp"</span>, <span class="st">"CG31221"</span>, <span class="st">"Octbeta1R"</span>, <span class="st">"CG14669"</span>, <span class="st">"sdk"</span>, <span class="st">"Shawl"</span>, <span class="st">"side-V"</span>, <span class="st">"NaCP60E"</span>, <span class="st">"sif"</span>, <span class="st">"OtopLc"</span>, <span class="st">"side-II"</span>, <span class="st">"kuz"</span>, <span class="st">"CG42540"</span>, <span class="st">"Dscam3"</span>, <span class="st">"haf"</span>, <span class="st">"CG42673"</span>, <span class="st">"pdm3"</span>, <span class="st">"tinc"</span>, <span class="st">"CG42750"</span>, <span class="st">"sdt"</span>, <span class="st">"Nuak1"</span>, <span class="st">"Hk"</span>, <span class="st">"scrib"</span>, <span class="st">"tsr"</span>, <span class="st">"dpr20"</span>, <span class="st">"GluRIB"</span>, <span class="st">"CG43902"</span>, <span class="st">"CG44242"</span>, <span class="st">"Dscam2"</span>, <span class="st">"CG44422"</span>, <span class="st">"lncRNA:CR45312"</span>, <span class="st">"Scsalpha1"</span>, <span class="st">"Rop"</span>, <span class="st">"Con"</span>, <span class="st">"Hsc70-3"</span>, <span class="st">"dpr8"</span>, <span class="st">"eag"</span>, <span class="st">"ND-18"</span>, <span class="st">"Nrt"</span>, <span class="st">"CG17839"</span>, <span class="st">"fz"</span>, <span class="st">"CG32137"</span>, <span class="st">"Rh7"</span>, <span class="st">"Sod1"</span>, <span class="st">"CG32052"</span>, <span class="st">"dpr6"</span>, <span class="st">"Hsp67Ba"</span>, <span class="st">"axed"</span>, <span class="st">"GluRIA"</span>, <span class="st">"robo2"</span><span class="op">)</span></span>
 <span></span>
 <span></span>
@@ -565,8 +647,7 @@ plot.</p>
 <span>        <span class="st">"L5 specific"</span> <span class="op">=</span> <span class="va">L5_only_genes</span></span>
 <span>    <span class="op">)</span>,</span>
 <span>    highlight_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>        size <span class="op">=</span> <span class="fl">1.5</span>,</span>
-<span>        label <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>        size <span class="op">=</span> <span class="fl">2</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -585,12 +666,12 @@ or downregulated genes between the lineages.</p>
 window<a class="anchor" aria-label="anchor" href="#browsing-differentially-bound-regions-with-an-igvshiny-browser-window"></a>
 </h4>
 <p>A volcano plot, while useful, still does not put the binding data
-into a genomic context. For this <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+into a genomic context. For this <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 provides an interactive Shiny browser window (via <em><a href="https://CRAN.R-project.org/package=Shiny" class="external-link">Shiny</a></em> and
 <em><a href="https://bioconductor.org/packages/3.19/igvShiny" class="external-link">igvShiny</a></em>),
 where an interactive table of enriched loci allows quick exploration of
 these in the genome browser.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Interactive, blocking session, uncomment to run</span></span>
 <span><span class="co"># browse_igv_regions(diff.bsh)</span></span></code></pre></div>
 <p>An example of the interface is shown below:</p>
@@ -608,13 +689,13 @@ tracks that show the loci that are enriched in both conditions.</p>
 <h4 id="gsea-plots">GSEA plots<a class="anchor" aria-label="anchor" href="#gsea-plots"></a>
 </h4>
 <p>Gene ontology is a powerful means of understanding which biological
-processes may be changing between two sets of data. Using <em><a href="https://bioconductor.org/packages/3.19/ClusterProfiler" class="external-link">ClusterProfiler</a></em>
-as the backend, <em><a href="https://github.com/marshall-lab/damidbind" class="external-link">damidbind</a></em>
+processes may be changing between two sets of data. Using <em><a href="https://bioconductor.org/packages/3.19/clusterProfiler" class="external-link">clusterProfiler</a></em>
+as the backend, <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
 provides the function <code><a href="../reference/analyse_go_enrichment.html">analyse_go_enrichment()</a></code> to explore
 enrichment of genes associated with bound peaks, accessible regions, or
 differential expression. In all cases, the underlying gene IDs, rather
 than gene names, are used for enrichment analysis.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">go.bsh_l4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse_go_enrichment.html">analyse_go_enrichment</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span>,</span>
 <span>    direction <span class="op">=</span> <span class="st">"L4"</span>,</span>
@@ -648,55 +729,8 @@ to illustrate the structure.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-Aughey2018" class="csl-entry">
-Aughey GN, Estacio Gomez A, Thomson J, Yin H &amp; Southall TD (2018) <a href="https://doi.org/10.7554/elife.32341" class="external-link"><span>CATaDa</span> reveals
-global remodelling of chromatin accessibility during stem cell
-differentiation in vivo</a>. <em>eLife</em> 7: 1–22
-</div>
-<div id="ref-Marshall2015" class="csl-entry">
-Marshall OJ &amp; Brand AH (2015) <a href="https://doi.org/10.1093/bioinformatics/btv386" class="external-link">Damidseq_pipeline:
-An automated pipeline for processing <span>DamID</span> sequencing
-datasets.</a> <em>Bioinformatics</em> 31: 3371–3
-</div>
-<div id="ref-Marshall2017" class="csl-entry">
-Marshall OJ &amp; Brand AH (2017) <a href="https://doi.org/10.1038/s41467-017-02385-4" class="external-link">Chromatin state
-changes during neural development revealed by in vivo cell-type specific
-profiling</a>. <em>Nat Commun</em> 8: 2271
-</div>
-<div id="ref-Marshall2016" class="csl-entry">
-Marshall OJ, Southall TD, Cheetham SW &amp; Brand AH (2016) <a href="https://doi.org/10.1038/nprot.2016.084" class="external-link">Cell-type-specific
-profiling of protein–<span>DNA</span> interactions without cell
-isolation using targeted <span>DamID</span> with next-generation
-sequencing</a>. <em>Nat Protoc</em> 11: 1586–1598
-</div>
-<div id="ref-Southall2013" class="csl-entry">
-Southall TD, Gold KS, Egger B, Davidson CM, Caygill EE, Marshall OJ
-&amp; Brand AH (2013) <a href="https://doi.org/10.1016/j.devcel.2013.05.020" class="external-link">Cell-<span>Type-Specific
-Profiling</span> of <span>Gene Expression</span> and <span>Chromatin
-Binding</span> without <span>Cell Isolation</span>: <span>Assaying RNA
-Pol II Occupancy</span> in <span>Neural Stem Cells</span>.</a> <em>Dev
-Cell</em> 26: 101–12
-</div>
-<div id="ref-Steensel2001" class="csl-entry">
-van Steensel B, Delrow J &amp; Henikoff S (2001) <a href="https://doi.org/10.1038/85871" class="external-link">Chromatin profiling using targeted
-<span>DNA</span> adenine methyltransferase.</a> <em>Nat Genet</em> 27:
-304–8
-</div>
-<div id="ref-Steensel2000" class="csl-entry">
-van Steensel B &amp; Henikoff S (2000) <a href="https://doi.org/10.1038/74487" class="external-link">Identification of in vivo
-<span>DNA</span> targets of chromatin proteins using tethered dam
-methyltransferase.</a> <em>Nat Biotechnol</em> 18: 424–8
-</div>
-<div id="ref-Xu2024" class="csl-entry">
-Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554/eLife.90136" class="external-link">Notch signaling and
-<span>Bsh</span> homeodomain activity are integrated to diversify
-<span>Drosophila</span> lamina neuron types</a>. <em>eLife</em> 12:
-RP90136
-</div>
-</div>
 </div>
 <div class="section level2">
 <h2 id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
@@ -728,7 +762,7 @@ RP90136
 <span><span class="co">##  [1] ensembldb_2.28.1        AnnotationFilter_1.28.0 GenomicFeatures_1.56.0 </span></span>
 <span><span class="co">##  [4] AnnotationDbi_1.66.0    Biobase_2.64.0          GenomicRanges_1.56.2   </span></span>
 <span><span class="co">##  [7] GenomeInfoDb_1.40.1     IRanges_2.38.1          S4Vectors_0.42.1       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.50.0     damidBind_0.99.0        DT_0.33                </span></span>
+<span><span class="co">## [10] BiocGenerics_0.50.0     damidBind_0.99.2        DT_0.33                </span></span>
 <span><span class="co">## [13] BiocStyle_2.32.1       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
@@ -818,6 +852,53 @@ RP90136
 <span><span class="co">## [167] ggtree_3.12.0               fastmatch_1.1-6            </span></span>
 <span><span class="co">## [169] bit_4.6.0                   gson_0.1.0                 </span></span>
 <span><span class="co">## [171] ape_5.8-1</span></span></code></pre>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Aughey2018" class="csl-entry">
+Aughey GN, Estacio Gomez A, Thomson J, Yin H &amp; Southall TD (2018) <a href="https://doi.org/10.7554/elife.32341" class="external-link"><span>CATaDa</span> reveals
+global remodelling of chromatin accessibility during stem cell
+differentiation in vivo</a>. <em>eLife</em> 7: 1–22
+</div>
+<div id="ref-Marshall2015" class="csl-entry">
+Marshall OJ &amp; Brand AH (2015) <a href="https://doi.org/10.1093/bioinformatics/btv386" class="external-link">Damidseq_pipeline:
+An automated pipeline for processing <span>DamID</span> sequencing
+datasets.</a> <em>Bioinformatics</em> 31: 3371–3
+</div>
+<div id="ref-Marshall2017" class="csl-entry">
+Marshall OJ &amp; Brand AH (2017) <a href="https://doi.org/10.1038/s41467-017-02385-4" class="external-link">Chromatin state
+changes during neural development revealed by in vivo cell-type specific
+profiling</a>. <em>Nat Commun</em> 8: 2271
+</div>
+<div id="ref-Marshall2016" class="csl-entry">
+Marshall OJ, Southall TD, Cheetham SW &amp; Brand AH (2016) <a href="https://doi.org/10.1038/nprot.2016.084" class="external-link">Cell-type-specific
+profiling of protein–<span>DNA</span> interactions without cell
+isolation using targeted <span>DamID</span> with next-generation
+sequencing</a>. <em>Nat Protoc</em> 11: 1586–1598
+</div>
+<div id="ref-Southall2013" class="csl-entry">
+Southall TD, Gold KS, Egger B, Davidson CM, Caygill EE, Marshall OJ
+&amp; Brand AH (2013) <a href="https://doi.org/10.1016/j.devcel.2013.05.020" class="external-link">Cell-<span>Type-Specific
+Profiling</span> of <span>Gene Expression</span> and <span>Chromatin
+Binding</span> without <span>Cell Isolation</span>: <span>Assaying RNA
+Pol II Occupancy</span> in <span>Neural Stem Cells</span>.</a> <em>Dev
+Cell</em> 26: 101–12
+</div>
+<div id="ref-Steensel2001" class="csl-entry">
+van Steensel B, Delrow J &amp; Henikoff S (2001) <a href="https://doi.org/10.1038/85871" class="external-link">Chromatin profiling using targeted
+<span>DNA</span> adenine methyltransferase.</a> <em>Nat Genet</em> 27:
+304–8
+</div>
+<div id="ref-Steensel2000" class="csl-entry">
+van Steensel B &amp; Henikoff S (2000) <a href="https://doi.org/10.1038/74487" class="external-link">Identification of in vivo
+<span>DNA</span> targets of chromatin proteins using tethered dam
+methyltransferase.</a> <em>Nat Biotechnol</em> 18: 424–8
+</div>
+<div id="ref-Xu2024" class="csl-entry">
+Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554/eLife.90136" class="external-link">Notch signaling and
+<span>Bsh</span> homeodomain activity are integrated to diversify
+<span>Drosophila</span> lamina neuron types</a>. <em>eLife</em> 12:
+RP90136
+</div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
