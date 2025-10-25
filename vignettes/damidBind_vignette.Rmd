@@ -101,7 +101,6 @@ browse_igv_regions(input.diff)
 my_custom_function(analysisTable(input.diff))
 ```
 
-
 # Sample data examples
 
 ## Sample input data (provided within the package)
@@ -191,6 +190,45 @@ input.bsh <- load_data_peaks(
 )
 ```
 
+### Loading data from GRanges objects
+
+In some workflows, you may already have your binding profiles and peak regions loaded as `r Biocpkg('GenomicRanges')` objects. `damidBind` supports this directly, bypassing the need to read from file paths.
+
+The `load_data_peaks()` and `load_data_genes()` functions accept `GRanges` objects via the `binding_profiles` and `peaks` arguments, when used in place of `binding_profiles_paths` and `peaks_paths`. These inputs must be provided as **named lists** of `GRanges` objects, where the names correspond to your sample identifiers. For binding profiles, each `GRanges` object must contain exactly one numeric metadata column (e.g., `score`) representing the signal.
+
+The following example first loads the provided sample data files to generate `GRanges` objects, and then loads these into `damidBind` to generate an input object ready for downstream analysis.
+
+```{r load_data_granges}
+# Locate bedGraph and peaks example files
+bedgraph_files <- list.files(data_dir, pattern = "\\.bedgraph\\.gz$", full.names = TRUE)
+peak_files <- list.files(data_dir, pattern = "\\.bed\\.gz$", full.names = TRUE)
+
+# Obtain unique sample names from the filenames (specific to these example files)
+sample_names <- gsub("-ext300-vs-Dam.kde-norm.gatc.*", "", basename(bedgraph_files))
+
+# Load the bedgraph files into a named list of GRanges objects
+binding_gr_list <- lapply(bedgraph_files, rtracklayer::import)
+names(binding_gr_list) <- sample_names
+
+# Similarly, load the peak files into a named list of GRanges objects
+peak_gr_list <- lapply(peak_files, rtracklayer::import)
+names(peak_gr_list) <- sample_names
+
+# Now, call load_data_peaks() using the GRanges lists instead of file paths
+input.bsh_from_gr <- load_data_peaks(
+    binding_profiles = binding_gr_list,
+    peaks = peak_gr_list,
+    quantile_norm = TRUE
+)
+
+# The resulting object can now be used for differential analysis,
+# just as in the examples below.
+```
+
+### Gene locus assignment to peaks
+
+`damidBind` automatically assigns peaks to genes within 1kb of the peak boundary.  This value (in bp) can be changed using the `maxgap_loci` parameter of `load_data_peaks()`.  Note that more than one gene locus can be assigned to a peak (especially within the gene-dense *Drosophila* genome).
+
 ## Analysing differential binding
 
 Now, we'll determine the differential binding of Bsh between L4 and L5 neurons. Our input files use `L4` and `L5` labels to distinguish the samples, and that's all we need to know here.
@@ -199,11 +237,11 @@ Again, there are two different analysis options depending on the data type:
 
 `differential_binding()`
 
-:   Analyses conventional DamID data (including RNA Polymerase DamID) present as a log2(Dam-fusion/Dam-only) ratio. All standard DamID data is in this format.  `r Biocpkg("limma")` is used as the backend for analysis. 
+:   Analyses conventional DamID data (including RNA Polymerase DamID) present as a log2(Dam-fusion/Dam-only) ratio. All standard DamID data is in this format. `r Biocpkg("limma")` is used as the backend for analysis.
 
 `differential_accessibility()`
 
-:   Analyses CATaDa data (Dam-only chromatin accessibility data) present as Counts Per Million reads (CPM) or raw counts. Only CATaDa data (generated via e.g. `damidseq_pipeline --catada`) should be used with this function.  Given the counts nature of these data, `r Biocpkg("NOISeq")` is used as the analysis backend.
+:   Analyses CATaDa data (Dam-only chromatin accessibility data) present as Counts Per Million reads (CPM) or raw counts. Only CATaDa data (generated via e.g. `damidseq_pipeline --catada`) should be used with this function. Given the counts nature of these data, `r Biocpkg("NOISeq")` is used as the analysis backend.
 
 The input from `load_data_peaks()` or `load_data_genes()` feeds directly into these functions.
 
@@ -223,17 +261,16 @@ The use of `cond_names` here is optional, and provides display names for the con
 
 Note that when run, `differential_binding` (or `differential_accessibility`) will list the replicates found under each condition. The package attempts to ensure that condition search overlaps are avoided, but please check that all replicates have been correctly assigned.
 
-The functions' output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis was worked correctly, and does not imply any special value to the listed genes beyond that. 
+The functions' output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis was worked correctly, and does not imply any special value to the listed genes beyond that.
 
-Both `differential_binding()` and `differential_accessibility()` return a `DamIDResults` S4 object, that forms the basis of downstream analysis.  Printing the object will provide a simple summary of the analysis results.
+Both `differential_binding()` and `differential_accessibility()` return a `DamIDResults` S4 object, that forms the basis of downstream analysis. Printing the object will provide a simple summary of the analysis results.
 
 ```{r show_object}
 # See a summary of the results object
 diff.bsh
 ```
 
-To fully explore the differentially bound loci, use one of the visualisation functions below.  
-
+To fully explore the differentially bound loci, use one of the visualisation functions below.
 
 ## Visualising data
 
@@ -241,7 +278,7 @@ All downstream visualisation / data exploration functions take the `DamIDResults
 
 ### Venn diagrams of differentially bound loci
 
-Venn diagrams are a simple means of visualising the proportion of loci that are differentially bound between the two tested conditions.  To provide this, `r Biocpkg('damidBind')` uses `r CRANpkg("BioVenn")` to generate proportional Venn diagrams of the two conditions.  The set union represents significant binding peaks that fail to show significant differences in occupancy; the exclusive regions of each set represent regions with enriched differential binding in that condition.
+Venn diagrams are a simple means of visualising the proportion of loci that are differentially bound between the two tested conditions. To provide this, `r Biocpkg('damidBind')` uses `r CRANpkg("BioVenn")` to generate proportional Venn diagrams of the two conditions. The set union represents significant binding peaks that fail to show significant differences in occupancy; the exclusive regions of each set represent regions with enriched differential binding in that condition.
 
 ```{r venn, fig.cap="A venn diagram of significantly bound loci by Bsh in L4 and L5 neurons.  The exclusive parts of each set represent regions that are differentially bound between the two conditions.", fig.small=TRUE, message=FALSE}
 plot_venn(diff.bsh)
@@ -274,6 +311,8 @@ plot_volcano(
 
 Already, that's becoming a lot clearer. 
 
+Note that the relative absence of labels on the L4 side of the plot does not reflect a paucity of loci, but rather the density of loci on the plot that prevents labels being drawn without overlaps.  To increase the allowed label overlaps, set the `max_overlaps` parameter in the `label_config` parameter list.
+
 #### Highlighting gene groups
 
 But, what if we now wanted to highlight genes bound by Bsh, that are only expressed in L4 neurons? (data from scRNA-seq data, provided in Supplementary Files 2 & 3 of [@Xu2024]). This is straightforward to do:
@@ -288,13 +327,12 @@ plot_volcano(
         "L4 specific" = L4_only_genes
     ),
     highlight_config = list(
-        size = 1.5,
-        label = TRUE
+        size = 2
     )
 )
 ```
 
-Although this is just a truncated sample from chr 2L, the link between a subset of Bsh binding and potential upregulation in this lineage is apparent.
+Although this is just a truncated sample from chr 2L, the link between a subset of Bsh binding and potential upregulation in this lineage is apparent.  (Why do some gene loci label multiple peaks?  This is because a gene may have more than one discrete binding peak associated with it.)
 
 We could also compare this against genes bound by Bsh and only expressed in L5 neurons. For clarity, we'll drop gene labels from this plot.
 
@@ -310,8 +348,7 @@ plot_volcano(
         "L5 specific" = L5_only_genes
     ),
     highlight_config = list(
-        size = 1.5,
-        label = FALSE
+        size = 2
     )
 )
 ```
@@ -331,7 +368,7 @@ An example of the interface is shown below:
 
 ![The interactive IGV browser window of damidBind](figures/damidBind_L5.png)
 
-The table on the left side of the window can be sorted by clicking on the column headers, and clicking on any entry will move the IGV browser window to that locus (+/- a sensible buffer region).  All sample reps are shown, together with the unified binding peaks and a simple pair of tracks that show the loci that are enriched in both conditions.
+The table on the left side of the window can be sorted by clicking on the column headers, and clicking on any entry will move the IGV browser window to that locus (+/- a sensible buffer region). All sample reps are shown, together with the unified binding peaks and a simple pair of tracks that show the loci that are enriched in both conditions.
 
 ### GSEA plots
 
@@ -358,16 +395,13 @@ Below are the first 20 lines of `analysisTable(diff.bsh)` to illustrate the stru
 DT::datatable(
     head(analysisTable(diff.bsh), n = 20),
     options = list(
-        pageLength = 10, 
+        pageLength = 10,
         scrollX = TRUE
     )
 ) %>% DT::formatRound(columns = c(1:8, 11), digits = 2)
 ```
 
-
-# References {.unnumbered}
-
-<div id="refs"></div>
+# References
 
 # Session info
 
