@@ -37,7 +37,7 @@ binding data. The weighting is based on the width of the overlap between
 each fragment and the gene body.
 }
 \examples{
-# 1. Create a GRanges object for gene annotations
+# Create a GRanges object for gene annotations
 genes_gr <- GenomicRanges::GRanges(
     "chrY",
     IRanges::IRanges(c(1000, 3000), width = 500),
@@ -45,7 +45,7 @@ genes_gr <- GenomicRanges::GRanges(
     gene_id = c("ID1", "ID2")
 )
 
-# 2. Create mock binding data
+# Create mock binding data
 binding_df <- data.frame(
     chr = "chrY",
     start = c(950, 1200, 3100),
@@ -54,7 +54,7 @@ binding_df <- data.frame(
     sampleB = c(1.8, 2.2, 0.4)
 )
 
-# 3. Calculate average gene occupancy
+# Calculate average gene occupancy
 # Use BiocParallel::SerialParam() for deterministic execution in examples
 if (requireNamespace("BiocParallel", quietly = TRUE)) {
     gene_occ <- gene_occupancy(binding_df, genes_gr,

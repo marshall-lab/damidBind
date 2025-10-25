@@ -14,7 +14,8 @@ analyse_go_enrichment(
   qvalue_cutoff = 0.2,
   plot_title = NULL,
   show_category = 12,
-  label_format_width = 30,
+  label_format_width = 50,
+  theme_size = 14,
   save = NULL,
   save_results_path = NULL,
   maxGSSize = 1000,
@@ -44,7 +45,9 @@ For Drosophila, use `org.Dm.eg.db::org.Dm.eg.db`.}
 
 \item{show_category}{Integer. Number of top enriched GO categories to display in the plot. Default: 12.}
 
-\item{label_format_width}{Integer. Max character length for GO term labels on the plot. Default: 30.}
+\item{label_format_width}{Integer. Max character length for GO term labels on the plot before wrapping. Default: 50.}
+
+\item{theme_size}{Integer. Base theme size to set. Default: 14.}
 
 \item{save}{List or `NULL`. Controls saving the plot to a file (dot plot).
 If `NULL`, `FALSE`, or `0`, the plot is not saved.

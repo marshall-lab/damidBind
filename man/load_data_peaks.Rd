@@ -9,6 +9,7 @@ load_data_peaks(
   peaks_path = NULL,
   binding_profiles = NULL,
   peaks = NULL,
+  maxgap_loci = 1000,
   quantile_norm = FALSE,
   organism = "drosophila melanogaster",
   ensdb_genes = NULL,
@@ -26,9 +27,11 @@ the peak calls in GFF or BED format.}
 
 \item{peaks}{List of GRanges objects representing peak regions.}
 
+\item{maxgap_loci}{Integer, the maximum bp distance between a peak boundary and a gene to associate that peak with the gene. Default: 1000.}
+
 \item{quantile_norm}{Logical (default: FALSE). If TRUE, quantile-normalise the signal columns across all datasets.}
 
-\item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Defautls to "drosophila melanogaster".}
+\item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Default: "drosophila melanogaster".}
 
 \item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained from `organism` if NULL.}
 
