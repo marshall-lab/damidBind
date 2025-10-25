@@ -28,8 +28,7 @@ make_dummy_ensdb_genes <- function(...) {
 }
 
 
-# This helper creates a list that pretends to be an EnsDb object.
-# It only needs to respond to the functions that get_ensdb_genes() calls on it.
+# Create a mock EnsDb object
 create_mock_ensdb_object <- function() {
     mock_metadata_df <- data.frame(
         name = c("ensembl_version", "species", "common_name"),
@@ -37,7 +36,7 @@ create_mock_ensdb_object <- function() {
         stringsAsFactors = FALSE
     )
 
-    # A very simple mock a GRanges object for genes
+    # A very simple GRanges object for genes
     mock_genes_gr <- GRanges(
         seqnames = Rle(c("2L", "3R")),
         ranges = IRanges(start = c(1000, 2000), end = c(1500, 2500)),
@@ -54,7 +53,7 @@ create_mock_ensdb_object <- function() {
         metadata = function(...) mock_metadata_df,
         dbconn = function(...) list() # Mock connection object
     )
-    # Give it the class "EnsDb" so 'inherits' checks will pass
+    # Set the class "EnsDb" so 'inherits' checks will pass
     class(ensdb_obj) <- "EnsDb"
     ensdb_obj
 }

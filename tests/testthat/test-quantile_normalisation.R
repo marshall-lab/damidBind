@@ -17,7 +17,7 @@ test_that("quantile_normalisation handles basic numeric matrices", {
     # Since each original column is just a permutation of (1,2,3), (4,5,6), (7,8,9), ranks will map to the same means.
     expected_norm2 <- matrix(rep(c(2, 5, 8), 3), nrow = 3)
 
-    # Run the normalization
+    # Run the normalisation
     actual_norm <- quantile_normalisation(mat2)
 
     # Use expect_equal for numeric comparison with tolerance

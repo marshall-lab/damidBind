@@ -12,7 +12,7 @@ make_dummy_diff_results_for_venn <- function() {
     )
 
     upCond1 <- analysis_table[c("Locus1", "Locus4"), ] # Sig for Cond1
-    upCond2 <- analysis_table[c("Locus2"), ] # Sig for Cond2 (note, not Locus5)
+    upCond2 <- analysis_table[c("Locus2"), ] # Sig for Cond2
 
     new("DamIDResults",
         upCond1 = upCond1,
@@ -89,11 +89,11 @@ test_that("plot_venn handles cases with no significant regions", {
 
     # dummy results object with no significant hits
     diff_res_no_sig <- new("DamIDResults",
-                           upCond1 = analysisTable(base_results)[FALSE, ],
-                           upCond2 = analysisTable(base_results)[FALSE, ],
-                           analysis = analysisTable(base_results),
-                           cond = conditionNames(base_results),
-                           data = inputData(base_results)
+        upCond1 = analysisTable(base_results)[FALSE, ],
+        upCond2 = analysisTable(base_results)[FALSE, ],
+        analysis = analysisTable(base_results),
+        cond = conditionNames(base_results),
+        data = inputData(base_results)
     )
 
     mock_draw_venn_args <- NULL # Reset mock args
@@ -109,7 +109,7 @@ test_that("plot_venn handles cases with no significant regions", {
     expect_match(res$messages[2], "Note: No loci were differentially enriched in condition 2", fixed = TRUE)
 
     expect_true(!is.null(mock_draw_venn_args))
-    # All loci should be in both 'full' sets, as all are non-significant
+    # All loci should be in both sets, as all are non-significant
     expect_equal(sort(mock_draw_venn_args$list_x), sort(rownames(analysisTable(diff_res_no_sig))))
     expect_equal(sort(mock_draw_venn_args$list_y), sort(rownames(analysisTable(diff_res_no_sig))))
 })
@@ -120,11 +120,11 @@ test_that("plot_venn messages if one condition has no loci", {
 
     # dummy results object with no significant hits
     diff_res_partial_sig <- new("DamIDResults",
-                           upCond1 = analysisTable(base_results)[FALSE, ],
-                           upCond2 =  enrichedCond2(base_results),
-                           analysis = analysisTable(base_results),
-                           cond = conditionNames(base_results),
-                           data = inputData(base_results)
+        upCond1 = analysisTable(base_results)[FALSE, ],
+        upCond2 = enrichedCond2(base_results),
+        analysis = analysisTable(base_results),
+        cond = conditionNames(base_results),
+        data = inputData(base_results)
     )
 
     mock_draw_venn <- function(list_x, list_y, ...) invisible(NULL)

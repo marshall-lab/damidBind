@@ -79,19 +79,16 @@ test_that("prep_data_for_differential_analysis throws error for overlapping samp
 })
 
 test_that("prep_data_for_differential_analysis throws error if samples not found", {
-  dl <- make_dummy_data_list()
-  cond_missing <- c("NonExistent1", "NonExistent2")
+    dl <- make_dummy_data_list()
+    cond_missing <- c("NonExistent1", "NonExistent2")
 
-  # This nests the expectations. The inner call to expect_warning will catch
-  # the warning about unassigned samples. The code continues executing until
-  # it hits the stop() call, which is then caught by the outer expect_error().
-  expect_error(
-    expect_warning(
-      damidBind:::prep_data_for_differential_analysis(dl, cond_missing),
-      "The following samples could not be assigned to either condition"
-    ),
-    "Fewer than two sample columns matched"
-  )
+    expect_error(
+        expect_warning(
+            damidBind:::prep_data_for_differential_analysis(dl, cond_missing),
+            "The following samples could not be assigned to either condition"
+        ),
+        "Fewer than two sample columns matched"
+    )
 })
 
 
@@ -108,7 +105,6 @@ test_that("prep_data_for_differential_analysis throws error if not all samples a
 })
 
 test_that("Function displays appropriate messages", {
-    # This tests for messages
     dl <- make_dummy_data_list()
     cond <- c("L4", "L5")
     cond_names <- c("L4 neurons", "L5 neurons")

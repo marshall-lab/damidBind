@@ -40,12 +40,12 @@ test_that("differential_binding processes data and returns correct structure", {
     expect_equal(sort(rownames(analysisTable(res))), sort(expected_loci))
     expect_equal(nrow(analysisTable(res)), 4)
 
-    #   Check essential columns are present and correctly derived
+    # Check essential columns are present and correctly derived
     expect_true(all(c("logFC", "adj.P.Val", "minuslogp", "gene_names", "gene_ids", "CondA_mean", "CondB_mean") %in% colnames(analysisTable(res))))
     # Check that minuslogp is correctly calculated from the adj.P.Val in the results of this specific run
     expect_equal(analysisTable(res)$minuslogp, -log10(analysisTable(res)$adj.P.Val))
 
-    #  Check that significant sets contain the correct members, ignoring order
+    # Check that significant sets contain the correct members, ignoring order
     # In this dataset, all 4 loci should be significant at FDR < 0.05
     expect_equal(nrow(enrichedCond1(res)), 2)
     expect_equal(sort(rownames(enrichedCond1(res))), sort(c("loc1", "loc2")))
@@ -86,13 +86,13 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     # 'pos_sig': significant difference, both means positive (standard case)
     # 'non_sig': not significant
     occupancy_df <- data.frame(
-      name = c("neg_sig", "pos_sig", "non_sig"),
-      gene_names = c("GeneNeg", "GenePos", "GeneNon"),
-      CondA_rep1 = c(-0.9, 3.1, 1.0),
-      CondA_rep2 = c(-1.1, 2.9, 1.1),
-      CondB_rep1 = c(-2.9, 1.1, 1.0),
-      CondB_rep2 = c(-3.1, 0.9, 0.9),
-      stringsAsFactors = FALSE
+        name = c("neg_sig", "pos_sig", "non_sig"),
+        gene_names = c("GeneNeg", "GenePos", "GeneNon"),
+        CondA_rep1 = c(-0.9, 3.1, 1.0),
+        CondA_rep2 = c(-1.1, 2.9, 1.1),
+        CondB_rep1 = c(-2.9, 1.1, 1.0),
+        CondB_rep2 = c(-3.1, 0.9, 0.9),
+        stringsAsFactors = FALSE
     )
     rownames(occupancy_df) <- occupancy_df$name
     dl <- list(occupancy = occupancy_df, test_category = "bound")
@@ -101,7 +101,7 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     # Test condition without filter
     # Both 'neg_sig' and 'pos_sig' should be in upCond1 (logFC > 0).
     res_unfiltered <- suppressMessages(
-      differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = FALSE)
+        differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = FALSE)
     )
 
     expect_s4_class(res_unfiltered, "DamIDResults")
@@ -114,7 +114,7 @@ test_that("differential_binding can optionally filter for positive enrichment", 
 
     # Test with the filter (default)
     res_filtered <- suppressMessages(
-      differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = TRUE)
+        differential_binding(dl, cond, fdr = 0.1, filter_positive_enrichment = TRUE)
     )
 
     expect_s4_class(res_filtered, "DamIDResults")
@@ -131,5 +131,3 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     expect_lt(analysisTable(res_filtered)["neg_sig", "CondA_mean"], 0)
     expect_lt(analysisTable(res_filtered)["neg_sig", "CondB_mean"], 0)
 })
-
-

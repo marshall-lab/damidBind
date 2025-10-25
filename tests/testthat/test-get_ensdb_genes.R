@@ -22,7 +22,7 @@ create_mock_query_result <- function() {
         genome = c("BDGP6.49", "BDGP6.48", "GRCh38.p14"),
         stringsAsFactors = FALSE
     )
-    # It's crucial that this is an S4 DataFrame, not a base data.frame
+    # Needs to be an S4 DataFrame
     S4Vectors::DataFrame(df)
 }
 
@@ -87,7 +87,6 @@ test_that("get_ensdb_genes can retrieve Drosophila EnsDb and filter biotypes", {
 
 test_that("get_ensdb_genes handles errors for non-existent organisms and invalid parameters", {
     # The same mocks as above will be in scope here.
-    # The key change is REMOVING the mock for `[[` and simplifying the others.
     local_mocked_bindings(
         # Mock the main AnnotationHub constructor to return a dummy object
         AnnotationHub = function(...) new("AnnotationHub"),
@@ -108,14 +107,13 @@ test_that("get_ensdb_genes handles errors for non-existent organisms and invalid
             if (any(grepl("drosophila melanogaster", search_terms, ignore.case = TRUE))) {
                 # Filter the DataFrame
                 res_df <- df[grepl("Drosophila melanogaster", df$species), ]
-                # Return the DataFrame wrapped in our mock S4 object
+                # Return the DataFrame wrapped in the mock S4 object
                 return(new("MockHubResult", data = res_df))
             }
             # For no matches, return the S4 object with a zero-row DataFrame
             return(new("MockHubResult", data = df[FALSE, ]))
         },
 
-        # Mock ensembldb functions to return mock data directly, avoiding `[[`
         genes = function(x, ...) create_mock_ensdb_object()$genes(),
         metadata = function(x, ...) create_mock_ensdb_object()$metadata(),
         dbconn = function(x, ...) create_mock_ensdb_object()$dbconn(),
