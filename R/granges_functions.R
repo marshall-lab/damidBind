@@ -20,7 +20,7 @@
 #'   gene name, number of overlapping fragments ('nfrags'), and gene ID.
 #' @export
 #' @examples
-#' # 1. Create a GRanges object for gene annotations
+#' # Create a GRanges object for gene annotations
 #' genes_gr <- GenomicRanges::GRanges(
 #'     "chrY",
 #'     IRanges::IRanges(c(1000, 3000), width = 500),
@@ -28,7 +28,7 @@
 #'     gene_id = c("ID1", "ID2")
 #' )
 #'
-#' # 2. Create mock binding data
+#' # Create mock binding data
 #' binding_df <- data.frame(
 #'     chr = "chrY",
 #'     start = c(950, 1200, 3100),
@@ -37,7 +37,7 @@
 #'     sampleB = c(1.8, 2.2, 0.4)
 #' )
 #'
-#' # 3. Calculate average gene occupancy
+#' # Calculate average gene occupancy
 #' # Use BiocParallel::SerialParam() for deterministic execution in examples
 #' if (requireNamespace("BiocParallel", quietly = TRUE)) {
 #'     gene_occ <- gene_occupancy(binding_df, genes_gr,
@@ -89,13 +89,13 @@ gene_occupancy <- function(
 
     # Find overlaps between genes and fragments
     overlaps <- findOverlaps(gene_gr, frag_gr)
+
     # For each gene, aggregate overlapping fragment scores (weighted)
     gene_names <- as.character(mcols(gene_gr)$gene_name)
     gene_id <- as.character(mcols(gene_gr)$gene_id)
     gene_loc <- as.character(mcols(gene_gr)$gene_loc)
     sample_cols <- setdiff(colnames(binding_data), c("chr", "start", "end"))
 
-    # For parallel aggregation
     calc_occupancy <- function(i) {
         gene_hits <- subjectHits(overlaps)[queryHits(overlaps) == i]
         if (length(gene_hits) == 0) {
@@ -121,14 +121,18 @@ gene_occupancy <- function(
             weighted.mean(vals, w = blens, na.rm = TRUE)
         }, FUN.VALUE = numeric(1))
 
-        # loc/name, nfrags, Averages,  name, gene_id
-        c(gene_loc[i], length(gene_hits), res, gene_names[i], gene_id[i])
+        # Return loc/name, nfrags, Averages, gene_name, gene_id
+        c(
+            name = gene_loc[i],
+            nfrags = length(gene_hits),
+            res,
+            gene_names = gene_names[i],
+            gene_ids = gene_id[i]
+        )
     }
 
     results <- BiocParallel::bplapply(seq_along(gene_gr), calc_occupancy, BPPARAM = BPPARAM)
     results <- do.call(rbind, results)
-    colnames(results)[1:2] <- c("name", "nfrags")
-    colnames(results)[(ncol(results) - 1):ncol(results)] <- c("gene_names", "gene_ids")
 
     results_df <- as.data.frame(results)
     cols_to_convert <- c("nfrags", sample_cols)

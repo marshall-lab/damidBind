@@ -148,22 +148,22 @@ differential_binding <- function(
 
     # Filter positive enrichment
     if (isTRUE(filter_positive_enrichment)) {
-      message("\nFiltering for positive enrichment (mean score > 0 in the enriched condition).")
-      upCond1 <- upCond1_all[upCond1_all[[mean1_name]] > 0, ]
-      upCond2 <- upCond2_all[upCond2_all[[mean2_name]] > 0, ]
+        message("\nFiltering for positive enrichment (mean score > 0 in the enriched condition).")
+        upCond1 <- upCond1_all[upCond1_all[[mean1_name]] > 0, ]
+        upCond2 <- upCond2_all[upCond2_all[[mean2_name]] > 0, ]
 
-      # Report discarded results
-      n_discarded1 <- nrow(upCond1_all) - nrow(upCond1)
-      n_discarded2 <- nrow(upCond2_all) - nrow(upCond2)
-      if (n_discarded1 > 0) {
-        message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded1, cond_display[1]))
-      }
-      if (n_discarded2 > 0) {
-        message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded2, cond_display[2]))
-      }
+        # Report discarded results
+        n_discarded1 <- nrow(upCond1_all) - nrow(upCond1)
+        n_discarded2 <- nrow(upCond2_all) - nrow(upCond2)
+        if (n_discarded1 > 0) {
+            message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded1, cond_display[1]))
+        }
+        if (n_discarded2 > 0) {
+            message(sprintf(" - Discarded %d regions enriched in '%s' due to negative mean scores.", n_discarded2, cond_display[2]))
+        }
     } else {
-      upCond1 <- upCond1_all
-      upCond2 <- upCond2_all
+        upCond1 <- upCond1_all
+        upCond2 <- upCond2_all
     }
 
     # Prepare mapping for output

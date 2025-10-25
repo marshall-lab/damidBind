@@ -85,9 +85,9 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
     # Create factors data frame
     factors <- data.frame(
         condition = factor(
-          rep(cond, times = c(length(samples_cond1), length(samples_cond2))),
-          levels = unique(cond)
-          ),
+            rep(cond, times = c(length(samples_cond1), length(samples_cond2))),
+            levels = unique(cond)
+        ),
         row.names = sel_cols
     )
 
@@ -139,12 +139,12 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
 #' @return (Returns NULL invisibly; not used)
 #' @noRd
 ._report_results <- function(ctype_name, loci) {
-  num <- nrow(loci)
-  num.adj <- sum(loci$gene_names != "" & !is.na(loci$gene_names))
-  message(sprintf("\n%d loci enriched in %s", num, ctype_name))
-  if (num.adj > 0) {
-    top_genes <- loci$gene_names[loci$gene_names != "" & !is.na(loci$gene_names)]
-    message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
-  }
-  invisible(NULL)
+    num <- nrow(loci)
+    num.adj <- sum(loci$gene_names != "" & !is.na(loci$gene_names))
+    message(sprintf("\n%d loci enriched in %s", num, ctype_name))
+    if (num.adj > 0) {
+        top_genes <- loci$gene_names[loci$gene_names != "" & !is.na(loci$gene_names)]
+        message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
+    }
+    invisible(NULL)
 }

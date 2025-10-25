@@ -133,7 +133,7 @@ plot_venn <- function(
     # Call BioVenn (discarding the verbose set numbers messaging from this package with capture.output())
     capture.output(
         {
-           venn <- do.call(BioVenn::draw.venn, biovenn_params)
+            venn <- do.call(BioVenn::draw.venn, biovenn_params)
         },
         file = NULL
     )
