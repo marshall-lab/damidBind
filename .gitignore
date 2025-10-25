@@ -18,3 +18,4 @@ Thumbs.db
 /docs
 Rplots.pdf
 _pkgdown.yml
+*.html
