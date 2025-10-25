@@ -93,8 +93,9 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'   the peak calls in GFF or BED format.
 #' @param binding_profiles List of GRanges objects with binding profiles, one per sample.
 #' @param peaks List of GRanges objects representing peak regions.
+#' @param maxgap_loci Integer, the maximum bp distance between a peak boundary and a gene to associate that peak with the gene. Default: 1000.
 #' @param quantile_norm Logical (default: FALSE). If TRUE, quantile-normalise the signal columns across all datasets.
-#' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Defautls to "drosophila melanogaster".
+#' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Default: "drosophila melanogaster".
 #' @param ensdb_genes GRanges object: gene annotation. Automatically obtained from `organism` if NULL.
 #' @param BPPARAM BiocParallel function (defaults to BiocParallel::bpparam())
 #'
@@ -141,6 +142,7 @@ load_data_peaks <- function(
     peaks_path = NULL,
     binding_profiles = NULL,
     peaks = NULL,
+    maxgap_loci = 1000,
     quantile_norm = FALSE,
     organism = "drosophila melanogaster",
     ensdb_genes = NULL,
@@ -185,7 +187,7 @@ load_data_peaks <- function(
     message("Calculating occupancy over peaks")
     occupancy <- gr_occupancy(binding_profiles_data, pr, BPPARAM = BPPARAM)
 
-    gene_overlaps <- all_overlaps_to_original(pr, ensdb_genes, maxgap = 1000)
+    gene_overlaps <- all_overlaps_to_original(pr, ensdb_genes, maxgap = maxgap_loci)
     occupancy$gene_names <- gene_overlaps$genes
     if (!is.null(gene_overlaps$ids)) {
         occupancy$gene_ids <- gene_overlaps$ids
@@ -438,9 +440,9 @@ import_bedgraph_as_df <- function(path, colname = "score") {
     # Test for gapped offset (caused when loading closed rather than half-open datasets) and correct if present
     gaps <- df$start[-1] - df$end[-nrow(df)]
     tab <- table(gaps)
-    if (as.integer(names(which.max(tab)))==2) {
-      # start of fragment(n+1) is always 2bp away from end of fragment(n): needs correcting
-      df$end <- df$end+1
+    if (as.integer(names(which.max(tab))) == 2) {
+        # start of fragment(n+1) is always 2bp away from end of fragment(n): needs correcting
+        df$end <- df$end + 1
     }
 
     df
