@@ -167,34 +167,37 @@
 #' @description This internal function is called by the server to load all
 #' BED, bedGraph, and annotation tracks into the IGV browser.
 #' @param session The Shiny server session object.
-#' @param prepped_data,track_scales,colours Data and configuration objects.
+#' @param prepped_data,track_scales,colours,trackheight Data and configuration objects.
 #' @return `NULL` invisibly
 #' @noRd
-.load_igv_tracks <- function(session, prepped_data, track_scales, colours) {
+.load_igv_tracks <- function(session, prepped_data, track_scales, colours, trackheight, peakCol, trackCol) {
     message("IGV browser initialized. Loading tracks...")
     preptbl <- function(tbl) { # A small helper to ensure 'chr' column exists
         if ("seqnames" %in% names(tbl)) tbl <- rename(tbl, chr = "seqnames")
         tbl$chr <- as.character(tbl$chr)
         return(tbl)
     }
+
     # Add binding peaks track if present
     if (!is.null(prepped_data$peaks_bed)) {
         loadBedTrack(session, "igv",
             tbl = preptbl(prepped_data$peaks_bed), trackHeight = 50,
-            trackName = "Binding peaks", color = "darkgreen"
+            trackName = "Binding peaks", color = peakCol
         )
         message(" - Added 'Binding peaks' track")
     }
+
     # Add sample quantitative tracks
     for (sample in prepped_data$use_samples) {
         bprof <- prepped_data$binding_profiles_data[, c("chr", "start", "end", sample)]
         loadBedGraphTrack(session, "igv",
             tbl = preptbl(bprof), autoscale = FALSE,
             min = track_scales$bp_min, max = track_scales$bp_max,
-            trackHeight = 65, trackName = sample, color = "#6666cc"
+            trackHeight = trackheight, trackName = sample, color = trackCol
         )
         message(sprintf(" - Added sample track: %s", sample))
     }
+
     # Add differentially-enriched region tracks
     cond1_name <- prepped_data$cond_display_names[1]
     cond2_name <- prepped_data$cond_display_names[2]
@@ -209,6 +212,7 @@
         )
         message(sprintf(" - Added 'Enriched in %s' track", cond1_name))
     }
+
     if (nrow(upCond2_df) > 0) {
         loadBedGraphTrack(session, "igv",
             tbl = preptbl(upCond2_df[, c("chr", "start", "end", "logFC")]), autoscale = FALSE,
@@ -222,10 +226,10 @@
 #' Define the IGV Shiny App server helper function
 #' @description This internal function creates the server function for the Shiny
 #' app, defining reactive outputs and event observers.
-#' @param prepped_data,shiny_configs,colours,padding_width Data and config objects.
+#' @param prepped_data,shiny_configs,colours,padding_width,trackheight Data and config objects.
 #' @return A Shiny server function.
 #' @noRd
-.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width) {
+.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width, trackheight, peakCol, trackCol) {
     server_func <- function(input, output, session) {
         output$igv <- renderIgvShiny({
             igvShiny(shiny_configs$igv_options)
@@ -233,7 +237,7 @@
 
         observeEvent(input$igvReady,
             {
-                .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours)
+                .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol)
             },
             once = TRUE
         )
@@ -277,8 +281,11 @@
 #' @param samples Optional character vector of sample names to display (default: all in dataset).
 #' @param colour_cond1,colour_cond2  Colours for differentially enriched region tracks.
 #' @param use_genome IGV genome name (inferred from peak annotations if not given).
-#' @param padding_width Width to pad browser viewbox on either side of the peak.
-#' @param host Hostname for the server location (defaults to localhost).
+#' @param padding_width Width to pad browser viewbox on either side of the peak (Default: 20000)
+#' @param trackHeight Height of bedGraph tracks (Default: 65)
+#' @param peakColour Colour for significant peaks track (Default: "darkgreen")
+#' @param trackColour Colour for bedGraph tracks (Default: "#6666ff")
+#' @param host Hostname for the server location (Default: "localhost").
 #' @param port Port for connection (if NULL (default) the port is assigned by Shiny).
 #' @return Invisibly returns the Shiny app object created by `shinyApp()`.
 #'
@@ -326,8 +333,12 @@ browse_igv_regions <- function(
     colour_cond2 = "#2288dd",
     use_genome = NULL,
     padding_width = 20000,
+    trackHeight = 65,
+    peakColour = "darkgreen",
+    trackColour = "#6666ff",
     host = "localhost",
     port = NULL) {
+
     # Validate inputs and dependencies
     stopifnot(is(diff_results, "DamIDResults"))
     .check_igv_dependencies()
@@ -360,7 +371,10 @@ browse_igv_regions <- function(
         prepped_data,
         shiny_configs,
         colours = list(cond1 = colour_cond1, cond2 = colour_cond2),
-        padding_width = padding_width
+        padding_width = padding_width,
+        trackheight = trackHeight,
+        peakCol = peakColour,
+        trackCol = trackColour
     )
 
     # Create and run the Shiny app
