@@ -158,18 +158,26 @@
 #' @title Create GO Dot Plot
 #' @description Internal helper to generate a ggplot object from processed GO results.
 #' @param results_df A processed data.frame of GO enrichment results.
-#' @param plot_title,show_category,label_format_width Plotting parameters.
+#' @param plot_title,show_category,label_format_width,wrap_labels,fit_labels Plotting parameters.
 #' @param theme_size integer value to set base theme size (default = 14)
 #' @return A `ggplot` object.
 #' @importFrom scales scientific_format number_format
 #' @noRd
-._create_go_dotplot <- function(results_df, plot_title, show_category, label_format_width, theme_size=14) {
+._create_go_dotplot <- function(results_df, plot_title, show_category,
+                                label_format_width, wrap_labels,
+                                fit_labels, theme_size=14) {
     plot_df <- if (nrow(results_df) > show_category) {
         head(results_df, n = show_category)
     } else {
         results_df
     }
     max_x_value <- max(plot_df$GeneRatio, na.rm = TRUE)
+
+    if (isTRUE(fit_labels)) {
+        label_format_width = max(vapply(plot_df$Description,
+                   stringr::str_width,
+                   integer(1)))
+    }
 
     ggplot(
         plot_df,
@@ -214,7 +222,9 @@
             }
         ) +
         scale_y_discrete(
-            labels = function(y) str_wrap(y, width = label_format_width),
+            labels = if (isTRUE(wrap_labels))
+                function(y) stringr::str_wrap(y, width = label_format_width)
+                else function(y) stringr::str_trunc(y, width = label_format_width, side = "right"),
             expand = expansion(add = c(0.5, 1))
         ) +
         theme(
@@ -273,12 +283,25 @@
     invisible(NULL)
 }
 
+#' @title Trim ontology terms
+#' @description Helper to truncate common terms
+#' @param str Ontology description string
+#' @param gsub Named vector.  Will replace names with values.
+#' @return Returns the string after substitutions
+#' @noRd
+._trim_ontology_terms = function (str, sub) {
+    for (i in seq_along(sub)) {
+        str <- gsub(sprintf("\\b%s\\b", names(sub)[i]), sub[i], str)
+    }
+    str
+}
+
 
 #' Perform Gene Ontology (GO) Enrichment Analysis for Differentially Bound/Expressed Regions
 #'
 #' This function performs Gene Ontology (GO) enrichment analysis using `clusterProfiler`
 #' for either the up-regulated or down-regulated regions/genes identified by
-#' `differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant Flybase IDs (FBgnIDs)
+#' `differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant gene IDs (FBgnIDs)
 #' and the background universe from the input `DamIDResults` object.
 #'
 #' @param diff_results A `DamIDResults` object, as returned by
@@ -294,7 +317,13 @@
 #' @param qvalue_cutoff Numeric. Q-value cutoff for significance. Default: 0.2.
 #' @param plot_title Character string. Title for the generated dot plot.
 #' @param show_category Integer. Number of top enriched GO categories to display in the plot. Default: 12.
-#' @param label_format_width Integer. Max character length for GO term labels on the plot before wrapping. Default: 50.
+#' @param label_format_width Integer. Max character length for GO term labels on the plot before wrapping.
+#'   Default: 50.
+#' @param wrap_labels Logical. Whether to wrap label text (TRUE) or truncate (FALSE) if greater than `label_format_width` (Default: FALSE)
+#' @param abbrev_terms Logical. Whether to abbreviate common GO term words. (Default: FALSE)
+#' @param abbrevs Named vector of abbreviations to use for `abbrev_terms`.
+#'   (Default: `c("regulation" = "reg.")`)
+#' @param fit_labels Set `label_format_width` to the largest label width (Default: FALSE)
 #' @param theme_size Integer. Base theme size to set. Default: 14.
 #' @param save List or `NULL`. Controls saving the plot to a file (dot plot).
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
@@ -320,11 +349,8 @@
 #'
 #' @details
 #' This function assumes that the `analysis` slot in the `diff_results`
-#' object contains a `gene_ids` column.
-#' If this column is not present, or cannot be processed, the function will return NULL.
-#'
-#' The function includes an internal helper `._clean_gene_symbols` which filters common ambiguous
-#' gene symbols (snoRNA, snRNA, tRNA) that may not be useful for GO enrichment.
+#' object contains a `gene_ids` column.   If this column is not present,
+#' or cannot be processed, the function will return NULL.
 #'
 #' @examples
 #' # This example requires the 'org.Dm.eg.db' package
@@ -387,12 +413,17 @@ analyse_go_enrichment <- function(
     plot_title = NULL,
     show_category = 12,
     label_format_width = 50,
+    wrap_labels = FALSE,
+    fit_labels = FALSE,
+    abbrev_terms = FALSE,
+    abbrevs = c("regulation" = "reg."),
     theme_size = 14,
     save = NULL,
     save_results_path = NULL,
     maxGSSize = 1000,
     minGSSize = 10,
     clean_gene_symbols = TRUE) {
+
     # Input validation
     stopifnot(is(diff_results, "DamIDResults"))
     if (!inherits(org_db, "OrgDb")) {
@@ -423,9 +454,12 @@ analyse_go_enrichment <- function(
         message("No significant GO terms found. Returning NULL.")
         return(NULL)
     }
-
     ego_df <- as.data.frame(ego)
-    ego_df$Description <- gsub("regulation", "reg.", ego_df$Description)
+
+    # Abbreviate common GO words if requested
+    if (isTRUE(abbrev_terms)) ego_df$Description <- ._trim_ontology_terms(ego_df$Description, abbrevs)
+
+    # Calc gene ratio
     ego_df$GeneRatio <- vapply(strsplit(ego_df$GeneRatio, "/"), function(x) {
         as.numeric(x[1]) / as.numeric(x[2])
     }, FUN.VALUE = numeric(1))
@@ -437,13 +471,13 @@ analyse_go_enrichment <- function(
             gene_lists$selected_display_name, ontology
         )
     }
-    dplot <- ._create_go_dotplot(ego_df, plot_title, show_category, label_format_width, theme_size)
+    dplot <- ._create_go_dotplot(ego_df, plot_title, show_category, label_format_width, wrap_labels, fit_labels, theme_size)
 
     # Save results table and plot (if requested)
     ._save_go_table(ego_df, save_results_path)
 
     save_defaults <- list(filename = "damidBind_GSEA_dotplot", format = "pdf", width = 6, height = 6)
-    save_config <- check_list_input(save_defaults, save) # Assumes check_list_input is available
+    save_config <- check_list_input(save_defaults, save)
     ._save_or_print_go_plot(dplot, save_config)
 
     # Return
