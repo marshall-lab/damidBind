@@ -82,7 +82,8 @@ check_list_input <- function(default_list, config_input) {
         legend_pos = list(
             legend.position = c(0.97, 0.05),
             legend.justification = c(1, 0)
-        )
+        ),
+        label_fill = TRUE, text_col = FALSE
     )
     final_highlight_config <- check_list_input(highlight_defaults, highlight_config)
 
@@ -134,7 +135,7 @@ check_list_input <- function(default_list, config_input) {
     if (!is.null(highlight) && length(highlight) > 0) {
         num_groups <- length(highlight)
         pal <- if (is.null(highlight_config$colour) || length(highlight_config$colour) < num_groups) {
-            scales::hue_pal()(num_groups)
+            scales::hue_pal(l = 50)(num_groups)
         } else {
             highlight_config$colour
         }
@@ -246,6 +247,8 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
 #'     \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
 #'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+#'     \item \code{label_fill}: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)
+#'     \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
 #'   }
 #' @param save List or `NULL`. Controls saving the plot to a file.
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
@@ -329,18 +332,26 @@ plot_volcano <- function(
 
     # Build plot layers
     p <- ggplot(plot_df, aes(x = .data$logFC, y = .data[[plot_cfg$ystat]])) +
-        geom_point(data = ~ subset(., !sig), colour = plot_cfg$nonsig_colour, alpha = plot_cfg$nonsig_alpha, size = plot_cfg$nonsig_size) +
-        geom_point(data = ~ subset(., sig), colour = plot_cfg$sig_colour, alpha = plot_cfg$sig_alpha, size = plot_cfg$sig_size)
+        geom_point(data = ~ subset(., !sig), colour = plot_cfg$nonsig_colour, alpha = plot_cfg$nonsig_alpha, size = plot_cfg$nonsig_size, shape = 20) +
+        geom_point(data = ~ subset(., sig), colour = plot_cfg$sig_colour, alpha = plot_cfg$sig_alpha, size = plot_cfg$sig_size, shape = 20)
 
     if (!is.null(layer_data$highlight_df)) {
-        p <- p + geom_point(data = layer_data$highlight_df, aes(colour = .data$highlight_group_name), alpha = configs$highlight$alpha, size = configs$highlight$size) +
+        p <- p + geom_point(data = layer_data$highlight_df, aes(colour = .data$highlight_group_name), alpha = configs$highlight$alpha, size = configs$highlight$size, shape = 20) +
             scale_colour_manual(name = NULL, values = layer_data$highlight_colours, guide = if (isTRUE(configs$highlight$legend)) "legend" else "none")
     }
 
     if (!is.null(layer_data$label_df)) {
         label_size <- if (!is.null(configs$label)) configs$label$label_size else configs$highlight$label_size
         max_overlaps <- if (!is.null(configs$label)) configs$label$max_overlaps else configs$highlight$max_overlaps
-        p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0.1, box.padding = 0.2, point.padding = 0.3)
+
+        if (isTRUE(configs$highlight$label_fill)) {
+            p <- p + ggrepel::geom_label_repel(data = layer_data$label_df, aes(label = .data$label_to_display, fill = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1, color = "black")+
+            ggplot2::scale_fill_manual(name = NULL, values = layer_data$highlight_colours, guide = "none")
+        } else if (isTRUE(configs$highlight$label_col)) {
+            p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display, colour = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
+        } else {
+            p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
+        }
     }
 
     # Finalise labels and legend
