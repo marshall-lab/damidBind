@@ -1,5 +1,5 @@
 importFrom(ggrepel, geom_text_repel)
-importFrom(stringr, fixed, str_detect, str_match, str_wrap)
+importFrom(stringr, fixed, str_detect, str_match, str_wrap, str_trunc)
 importFrom(ggplot2, aes, element_text, expansion, geom_point, geom_segment,
            ggplot, ggsave, guide_colorbar, guide_legend, guides, labs,
            scale_color_gradientn, scale_colour_manual,
