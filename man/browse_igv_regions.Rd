@@ -11,6 +11,9 @@ browse_igv_regions(
   colour_cond2 = "#2288dd",
   use_genome = NULL,
   padding_width = 20000,
+  trackHeight = 65,
+  peakColour = "darkgreen",
+  trackColour = "#6666ff",
   host = "localhost",
   port = NULL
 )
@@ -25,9 +28,15 @@ browse_igv_regions(
 
 \item{use_genome}{IGV genome name (inferred from peak annotations if not given).}
 
-\item{padding_width}{Width to pad browser viewbox on either side of the peak.}
+\item{padding_width}{Width to pad browser viewbox on either side of the peak (Default: 20000)}
 
-\item{host}{Hostname for the server location (defaults to localhost).}
+\item{trackHeight}{Height of bedGraph tracks (Default: 65)}
+
+\item{peakColour}{Colour for significant peaks track (Default: "darkgreen")}
+
+\item{trackColour}{Colour for bedGraph tracks (Default: "#6666ff")}
+
+\item{host}{Hostname for the server location (Default: "localhost").}
 
 \item{port}{Port for connection (if NULL (default) the port is assigned by Shiny).}
 }
