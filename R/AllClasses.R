@@ -38,7 +38,6 @@ setMethod(
         cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
         cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
         cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
-        cat("\nAccess results with accessor functions like analysisTable(object).\n")
     }
 )
 
@@ -46,7 +45,6 @@ setMethod(
 #' @section Accessor Functions:
 #' These functions provide a convenient way to access the different data slots
 #' of a `DamIDResults` object.
-#'
 #' @param object A `DamIDResults` object.
 #' @return
 #' \itemize{
