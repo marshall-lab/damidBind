@@ -15,6 +15,10 @@ analyse_go_enrichment(
   plot_title = NULL,
   show_category = 12,
   label_format_width = 50,
+  wrap_labels = FALSE,
+  fit_labels = FALSE,
+  abbrev_terms = FALSE,
+  abbrevs = c(regulation = "reg."),
   theme_size = 14,
   save = NULL,
   save_results_path = NULL,
@@ -45,7 +49,17 @@ For Drosophila, use `org.Dm.eg.db::org.Dm.eg.db`.}
 
 \item{show_category}{Integer. Number of top enriched GO categories to display in the plot. Default: 12.}
 
-\item{label_format_width}{Integer. Max character length for GO term labels on the plot before wrapping. Default: 50.}
+\item{label_format_width}{Integer. Max character length for GO term labels on the plot before wrapping.
+Default: 50.}
+
+\item{wrap_labels}{Logical. Whether to wrap label text (TRUE) or truncate (FALSE) if greater than `label_format_width` (Default: FALSE)}
+
+\item{fit_labels}{Set `label_format_width` to the largest label width (Default: FALSE)}
+
+\item{abbrev_terms}{Logical. Whether to abbreviate common GO term words. (Default: FALSE)}
+
+\item{abbrevs}{Named vector of abbreviations to use for `abbrev_terms`.
+(Default: `c("regulation" = "reg.")`)}
 
 \item{theme_size}{Integer. Base theme size to set. Default: 14.}
 
@@ -79,16 +93,13 @@ A list containing:
 \description{
 This function performs Gene Ontology (GO) enrichment analysis using `clusterProfiler`
 for either the up-regulated or down-regulated regions/genes identified by
-`differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant Flybase IDs (FBgnIDs)
+`differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant gene IDs (FBgnIDs)
 and the background universe from the input `DamIDResults` object.
 }
 \details{
 This function assumes that the `analysis` slot in the `diff_results`
-object contains a `gene_ids` column.
-If this column is not present, or cannot be processed, the function will return NULL.
-
-The function includes an internal helper `._clean_gene_symbols` which filters common ambiguous
-gene symbols (snoRNA, snRNA, tRNA) that may not be useful for GO enrichment.
+object contains a `gene_ids` column.   If this column is not present,
+or cannot be processed, the function will return NULL.
 }
 \examples{
 # This example requires the 'org.Dm.eg.db' package
