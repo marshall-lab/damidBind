@@ -74,19 +74,28 @@ Tasmania<br><a class="author_email" href="mailto:#"></a><a href="mailto:owen.mar
     
         <div class="abstract">
       <p class="abstract">Abstract</p>
-      <p>The damidBind package provides a means of determining
-      differential binding/gene transcription/chromatin accessibility
-      for DamID-seq data (differential binding = conventional DamID /
-      TaDa for TFs; differential transcription = TaDa for RNA polymerase
-      occupancy; chromatin accessibility = CATaDa). The package loads
-      processed bedgraphs and peaks files, processes these, uses limma
-      (for DamID log2 ratios) or NOIseq (for CATaDa counts data) to
-      determine differentially bound/transcribed/accessible loci, and
-      then provides visualisation via volcano plots, GSEA lollipop
-      plots, Venn diagrams, and an igvShiny interface to quickly view
-      each differentially bound locus in an IGV browser, with the
-      ranked, sorted differentially bound loci listed in an adjacent
-      interactable table.</p>
+      <p>The damidBind package provides a straightforward formal
+      analysis pipeline to analyse and explore differential DamID
+      binding, gene transcription or chromatin accessibility between two
+      conditions. The package imports processed data from DamID-seq
+      experiments, either as external raw files in the form of binding
+      bedGraphs and GFF/BED peak calls, or as internal lists of GRanges
+      objects. After optionally normalising data, combining peaks across
+      replicates and determining per-replicate peak occupancy, the
+      package links bound loci to nearby genes. For RNA Polymerase DamID
+      data, the package calculates occupancy over genes, and optionally
+      calcualates the FDR of significantly-enriched gene occupancy.
+      damidBind then uses either limma (for conventional log2 ratio
+      DamID binding data) or NOIseq (for counts-based CATaDa chromatin
+      accessibility data) to identify differentially-enriched regions,
+      or differentially epxressed genes, between two conditions. The
+      package provides a number of visualisation tools (volcano plots,
+      Gene Ontology enrichment plots via ClusterProfiler and
+      proportional Venn diagrams via BioVenn for downstream data
+      exploration and analysis. An powerful, interactive IGV genome
+      browser interface (powered by Shiny and igvShiny) allows users to
+      rapidly and intuitively assess significant differentially-bound
+      regions in their genomic context.</p>
     </div>
     
 <div class="section level2">
