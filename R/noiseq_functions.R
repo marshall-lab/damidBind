@@ -1,4 +1,4 @@
-#' Differential Accessibility Analysis for CATaDa (NOISeq based)
+#' Differential accessibility analysis for CATaDa (NOISeq based)
 #'
 #' Setup and differential analysis for CATaDa chromatin accessibility experiments using NOISeq.
 #' Accepts output from load_data_peaks, prepares count matrix,
@@ -27,8 +27,8 @@
 #' # Create a mock data_list with plausible count data
 #' mock_occupancy_counts <- data.frame(
 #'     name = c("peak1", "peak2", "peak3"),
-#'     gene_names = c("GeneA", "GeneB", "GeneC"),
-#'     gene_ids = c("ID_A", "ID_B", "ID_C"),
+#'     gene_name = c("GeneA", "GeneB", "GeneC"),
+#'     gene_id = c("ID_A", "ID_B", "ID_C"),
 #'     GroupA_rep1 = c(100, 20, 50), GroupA_rep2 = c(110, 25, 45),
 #'     GroupB_rep1 = c(10, 200, 55), GroupB_rep2 = c(15, 220, 60),
 #'     row.names = c("peak1", "peak2", "peak3")
@@ -107,13 +107,13 @@ differential_accessibility <- function(
     noiseq_df$minuslogp <- -log10(1 - noiseq_df$prob)
 
     # Gene annotation
-    if ("gene_names" %in% colnames(occupancy_df) && "gene_ids" %in% colnames(occupancy_df)) {
+    if ("gene_name" %in% colnames(occupancy_df) && "gene_id" %in% colnames(occupancy_df)) {
         idx <- match(rownames(noiseq_df), rownames(occupancy_df))
-        noiseq_df$gene_names <- occupancy_df$gene_names[idx]
-        noiseq_df$gene_ids <- occupancy_df$gene_ids[idx]
+        noiseq_df$gene_name <- occupancy_df$gene_name[idx]
+        noiseq_df$gene_id <- occupancy_df$gene_id[idx]
     } else {
-        noiseq_df$gene_names <- NA_character_
-        noiseq_df$gene_ids <- NA_character_
+        noiseq_df$gene_name <- NA_character_
+        noiseq_df$gene_id <- NA_character_
     }
 
     # Identify significant DE loci using degenes
