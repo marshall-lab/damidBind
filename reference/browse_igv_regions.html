@@ -13,7 +13,7 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.'></
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,9 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <span>  colour_cond2 <span class="op">=</span> <span class="st">"#2288dd"</span>,</span>
 <span>  use_genome <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  padding_width <span class="op">=</span> <span class="fl">20000</span>,</span>
+<span>  trackHeight <span class="op">=</span> <span class="fl">65</span>,</span>
+<span>  peakColour <span class="op">=</span> <span class="st">"darkgreen"</span>,</span>
+<span>  trackColour <span class="op">=</span> <span class="st">"#6666ff"</span>,</span>
 <span>  host <span class="op">=</span> <span class="st">"localhost"</span>,</span>
 <span>  port <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -86,11 +89,23 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 
 
 <dt id="arg-padding-width">padding_width<a class="anchor" aria-label="anchor" href="#arg-padding-width"></a></dt>
-<dd><p>Width to pad browser viewbox on either side of the peak.</p></dd>
+<dd><p>Width to pad browser viewbox on either side of the peak (Default: 20000)</p></dd>
+
+
+<dt id="arg-trackheight">trackHeight<a class="anchor" aria-label="anchor" href="#arg-trackheight"></a></dt>
+<dd><p>Height of bedGraph tracks (Default: 65)</p></dd>
+
+
+<dt id="arg-peakcolour">peakColour<a class="anchor" aria-label="anchor" href="#arg-peakcolour"></a></dt>
+<dd><p>Colour for significant peaks track (Default: "darkgreen")</p></dd>
+
+
+<dt id="arg-trackcolour">trackColour<a class="anchor" aria-label="anchor" href="#arg-trackcolour"></a></dt>
+<dd><p>Colour for bedGraph tracks (Default: "#6666ff")</p></dd>
 
 
 <dt id="arg-host">host<a class="anchor" aria-label="anchor" href="#arg-host"></a></dt>
-<dd><p>Hostname for the server location (defaults to localhost).</p></dd>
+<dd><p>Hostname for the server location (Default: "localhost").</p></dd>
 
 
 <dt id="arg-port">port<a class="anchor" aria-label="anchor" href="#arg-port"></a></dt>
@@ -142,7 +157,7 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy per region ...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Differential analysis setup:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1: 'L4' (display as 'L4 Neurons')</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>

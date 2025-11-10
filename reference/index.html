@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,22 +48,22 @@
 
       <dl><dt>
 
-          <code><a href="DamIDResults-class.html">show(<i>&lt;DamIDResults&gt;</i>)</a></code> <code><a href="DamIDResults-class.html">analysisTable()</a></code> <code><a href="DamIDResults-class.html">enrichedCond1()</a></code> <code><a href="DamIDResults-class.html">enrichedCond2()</a></code> <code><a href="DamIDResults-class.html">conditionNames()</a></code> <code><a href="DamIDResults-class.html">inputData()</a></code> <code><a href="DamIDResults-class.html">plot(<i>&lt;DamIDResults&gt;</i>,<i>&lt;missing&gt;</i>)</a></code>
+          <code><a href="DamIDResults-class.html">DamIDResults-class</a></code> <code><a href="DamIDResults-class.html">DamIDResults</a></code>
 
         </dt>
         <dd>The DamIDResults Class</dd>
       </dl><dl><dt>
 
-          <code><a href="all_overlaps_to_original.html">all_overlaps_to_original()</a></code>
-
-        </dt>
-        <dd>Find best gene overlap(s) for each query interval</dd>
-      </dl><dl><dt>
-
           <code><a href="analyse_go_enrichment.html">analyse_go_enrichment()</a></code>
 
         </dt>
-        <dd>Perform Gene Ontology (GO) Enrichment Analysis for Differentially Bound/Expressed Regions</dd>
+        <dd>Perform Gene Ontology (GO) enrichment analysis for differentially bound/expressed regions</dd>
+      </dl><dl><dt>
+
+          <code><a href="analysisTable.html">analysisTable()</a></code>
+
+        </dt>
+        <dd>Access the differential binding analysis results</dd>
       </dl><dl><dt>
 
           <code><a href="browse_igv_regions.html">browse_igv_regions()</a></code>
@@ -72,22 +72,58 @@
         <dd>Interactive IGV visualisation (Shiny + igvShiny) of differential regions</dd>
       </dl><dl><dt>
 
+          <code><a href="calculate_and_add_fdr.html">calculate_and_add_fdr()</a></code>
+
+        </dt>
+        <dd>Calculate and add gene occupancy FDR</dd>
+      </dl><dl><dt>
+
+          <code><a href="calculate_occupancy.html">calculate_occupancy()</a></code>
+
+        </dt>
+        <dd>Compute occupancy for genomic regions</dd>
+      </dl><dl><dt>
+
+          <code><a href="conditionNames.html">conditionNames()</a></code>
+
+        </dt>
+        <dd>Access condition name mapping</dd>
+      </dl><dl><dt>
+
           <code><a href="differential_accessibility.html">differential_accessibility()</a></code>
 
         </dt>
-        <dd>Differential Accessibility Analysis for CATaDa (NOISeq based)</dd>
+        <dd>Differential accessibility analysis for CATaDa (NOISeq based)</dd>
       </dl><dl><dt>
 
           <code><a href="differential_binding.html">differential_binding()</a></code>
 
         </dt>
-        <dd>Differential Binding/Expression Analysis (limma)</dd>
+        <dd>Differential binding/expression analysis (limma)</dd>
       </dl><dl><dt>
 
-          <code><a href="gene_occupancy.html">gene_occupancy()</a></code>
+          <code><a href="enrichedCond1.html">enrichedCond1()</a></code>
 
         </dt>
-        <dd>Compute average occupancy for each gene, using DamID binding profiles</dd>
+        <dd>Access Condition 1 enriched regions</dd>
+      </dl><dl><dt>
+
+          <code><a href="enrichedCond2.html">enrichedCond2()</a></code>
+
+        </dt>
+        <dd>Access Condition 2 enriched regions</dd>
+      </dl><dl><dt>
+
+          <code><a href="expressed.html">expressed()</a></code>
+
+        </dt>
+        <dd>Get expressed genes/loci by FDR</dd>
+      </dl><dl><dt>
+
+          <code><a href="filter_genes_by_fdr.html">filter_genes_by_fdr()</a></code>
+
+        </dt>
+        <dd>Filter genes by FDR within a specific condition</dd>
       </dl><dl><dt>
 
           <code><a href="get_ensdb_genes.html">get_ensdb_genes()</a></code>
@@ -96,10 +132,10 @@
         <dd>Extract gene annotation from Ensembl via AnnotationHub EnsDb</dd>
       </dl><dl><dt>
 
-          <code><a href="gr_occupancy.html">gr_occupancy()</a></code>
+          <code><a href="inputData.html">inputData()</a></code>
 
         </dt>
-        <dd>Compute occupancy (average) per region over a set of GRanges</dd>
+        <dd>Access original input data and metadata</dd>
       </dl><dl><dt>
 
           <code><a href="load_data_genes.html">load_data_genes()</a></code>
@@ -117,19 +153,19 @@
           <code><a href="plot_venn.html">plot_venn()</a></code>
 
         </dt>
-        <dd>Draw Proportional Venn Diagram for differential binding analysis</dd>
+        <dd>Draw proportional Venn diagrams for differential binding analysis</dd>
       </dl><dl><dt>
 
           <code><a href="plot_volcano.html">plot_volcano()</a></code>
 
         </dt>
-        <dd>Volcano Plot of Differentially Bound/Expressed Loci</dd>
+        <dd>Volcano plot of differentially bound/expressed loci</dd>
       </dl><dl><dt>
 
           <code><a href="quantile_normalisation.html">quantile_normalisation()</a></code>
 
         </dt>
-        <dd>Quantile Normalisation</dd>
+        <dd>Quantile normalisation (native R code version)</dd>
       </dl><dl><dt>
 
           <code><a href="reduce_regions.html">reduce_regions()</a></code>

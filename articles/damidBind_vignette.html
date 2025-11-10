@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,12 +54,8 @@
 
 
 
-<link href="damidBind_vignette_files/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
-<script src="damidBind_vignette_files/htmlwidgets-1.6.4/htmlwidgets.js"></script><link href="damidBind_vignette_files/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
-<script src="damidBind_vignette_files/datatables-binding-0.33/datatables.js"></script><link href="damidBind_vignette_files/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-<link href="damidBind_vignette_files/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
-<script src="damidBind_vignette_files/dt-core-1.13.6/js/jquery.dataTables.min.js"></script><link href="damidBind_vignette_files/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
-<script src="damidBind_vignette_files/crosstalk-1.2.1/js/crosstalk.min.js"></script><div class="row">
+
+<div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>damidBind</h1>
@@ -109,25 +105,25 @@ disease.</p>
 <p>Despite the technique’s growing popularity and adoption, no formal
 analysis pipeline or R package exists to analyse and explore
 differential DamID binding, gene transcription or chromatin
-accessibility between two conditions. The <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+accessibility between two conditions. The <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 package provides this functionality.</p>
-<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 imports processed data from DamID-seq experiments in the form of binding
 bedgraphs and GFF peak calls. After optionally normalising data,
 combining peaks across replicates and determining per-replicate peak
 occupancy, the package links bound loci to nearby genes. It then uses
-either <em><a href="https://bioconductor.org/packages/3.19/limma" class="external-link">limma</a></em> (for
-conventional log2 ratio DamID binding data) or <em><a href="https://bioconductor.org/packages/3.19/NOIseq" class="external-link">NOIseq</a></em>
+either <em><a href="https://bioconductor.org/packages/3.20/limma" class="external-link">limma</a></em> (for
+conventional log2 ratio DamID binding data) or <em><a href="https://bioconductor.org/packages/3.20/NOIseq" class="external-link">NOIseq</a></em>
 (for counts-based CATaDa chromatin accessibility data) to identify
 differentially-enriched regions between two conditions. The package
-provides a number of visualisation tools (volcano plots, GSEA plots,
-Venn diagrams) for downstream data exploration and analysis. An
+provides a number of visualisation tools (volcano plots, GO enrichment
+plots, Venn diagrams) for downstream data exploration and analysis. An
 interactive IGV genome browser interface (powered by <em><a href="https://CRAN.R-project.org/package=Shiny" class="external-link">Shiny</a></em> and
-<em><a href="https://bioconductor.org/packages/3.19/igvShiny" class="external-link">igvShiny</a></em>)
+<em><a href="https://bioconductor.org/packages/3.20/igvShiny" class="external-link">igvShiny</a></em>)
 allows users to rapidly and intuitively assess significant
 differentially-bound regions.</p>
 <p>Although extensive customisation options are available if required,
-much of the data handling by <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+much of the data handling by <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 is taken care of automatically, with sensible defaults assumed. To move
 from loading raw data to visualising differentially-enriched regions on
 a volcano plot or browsing enriched regions in an interactive IGV window
@@ -148,7 +144,7 @@ is a simple three command procedure.</p>
 <div class="section level2">
 <h2 id="quick-start-guide">Quick start guide<a class="anchor" aria-label="anchor" href="#quick-start-guide"></a>
 </h2>
-<p>Using <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>,
+<p>Using <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>,
 in eight easy steps:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Example code only, not run:</span></span>
@@ -188,7 +184,7 @@ in eight easy steps:</p>
 <span><span class="fu"><a href="../reference/browse_igv_regions.html">browse_igv_regions</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Apply additional functions on the differential binding results</span></span>
-<span><span class="fu">my_custom_function</span><span class="op">(</span><span class="fu"><a href="../reference/DamIDResults-class.html">analysisTable</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">my_custom_function</span><span class="op">(</span><span class="fu"><a href="../reference/analysisTable.html">analysisTable</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="sample-data-examples">Sample data examples<a class="anchor" aria-label="anchor" href="#sample-data-examples"></a>
@@ -196,7 +192,7 @@ in eight easy steps:</p>
 <div class="section level3">
 <h3 id="sample-input-data-provided-within-the-package">Sample input data (provided within the package)<a class="anchor" aria-label="anchor" href="#sample-input-data-provided-within-the-package"></a>
 </h3>
-<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 provides a simple, truncated dataset with the package for immediate
 testing. Owing to package space, this sample dataset uses only
 <em>Drosophila melanogaster</em> chromosome 2L binding, and should not
@@ -208,7 +204,7 @@ be used for any actual analysis.</p>
 <p><a href="https://doi.org/10.5281/zenodo.16649477" class="external-link">Three
 previously-published sample datasets</a> have been deposited in Zenodo
 and made available for fully exploring the features and capabilities of
-<em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>:</p>
+<em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>:</p>
 <ul>
 <li>Bsh transcription factor binding in L4 and L5 neurons of the
 <em>Drosophila</em> lamina <span class="citation">(Xu <em>et al</em>,
@@ -231,11 +227,11 @@ for all datasets.</p>
 <div class="section level3">
 <h3 id="input-data-format">Input data format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
 </h3>
-<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 takes as input:</p>
 <ul>
 <li>Genome-wide binding profile tracks in BEDGRAPH format (external
-files) or <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+files) or <em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format (internal)
 <ul>
 <li>For standard DamID binding datasets, the score column is expected to
@@ -245,7 +241,7 @@ be in CPM (counts per million reads) or similar</li>
 </ul>
 </li>
 <li>Significant peaks files in GFF or BED format (external files) or
-<em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+<em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format (internal)
 <ul>
 <li>Peaks are not required when comparing differential gene expression
@@ -253,14 +249,14 @@ via RNA Polymerase occupancy.</li>
 </ul>
 </li>
 </ul>
-<p>All external data files are read using <em><a href="https://bioconductor.org/packages/3.19/rtracklayer" class="external-link">rtracklayer</a></em>
+<p>All external data files are read using <em><a href="https://bioconductor.org/packages/3.20/rtracklayer" class="external-link">rtracklayer</a></em>
 and can be gzip compressed or uncompressed as required.</p>
 </div>
 <div class="section level3">
 <h3 id="input-data-generation">Input data generation<a class="anchor" aria-label="anchor" href="#input-data-generation"></a>
 </h3>
-<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
-can work with either raw data files or preprocessed data in <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
+can work with either raw data files or preprocessed data in <em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format.</p>
 <div class="section level4">
 <h4 id="bedgraph-binding-accessibility-profiles">BEDGRAPH binding / accessibility profiles<a class="anchor" aria-label="anchor" href="#bedgraph-binding-accessibility-profiles"></a>
@@ -296,7 +292,7 @@ generate peak files on each DamID / CATaDa BEDGRAPH file replicate:</p>
 <div class="section level3">
 <h3 id="loading-data">Loading data<a class="anchor" aria-label="anchor" href="#loading-data"></a>
 </h3>
-<p>A small example dataset is provided with <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>.
+<p>A small example dataset is provided with <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>.
 The dataset is derived from the binding of Bsh in L4 and L5 neurons of
 the <em>Drosophila melanogaster</em> lamina <span class="citation">(Xu
 <em>et al</em>, 2024)</span>, truncated to chromosome 2L. The raw data
@@ -319,7 +315,7 @@ example datafiles:</p>
 <span><span class="co">## [6] "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm.gatc.2L.bedgraph.gz"         </span></span>
 <span><span class="co">## [7] "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm.gatc-FDR0.01.peaks.2L.bed.gz"</span></span>
 <span><span class="co">## [8] "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm.gatc.2L.bedgraph.gz"</span></span></code></pre>
-<p>And then we can use <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+<p>And then we can use <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 on the data. First, we load up the data. There are two potential
 commands that can be used for data loading, depending on the data being
 analysed:</p>
@@ -349,7 +345,7 @@ quantile normalisation on the datasets.</p>
 <span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
-<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 112 EnsDb for Drosophila melanogaster'</span></span></code></pre>
+<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
 <pre><code><span><span class="co">## loading from cache</span></span></code></pre>
 <pre><code><span><span class="co">## require("ensembldb")</span></span></code></pre>
 <pre><code><span><span class="co">## Locating binding profile files</span></span></code></pre>
@@ -361,12 +357,12 @@ quantile normalisation on the datasets.</p>
 <pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Locating peak files</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
-<pre><code><span><span class="co">## Calculating average occupancy per region ...</span></span></code></pre>
+<pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
 <div class="section level4">
 <h4 id="loading-data-from-granges-objects">Loading data from GRanges objects<a class="anchor" aria-label="anchor" href="#loading-data-from-granges-objects"></a>
 </h4>
 <p>In some workflows, you may already have your binding profiles and
-peak regions loaded as <em><a href="https://bioconductor.org/packages/3.19/GenomicRanges" class="external-link">GenomicRanges</a></em>
+peak regions loaded as <em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 objects. <code>damidBind</code> supports this directly, bypassing the
 need to read from file paths.</p>
 <p>The <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code> and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>
@@ -405,13 +401,13 @@ analysis.</p>
 <span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
-<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 112 EnsDb for Drosophila melanogaster'</span></span></code></pre>
+<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
 <pre><code><span><span class="co">## loading from cache</span></span></code></pre>
 <pre><code><span><span class="co">## Building binding profile dataframe from supplied GRanges objects ...</span></span></code></pre>
 <pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Using supplied peaks GRanges list.</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
-<pre><code><span><span class="co">## Calculating average occupancy per region ...</span></span></code></pre>
+<pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The resulting object can now be used for differential analysis,</span></span>
 <span><span class="co"># just as in the examples below.</span></span></code></pre></div>
@@ -440,7 +436,7 @@ type:</p>
 <dd>
 <p>Analyses conventional DamID data (including RNA Polymerase DamID)
 present as a log2(Dam-fusion/Dam-only) ratio. All standard DamID data is
-in this format. <em><a href="https://bioconductor.org/packages/3.19/limma" class="external-link">limma</a></em> is
+in this format. <em><a href="https://bioconductor.org/packages/3.20/limma" class="external-link">limma</a></em> is
 used as the backend for analysis.</p>
 </dd>
 <dt><code><a href="../reference/differential_accessibility.html">differential_accessibility()</a></code></dt>
@@ -448,7 +444,7 @@ used as the backend for analysis.</p>
 <p>Analyses CATaDa data (Dam-only chromatin accessibility data) present
 as Counts Per Million reads (CPM) or raw counts. Only CATaDa data
 (generated via e.g. <code>damidseq_pipeline --catada</code>) should be
-used with this function. Given the counts nature of these data, <em><a href="https://bioconductor.org/packages/3.19/NOISeq" class="external-link">NOISeq</a></em> is
+used with this function. Given the counts nature of these data, <em><a href="https://bioconductor.org/packages/3.20/NOISeq" class="external-link">NOISeq</a></em> is
 used as the analysis backend.</p>
 </dd>
 </dl>
@@ -499,7 +495,7 @@ search overlaps are avoided, but please check that all replicates have
 been correctly assigned.</p>
 <p>The functions’ output provides a quick “top ten” list of genes
 associated with the most significant, differentially bound loci. This is
-provided for a quick verification that the analysis was worked
+provided for a quick verification that the analysis has worked
 correctly, and does not imply any special value to the listed genes
 beyond that.</p>
 <p>Both <code><a href="../reference/differential_binding.html">differential_binding()</a></code> and
@@ -515,11 +511,35 @@ analysis results.</p>
 <span><span class="co">## Comparison: 'L4 neurons' vs 'L5 neurons'</span></span>
 <span><span class="co">## - 277 regions enriched in L4 neurons</span></span>
 <span><span class="co">## - 173 regions enriched in L5 neurons</span></span>
-<span><span class="co">## - 1208 total regions tested</span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## Access results with accessor functions like analysisTable(object).</span></span></code></pre>
+<span><span class="co">## - 1208 total regions tested</span></span></code></pre>
 <p>To fully explore the differentially bound loci, use one of the
 visualisation functions below.</p>
+</div>
+<div class="section level3">
+<h3 id="analysing-differential-expression">Analysing differential expression<a class="anchor" aria-label="anchor" href="#analysing-differential-expression"></a>
+</h3>
+<p>The sample dataset provided is a transcription factor binding
+dataset, with pre-called peaks. If analysing gene expression datasets
+via RNA Polymerase DamID and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>, the
+analysis pipeline is similar, with some exceptions:</p>
+<ol style="list-style-type: decimal">
+<li>No peaks are required. <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
+calculates signal occupancy over genes directly, and all downstream
+analyses are conducted on gene loci.</li>
+<li>Optional FDR calling via
+<code>load_data_genes(calculate_fdr = TRUE)</code>. <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
+can determine the FDR for enriched occupancy of RNA Polymerase over gene
+bodies, which we have previously shown to be a proxy for gene expression
+<span class="citation">(Southall <em>et al</em>, 2013; Marshall <em>et
+al</em>, 2016)</span>.</li>
+<li>FDR values are not used for DEG analysis, but when present these can
+and should be used to filter the Venn and volcano plot outputs via the
+<code>fdr_filter_threshold</code> parameter, so that only genes deemed
+to be expressed are shown.</li>
+<li>The accessor method <code><a href="../reference/expressed.html">expressed()</a></code> provides a quick means
+to obtain the list of genes passing an FDR threshold for one of the
+analysed conditions.</li>
+</ol>
 </div>
 <div class="section level3">
 <h3 id="visualising-data">Visualising data<a class="anchor" aria-label="anchor" href="#visualising-data"></a>
@@ -533,7 +553,7 @@ visualisation functions below.</p>
 </h4>
 <p>Venn diagrams are a simple means of visualising the proportion of
 loci that are differentially bound between the two tested conditions. To
-provide this, <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+provide this, <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 uses <em><a href="https://CRAN.R-project.org/package=BioVenn" class="external-link">BioVenn</a></em> to
 generate proportional Venn diagrams of the two conditions. The set union
 represents significant binding peaks that fail to show significant
@@ -552,7 +572,7 @@ differentially bound between the two conditions.
 <div class="section level4">
 <h4 id="volcano-plots">Volcano plots<a class="anchor" aria-label="anchor" href="#volcano-plots"></a>
 </h4>
-<p><em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+<p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 comes with a comprehensive volcano plot function. The following gives
 some idea as to the capabilities.</p>
 <div class="section level5">
@@ -666,9 +686,9 @@ or downregulated genes between the lineages.</p>
 window<a class="anchor" aria-label="anchor" href="#browsing-differentially-bound-regions-with-an-igvshiny-browser-window"></a>
 </h4>
 <p>A volcano plot, while useful, still does not put the binding data
-into a genomic context. For this <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+into a genomic context. For this <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 provides an interactive Shiny browser window (via <em><a href="https://CRAN.R-project.org/package=Shiny" class="external-link">Shiny</a></em> and
-<em><a href="https://bioconductor.org/packages/3.19/igvShiny" class="external-link">igvShiny</a></em>),
+<em><a href="https://bioconductor.org/packages/3.20/igvShiny" class="external-link">igvShiny</a></em>),
 where an interactive table of enriched loci allows quick exploration of
 these in the genome browser.</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
@@ -686,11 +706,11 @@ shown, together with the unified binding peaks and a simple pair of
 tracks that show the loci that are enriched in both conditions.</p>
 </div>
 <div class="section level4">
-<h4 id="gsea-plots">GSEA plots<a class="anchor" aria-label="anchor" href="#gsea-plots"></a>
+<h4 id="gene-ontology-go-enrichment-plots">Gene Ontology (GO) enrichment plots<a class="anchor" aria-label="anchor" href="#gene-ontology-go-enrichment-plots"></a>
 </h4>
 <p>Gene ontology is a powerful means of understanding which biological
-processes may be changing between two sets of data. Using <em><a href="https://bioconductor.org/packages/3.19/clusterProfiler" class="external-link">clusterProfiler</a></em>
-as the backend, <em><a href="https://bioconductor.org/packages/3.19/damidBind" class="external-link">damidBind</a></em>
+processes may be changing between two sets of data. Using <em><a href="https://bioconductor.org/packages/3.20/clusterProfiler" class="external-link">clusterProfiler</a></em>
+as the backend, <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 provides the function <code><a href="../reference/analyse_go_enrichment.html">analyse_go_enrichment()</a></code> to explore
 enrichment of genes associated with bound peaks, accessible regions, or
 differential expression. In all cases, the underlying gene IDs, rather
@@ -702,30 +722,45 @@ than gene names, are used for enrichment analysis.</p>
 <span>    org_db <span class="op">=</span> <span class="fu">org.Dm.eg.db</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/org.Dm.eg.db/man/org.Dm.egBASE.html" class="external-link">org.Dm.eg.db</a></span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span></code></pre>
-<pre><code><span><span class="co">## 'select()' returned 1:1 mapping between keys and columns</span></span></code></pre>
-<div class="figure">
-<img src="damidBind_vignette_files/figure-html/gsea-1.png" alt="Enriched GO terms for genes associated with differential Bsh binding in L4 neuron.  Dataset from chromosome 2L only." width="700"><p class="caption">
-Enriched GO terms for genes associated with differential Bsh binding in
-L4 neuron. Dataset from chromosome 2L only.
-</p>
-</div>
+<pre><code><span><span class="co">## No significant GO terms found. Returning NULL.</span></span></code></pre>
 <p>The return value of this function includes the full analysis table,
 including the names of all enriched loci within an ontology term.</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="further-analysis">Further analysis<a class="anchor" aria-label="anchor" href="#further-analysis"></a>
+<h3 id="accessor-methods-and-further-analysis">Accessor methods and further analysis<a class="anchor" aria-label="anchor" href="#accessor-methods-and-further-analysis"></a>
 </h3>
 <p>The <code>DamIDResults</code> object returned by
 <code><a href="../reference/differential_binding.html">differential_binding()</a></code> and
-<code><a href="../reference/differential_accessibility.html">differential_accessibility()</a></code> contains a slot named
-<code>analysis</code> (a dataframe) that can be used for any additional
-downstream data exploration, filtering, or analysis. You access this
-slot using the <code><a href="../reference/DamIDResults-class.html">analysisTable()</a></code> accessor.</p>
-<p>Below are the first 20 lines of <code>analysisTable(diff.bsh)</code>
-to illustrate the structure.</p>
-<div class="datatables html-widget html-fill-item" id="htmlwidget-ac96cb3ee4656e2e9ec3" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-ac96cb3ee4656e2e9ec3">{"x":{"filter":"none","vertical":false,"data":[["2L:16014990-16016485","2L:13935771-13937125","2L:21921104-21922746","2L:9894802-9896162","2L:776873-777732","2L:15143784-15147420","2L:7181117-7182867","2L:18821117-18821746","2L:7618759-7619932","2L:2493025-2495386","2L:3011265-3012505","2L:19311265-19312479","2L:12024689-12026668","2L:19439281-19439930","2L:11969874-11971344","2L:6546134-6547953","2L:815280-816449","2L:14661096-14661345","2L:19399464-19400894","2L:4572769-4574353"],[-2.89471214906417,-2.232826568265683,-2.936331405964698,1.846422667156502,-1.947571947674415,-1.942523886444871,1.759428540833805,-1.871721230158728,-2.11874254684838,1.753074724809483,-3.033915189363416,-1.983414609053493,-1.515909406565656,-1.786227884615382,-1.91140253229096,-1.394350274725271,1.319808760683764,-2.721734999999999,1.47331498951782,-1.35712933753943],[2.295125125334225,0.8249243542435433,1.733310255629946,0.3858132806759738,2.398201671511627,1.606862713087709,0.9459035908052523,0.9202554563492056,0.9902688458262346,1.124282387806943,1.775532332796132,1.399148662551438,1.072495107323232,0.8485562499999989,0.6607743456832098,1.06957074175824,0.483676816239318,1.6585875,0.5453105345911951,0.653552050473185],[-24.99703328038399,-17.28794963407047,-17.1675719515327,16.89112282733457,-15.59741320414712,-15.38904760868087,15.08558826751977,-14.98739296362398,-14.91334140616278,14.79961383455203,-14.37220634352275,-14.28259812564876,-13.85281726091198,-13.05394052657993,-12.78042454123656,-12.47726062423901,12.04644631859876,-11.9789931437025,11.93964424977989,-11.74618770573185],[1.960418795320856e-05,8.115229625510122e-05,8.335933586664633e-05,8.872009714555824e-05,0.0001204296560851908,0.0001267963164736528,0.0001368432871908522,0.0001403067324515353,0.0001429915468138638,0.0001472415577964701,0.0001647017209921983,0.0001686861443591215,0.0001895675073245929,0.0002377668192154671,0.0002577360208740676,0.0002823889094698302,0.0003227345961167019,0.0003296899705288691,0.0003338341426033963,0.0003551841323389006],[0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989,0.01610342559388989],[3.758089850747226,2.602373672759212,2.577833228435365,2.520483305300679,2.232471130690826,2.182840415154494,2.108829927006539,2.084430895912755,2.065882477270657,2.037144424410922,1.926345649995291,1.902540836917805,1.785481107264429,1.5544367838979,1.471033281377949,1.375860476247817,1.23543845592504,1.212880818093483,1.199648444510153,1.133794527611718],[0.8477690508021395,-0.2914889298892985,0.265144552647596,1.309024614254225,1.42441569767442,0.6356007698652735,1.825617861222155,-0.01560515873015873,-0.06910242759795565,2.000819750211685,0.2585747381144238,0.4074413580246915,0.314540404040404,-0.0445576923076923,-0.2949269204622705,0.3723956043956045,1.1435811965812,0.29772,1.281968029350105,-0.02501261829652999],[3.74248119986631,1.941337638376385,3.201475958612295,-0.5373980529022775,3.371987645348835,2.578124656310145,0.06618932038834965,1.85611607142857,2.049640119250425,0.2477450254022015,3.29248992747784,2.390855967078185,1.83044981060606,1.74167019230769,1.61647561182869,1.766745879120875,-0.176227564102564,3.019455,-0.191346960167715,1.3321167192429],["beat-Ic","Ance-3","CG11634","Bka,RpS2,snoRNA:Me18S-A1576,snoRNA:Me18S-G1620,snoRNA:U14:30Ea,snoRNA:U14:30Eb,Uhg2","CG13946","","MICU1","Ugt36F1","","oaf,Slh","Ccdc85","","dmGlut,lncRNA:CR44587","CG10237","lncRNA:CR43314","eya","CG15880,Pex12,Saf6","osp","CG17544,Pax","dpy"],["FBgn0028644","FBgn0032536","FBgn0032968","FBgn0004867,FBgn0010520,FBgn0025881,FBgn0063389,FBgn0063391,FBgn0063392,FBgn0063449","FBgn0040725","","FBgn0031893","FBgn0027074","","FBgn0011818,FBgn0264978","FBgn0031488","","FBgn0010497,FBgn0265798","FBgn0032783","FBgn0263019","FBgn0000320","FBgn0031281,FBgn0031282,FBgn0031283","FBgn0003016","FBgn0032775,FBgn0041789","FBgn0053196"],[1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207,1.793081729044207]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>logFC<\/th>\n      <th>AveExpr<\/th>\n      <th>t<\/th>\n      <th>P.Value<\/th>\n      <th>adj.P.Val<\/th>\n      <th>B<\/th>\n      <th>L4_mean<\/th>\n      <th>L5_mean<\/th>\n      <th>gene_names<\/th>\n      <th>gene_ids<\/th>\n      <th>minuslogp<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"scrollX":true,"columnDefs":[{"targets":1,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":4,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":5,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":6,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":7,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":8,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":11,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,11]},{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"logFC","targets":1},{"name":"AveExpr","targets":2},{"name":"t","targets":3},{"name":"P.Value","targets":4},{"name":"adj.P.Val","targets":5},{"name":"B","targets":6},{"name":"L4_mean","targets":7},{"name":"L5_mean","targets":8},{"name":"gene_names","targets":9},{"name":"gene_ids","targets":10},{"name":"minuslogp","targets":11}],"order":[],"autoWidth":false,"orderClasses":false},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render","options.columnDefs.2.render","options.columnDefs.3.render","options.columnDefs.4.render","options.columnDefs.5.render","options.columnDefs.6.render","options.columnDefs.7.render","options.columnDefs.8.render"],"jsHooks":[]}</script>
+<code><a href="../reference/differential_accessibility.html">differential_accessibility()</a></code> provides accessor methods for
+accessing data for further analysis.</p>
+<p>The following accessor functions are available for a
+<code>DamIDResults</code> object.</p>
+<ul>
+<li>
+<code>analysisTable(object)</code>: Returns the full differential
+analysis table (a <code>data.frame</code>).</li>
+<li>
+<code>enrichedCond1(object)</code>: Returns a
+<code>data.frame</code> of regions significantly enriched in the first
+condition.</li>
+<li>
+<code>enrichedCond2(object)</code>: Returns a
+<code>data.frame</code> of regions significantly enriched in the second
+condition.</li>
+<li>
+<code>conditionNames(object)</code>: Returns a named character
+vector mapping display names to internal identifiers.</li>
+<li>
+<code>inputData(object)</code>: Returns a list containing the
+original input data used for the analysis.</li>
+<li>
+<code>expressed(object, condition, fdr = 0.05, which = "any")</code>:
+Returns a <code>data.frame</code> of genes considered expressed in
+‘condition’, based on an FDR threshold of significantly enriched
+occupancy. Only available for analyses with FDR calculations, generated
+via <code>load_data_genes(calculate_fdr = TRUE)</code>.</li>
+</ul>
 </div>
 </div>
 <div class="section level2">
@@ -806,99 +841,93 @@ RP90136
 <span><span class="co">## [8] base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">##  [1] ensembldb_2.28.1        AnnotationFilter_1.28.0 GenomicFeatures_1.56.0 </span></span>
-<span><span class="co">##  [4] AnnotationDbi_1.66.0    Biobase_2.64.0          GenomicRanges_1.56.2   </span></span>
-<span><span class="co">##  [7] GenomeInfoDb_1.40.1     IRanges_2.38.1          S4Vectors_0.42.1       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.50.0     damidBind_0.99.2        DT_0.33                </span></span>
-<span><span class="co">## [13] BiocStyle_2.32.1       </span></span>
+<span><span class="co">##  [1] ensembldb_2.30.0        AnnotationFilter_1.30.0 GenomicFeatures_1.58.0 </span></span>
+<span><span class="co">##  [4] AnnotationDbi_1.68.0    Biobase_2.66.0          GenomicRanges_1.58.0   </span></span>
+<span><span class="co">##  [7] GenomeInfoDb_1.42.3     IRanges_2.40.1          S4Vectors_0.44.0       </span></span>
+<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.4        DT_0.34.0              </span></span>
+<span><span class="co">## [13] BiocStyle_2.34.0       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##   [1] later_1.4.2                 splines_4.4.0              </span></span>
-<span><span class="co">##   [3] BiocIO_1.14.0               bitops_1.0-9               </span></span>
-<span><span class="co">##   [5] ggplotify_0.1.2             filelock_1.0.3             </span></span>
+<span><span class="co">##   [1] splines_4.4.0               later_1.4.4                </span></span>
+<span><span class="co">##   [3] BiocIO_1.16.0               bitops_1.0-9               </span></span>
+<span><span class="co">##   [5] ggplotify_0.1.3             filelock_1.0.3             </span></span>
 <span><span class="co">##   [7] tibble_3.3.0                R.oo_1.27.1                </span></span>
-<span><span class="co">##   [9] polyclip_1.10-7             XML_3.99-0.18              </span></span>
-<span><span class="co">##  [11] lifecycle_1.0.4             httr2_1.1.2                </span></span>
-<span><span class="co">##  [13] org.Dm.eg.db_3.19.1         lattice_0.22-7             </span></span>
-<span><span class="co">##  [15] MASS_7.3-65                 crosstalk_1.2.1            </span></span>
-<span><span class="co">##  [17] backports_1.5.0             NOISeq_2.48.0              </span></span>
-<span><span class="co">##  [19] magrittr_2.0.3              limma_3.60.6               </span></span>
-<span><span class="co">##  [21] sass_0.4.10                 rmarkdown_2.29             </span></span>
-<span><span class="co">##  [23] jquerylib_0.1.4             yaml_2.3.10                </span></span>
-<span><span class="co">##  [25] plotrix_3.8-4               httpuv_1.6.16              </span></span>
-<span><span class="co">##  [27] cowplot_1.1.3               DBI_1.2.3                  </span></span>
-<span><span class="co">##  [29] RColorBrewer_1.1-3          abind_1.4-5                </span></span>
-<span><span class="co">##  [31] zlibbioc_1.50.0             Rtsne_0.17                 </span></span>
-<span><span class="co">##  [33] purrr_1.0.4                 R.utils_2.13.0             </span></span>
-<span><span class="co">##  [35] ggraph_2.2.1                RCurl_1.98-1.17            </span></span>
-<span><span class="co">##  [37] yulab.utils_0.2.0           tweenr_2.0.3               </span></span>
-<span><span class="co">##  [39] rappdirs_0.3.3              GenomeInfoDbData_1.2.12    </span></span>
-<span><span class="co">##  [41] enrichplot_1.24.4           ggrepel_0.9.6              </span></span>
-<span><span class="co">##  [43] tidytree_0.4.6              pkgdown_2.1.3              </span></span>
-<span><span class="co">##  [45] svglite_2.2.1               codetools_0.2-20           </span></span>
-<span><span class="co">##  [47] DelayedArray_0.30.1         DOSE_3.30.5                </span></span>
-<span><span class="co">##  [49] xml2_1.3.8                  ggforce_0.5.0              </span></span>
-<span><span class="co">##  [51] tidyselect_1.2.1            futile.logger_1.4.3        </span></span>
-<span><span class="co">##  [53] aplot_0.2.8                 UCSC.utils_1.0.0           </span></span>
-<span><span class="co">##  [55] farver_2.1.2                viridis_0.6.5              </span></span>
-<span><span class="co">##  [57] matrixStats_1.5.0           BiocFileCache_2.12.0       </span></span>
-<span><span class="co">##  [59] GenomicAlignments_1.40.0    jsonlite_2.0.0             </span></span>
-<span><span class="co">##  [61] tidygraph_1.3.1             randomcoloR_1.1.0.1        </span></span>
-<span><span class="co">##  [63] systemfonts_1.2.3           tools_4.4.0                </span></span>
-<span><span class="co">##  [65] progress_1.2.3              treeio_1.28.0              </span></span>
-<span><span class="co">##  [67] Rcpp_1.1.0                  glue_1.8.0                 </span></span>
-<span><span class="co">##  [69] gridExtra_2.3               SparseArray_1.4.8          </span></span>
-<span><span class="co">##  [71] xfun_0.52                   qvalue_2.36.0              </span></span>
-<span><span class="co">##  [73] MatrixGenerics_1.16.0       dplyr_1.1.4                </span></span>
-<span><span class="co">##  [75] withr_3.0.2                 formatR_1.14               </span></span>
-<span><span class="co">##  [77] BiocManager_1.30.26         fastmap_1.2.0              </span></span>
-<span><span class="co">##  [79] digest_0.6.37               BioVenn_1.1.3              </span></span>
-<span><span class="co">##  [81] mime_0.12                   R6_2.5.1                   </span></span>
-<span><span class="co">##  [83] gridGraphics_0.5-1          colorspace_2.1-1           </span></span>
-<span><span class="co">##  [85] textshaping_1.0.1           GO.db_3.19.1               </span></span>
-<span><span class="co">##  [87] biomaRt_2.60.1              RSQLite_2.4.1              </span></span>
-<span><span class="co">##  [89] R.methodsS3_1.8.2           tidyr_1.3.1                </span></span>
-<span><span class="co">##  [91] generics_0.1.4              data.table_1.17.6          </span></span>
-<span><span class="co">##  [93] rtracklayer_1.64.0          prettyunits_1.2.0          </span></span>
-<span><span class="co">##  [95] graphlayouts_1.2.2          httr_1.4.7                 </span></span>
-<span><span class="co">##  [97] htmlwidgets_1.6.4           S4Arrays_1.4.1             </span></span>
-<span><span class="co">##  [99] scatterpie_0.2.5            pkgconfig_2.0.3            </span></span>
-<span><span class="co">## [101] gtable_0.3.6                blob_1.2.4                 </span></span>
-<span><span class="co">## [103] S7_0.2.0                    XVector_0.44.0             </span></span>
-<span><span class="co">## [105] shadowtext_0.1.5            clusterProfiler_4.12.6     </span></span>
-<span><span class="co">## [107] htmltools_0.5.8.1           bookdown_0.43              </span></span>
-<span><span class="co">## [109] fgsea_1.30.0                ProtGenerics_1.36.0        </span></span>
-<span><span class="co">## [111] scales_1.4.0                png_0.1-8                  </span></span>
-<span><span class="co">## [113] ggfun_0.1.9                 lambda.r_1.2.4             </span></span>
-<span><span class="co">## [115] knitr_1.50                  rstudioapi_0.17.1          </span></span>
-<span><span class="co">## [117] reshape2_1.4.4              rjson_0.2.21               </span></span>
-<span><span class="co">## [119] checkmate_2.3.2             nlme_3.1-168               </span></span>
-<span><span class="co">## [121] curl_6.4.0                  cachem_1.1.0               </span></span>
-<span><span class="co">## [123] stringr_1.5.1               BiocVersion_3.19.1         </span></span>
-<span><span class="co">## [125] parallel_4.4.0              restfulr_0.0.16            </span></span>
-<span><span class="co">## [127] desc_1.4.3                  pillar_1.11.0              </span></span>
-<span><span class="co">## [129] grid_4.4.0                  vctrs_0.6.5                </span></span>
-<span><span class="co">## [131] promises_1.3.3              dbplyr_2.5.0               </span></span>
-<span><span class="co">## [133] cluster_2.1.6               xtable_1.8-4               </span></span>
-<span><span class="co">## [135] evaluate_1.0.4              futile.options_1.0.1       </span></span>
-<span><span class="co">## [137] cli_3.6.5                   compiler_4.4.0             </span></span>
-<span><span class="co">## [139] Rsamtools_2.20.0            rlang_1.1.6                </span></span>
-<span><span class="co">## [141] crayon_1.5.3                igvShiny_1.0.5             </span></span>
-<span><span class="co">## [143] labeling_0.4.3              forcats_1.0.0              </span></span>
-<span><span class="co">## [145] plyr_1.8.9                  fs_1.6.6                   </span></span>
-<span><span class="co">## [147] stringi_1.8.7               viridisLite_0.4.2          </span></span>
-<span><span class="co">## [149] BiocParallel_1.38.0         Biostrings_2.72.1          </span></span>
-<span><span class="co">## [151] lazyeval_0.2.2              V8_6.0.4                   </span></span>
-<span><span class="co">## [153] GOSemSim_2.30.2             Matrix_1.7-3               </span></span>
-<span><span class="co">## [155] hms_1.1.3                   patchwork_1.3.1            </span></span>
-<span><span class="co">## [157] bit64_4.0.5                 ggplot2_3.5.2              </span></span>
-<span><span class="co">## [159] shiny_1.11.1                KEGGREST_1.44.1            </span></span>
-<span><span class="co">## [161] statmod_1.5.0               SummarizedExperiment_1.34.0</span></span>
-<span><span class="co">## [163] AnnotationHub_3.12.0        igraph_2.1.4               </span></span>
-<span><span class="co">## [165] memoise_2.0.1               bslib_0.9.0                </span></span>
-<span><span class="co">## [167] ggtree_3.12.0               fastmatch_1.1-6            </span></span>
-<span><span class="co">## [169] bit_4.6.0                   gson_0.1.0                 </span></span>
-<span><span class="co">## [171] ape_5.8-1</span></span></code></pre>
+<span><span class="co">##   [9] XML_3.99-0.19               lifecycle_1.0.4            </span></span>
+<span><span class="co">##  [11] httr2_1.2.1                 org.Dm.eg.db_3.20.0        </span></span>
+<span><span class="co">##  [13] lattice_0.22-7              backports_1.5.0            </span></span>
+<span><span class="co">##  [15] NOISeq_2.50.0               magrittr_2.0.4             </span></span>
+<span><span class="co">##  [17] limma_3.62.2                sass_0.4.10                </span></span>
+<span><span class="co">##  [19] rmarkdown_2.30              jquerylib_0.1.4            </span></span>
+<span><span class="co">##  [21] yaml_2.3.10                 plotrix_3.8-4              </span></span>
+<span><span class="co">##  [23] otel_0.2.0                  httpuv_1.6.16              </span></span>
+<span><span class="co">##  [25] ggtangle_0.0.7              cowplot_1.2.0              </span></span>
+<span><span class="co">##  [27] DBI_1.2.3                   RColorBrewer_1.1-3         </span></span>
+<span><span class="co">##  [29] abind_1.4-8                 zlibbioc_1.52.0            </span></span>
+<span><span class="co">##  [31] Rtsne_0.17                  purrr_1.1.0                </span></span>
+<span><span class="co">##  [33] R.utils_2.13.0              RCurl_1.98-1.17            </span></span>
+<span><span class="co">##  [35] yulab.utils_0.2.1           rappdirs_0.3.3             </span></span>
+<span><span class="co">##  [37] GenomeInfoDbData_1.2.13     enrichplot_1.26.6          </span></span>
+<span><span class="co">##  [39] ggrepel_0.9.6               tidytree_0.4.6             </span></span>
+<span><span class="co">##  [41] pkgdown_2.1.3               svglite_2.2.2              </span></span>
+<span><span class="co">##  [43] codetools_0.2-20            DelayedArray_0.32.0        </span></span>
+<span><span class="co">##  [45] DOSE_4.0.1                  xml2_1.4.1                 </span></span>
+<span><span class="co">##  [47] tidyselect_1.2.1            futile.logger_1.4.3        </span></span>
+<span><span class="co">##  [49] aplot_0.2.9                 UCSC.utils_1.2.0           </span></span>
+<span><span class="co">##  [51] farver_2.1.2                matrixStats_1.5.0          </span></span>
+<span><span class="co">##  [53] BiocFileCache_2.14.0        GenomicAlignments_1.42.0   </span></span>
+<span><span class="co">##  [55] jsonlite_2.0.0              randomcoloR_1.1.0.1        </span></span>
+<span><span class="co">##  [57] systemfonts_1.3.1           tools_4.4.0                </span></span>
+<span><span class="co">##  [59] progress_1.2.3              treeio_1.30.0              </span></span>
+<span><span class="co">##  [61] Rcpp_1.1.0                  glue_1.8.0                 </span></span>
+<span><span class="co">##  [63] SparseArray_1.6.2           xfun_0.54                  </span></span>
+<span><span class="co">##  [65] qvalue_2.38.0               MatrixGenerics_1.18.1      </span></span>
+<span><span class="co">##  [67] dplyr_1.1.4                 withr_3.0.2                </span></span>
+<span><span class="co">##  [69] formatR_1.14                BiocManager_1.30.26        </span></span>
+<span><span class="co">##  [71] fastmap_1.2.0               digest_0.6.37              </span></span>
+<span><span class="co">##  [73] BioVenn_1.1.3               mime_0.13                  </span></span>
+<span><span class="co">##  [75] R6_2.6.1                    gridGraphics_0.5-1         </span></span>
+<span><span class="co">##  [77] colorspace_2.1-2            textshaping_1.0.4          </span></span>
+<span><span class="co">##  [79] GO.db_3.20.0                biomaRt_2.62.1             </span></span>
+<span><span class="co">##  [81] RSQLite_2.4.3               R.methodsS3_1.8.2          </span></span>
+<span><span class="co">##  [83] tidyr_1.3.1                 generics_0.1.4             </span></span>
+<span><span class="co">##  [85] data.table_1.17.8           rtracklayer_1.66.0         </span></span>
+<span><span class="co">##  [87] prettyunits_1.2.0           httr_1.4.7                 </span></span>
+<span><span class="co">##  [89] htmlwidgets_1.6.4           S4Arrays_1.6.0             </span></span>
+<span><span class="co">##  [91] pkgconfig_2.0.3             gtable_0.3.6               </span></span>
+<span><span class="co">##  [93] blob_1.2.4                  S7_0.2.0                   </span></span>
+<span><span class="co">##  [95] XVector_0.46.0              clusterProfiler_4.14.6     </span></span>
+<span><span class="co">##  [97] htmltools_0.5.8.1           bookdown_0.45              </span></span>
+<span><span class="co">##  [99] fgsea_1.32.4                ProtGenerics_1.38.0        </span></span>
+<span><span class="co">## [101] scales_1.4.0                png_0.1-8                  </span></span>
+<span><span class="co">## [103] ggfun_0.2.0                 lambda.r_1.2.4             </span></span>
+<span><span class="co">## [105] knitr_1.50                  rstudioapi_0.17.1          </span></span>
+<span><span class="co">## [107] reshape2_1.4.4              rjson_0.2.23               </span></span>
+<span><span class="co">## [109] checkmate_2.3.3             nlme_3.1-168               </span></span>
+<span><span class="co">## [111] curl_7.0.0                  cachem_1.1.0               </span></span>
+<span><span class="co">## [113] stringr_1.5.2               BiocVersion_3.20.0         </span></span>
+<span><span class="co">## [115] parallel_4.4.0              restfulr_0.0.16            </span></span>
+<span><span class="co">## [117] desc_1.4.3                  pillar_1.11.1              </span></span>
+<span><span class="co">## [119] grid_4.4.0                  vctrs_0.6.5                </span></span>
+<span><span class="co">## [121] promises_1.5.0              dbplyr_2.5.1               </span></span>
+<span><span class="co">## [123] cluster_2.1.8.1             xtable_1.8-4               </span></span>
+<span><span class="co">## [125] evaluate_1.0.5              futile.options_1.0.1       </span></span>
+<span><span class="co">## [127] cli_3.6.5                   compiler_4.4.0             </span></span>
+<span><span class="co">## [129] Rsamtools_2.22.0            rlang_1.1.6                </span></span>
+<span><span class="co">## [131] crayon_1.5.3                igvShiny_1.2.0             </span></span>
+<span><span class="co">## [133] labeling_0.4.3              plyr_1.8.9                 </span></span>
+<span><span class="co">## [135] forcats_1.0.1               fs_1.6.6                   </span></span>
+<span><span class="co">## [137] stringi_1.8.7               BiocParallel_1.40.2        </span></span>
+<span><span class="co">## [139] Biostrings_2.74.1           lazyeval_0.2.2             </span></span>
+<span><span class="co">## [141] V8_8.0.1                    GOSemSim_2.32.0            </span></span>
+<span><span class="co">## [143] Matrix_1.7-4                hms_1.1.4                  </span></span>
+<span><span class="co">## [145] patchwork_1.3.2             bit64_4.6.0-1              </span></span>
+<span><span class="co">## [147] ggplot2_4.0.0               KEGGREST_1.46.0            </span></span>
+<span><span class="co">## [149] statmod_1.5.1               shiny_1.11.1               </span></span>
+<span><span class="co">## [151] SummarizedExperiment_1.36.0 AnnotationHub_3.14.0       </span></span>
+<span><span class="co">## [153] igraph_2.2.1                memoise_2.0.1              </span></span>
+<span><span class="co">## [155] bslib_0.9.0                 ggtree_3.12.0              </span></span>
+<span><span class="co">## [157] fastmatch_1.1-6             bit_4.6.0                  </span></span>
+<span><span class="co">## [159] ape_5.8-1                   gson_0.1.0</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

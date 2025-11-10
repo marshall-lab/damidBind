@@ -11,7 +11,7 @@ summarised over genes."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,6 +54,8 @@ summarised over genes.</p>
 <span>  binding_profiles <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  quantile_norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  organism <span class="op">=</span> <span class="st">"drosophila melanogaster"</span>,</span>
+<span>  calculate_fdr <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  fdr_iterations <span class="op">=</span> <span class="fl">50000</span>,</span>
 <span>  ensdb_genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">bpparam</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -79,6 +81,14 @@ containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') support
 <dt id="arg-organism">organism<a class="anchor" aria-label="anchor" href="#arg-organism"></a></dt>
 <dd><p>Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 Defautls to "drosophila melanogaster".</p></dd>
+
+
+<dt id="arg-calculate-fdr">calculate_fdr<a class="anchor" aria-label="anchor" href="#arg-calculate-fdr"></a></dt>
+<dd><p>Calculate FDR based on RNA Pol occupancy (see details) (default: FALSE)</p></dd>
+
+
+<dt id="arg-fdr-iterations">fdr_iterations<a class="anchor" aria-label="anchor" href="#arg-fdr-iterations"></a></dt>
+<dd><p>Number of iterations to use to determine null model for FDR (default: 50000)</p></dd>
 
 
 <dt id="arg-ensdb-genes">ensdb_genes<a class="anchor" aria-label="anchor" href="#arg-ensdb-genes"></a></dt>
@@ -108,6 +118,15 @@ Defautls to "drosophila melanogaster".</p></dd>
 <p>When supplying GRanges lists, each GRanges should contain exactly one numeric
 metadata column representing the signal, and `binding_profiles` must be a
 named list, with element names used as sample names.</p>
+
+<p>The algorithm for determining gene occupancy FDR (as a proxy for gene expression)
+is based on `polii.gene.call`, which in turn was based on that described in
+Southall et al. (2013). Dev Cell, 26(1), 101–12. doi:10.1016/j.devcel.2013.05.020.
+Briefly, the algorithm establishes a null model by simulating the distribution of mean occupancy scores
+from random fragments.  It fits a two-tiered regression to predict the False Discovery Rate (FDR), based
+on fragment count and score. For each gene, the true weighted mean occupancy and fragment count are
+calculated from the provided binding profile. Finally, the pre-computed regression models are used
+to assign a specific FDR to each gene based on its observed occupancy and fragment count.</p>
     </div>
 
     <div class="section level2">
@@ -142,17 +161,24 @@ named list, with element names used as sample names.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy per gene ...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 7 regions...</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View the head of the occupancy table</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">loaded_data_genes</span><span class="op">$</span><span class="va">occupancy</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                      name nfrags Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500 2L:1000-1500      4                             0.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500 2L:2000-2500      4                             0.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:3000-3500 2L:3000-3500      4                             0.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500 2L:5000-5500      4                             1.465469</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500 2L:6000-6500      2                             1.515389</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500 2L:7000-7500      1                            -0.130000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              gene_id gene_name         name nfrags</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500 FBgn001     geneA 2L:1000-1500      4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500 FBgn002     geneB 2L:2000-2500      4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:3000-3500 FBgn003     geneC 2L:3000-3500      4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500 FBgn004     geneD 2L:5000-5500      4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500 FBgn005     geneE 2L:6000-6500      2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500 FBgn006     geneF 2L:7000-7500      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500                             0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500                             0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:3000-3500                             0.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500                             1.465469</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500                             1.515389</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500                            -0.130000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>              Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500                             0.000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500                             0.000000</span>
@@ -167,13 +193,13 @@ named list, with element names used as sample names.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500                            1.2137325</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500                            0.2373453</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500                           -0.0300000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm gene_names gene_ids</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500                            0.0000000      geneA  FBgn001</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500                            0.0000000      geneB  FBgn002</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:3000-3500                            0.0000000      geneC  FBgn003</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500                            0.8943313      geneD  FBgn004</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500                            0.6489222      geneE  FBgn005</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500                           -0.0900000      geneF  FBgn006</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:1000-1500                            0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:2000-2500                            0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:3000-3500                            0.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:5000-5500                            0.8943313</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:6000-6500                            0.6489222</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2L:7000-7500                           -0.0900000</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
