@@ -38,7 +38,7 @@
     }
 
     # Determine which sample columns to use
-    all_sample_cols <- setdiff(names(binding_profiles_data), c("chr", "start", "end"))
+    all_sample_cols <- colnames(mcols(binding_profiles_data))
     use_samples <- if (is.null(samples)) all_sample_cols else intersect(as.character(samples), all_sample_cols)
     if (length(use_samples) == 0) stop("None of the requested samples are present in the data.")
 
@@ -189,7 +189,12 @@
 
     # Add sample quantitative tracks
     for (sample in prepped_data$use_samples) {
-        bprof <- prepped_data$binding_profiles_data[, c("chr", "start", "end", sample)]
+        # igvShiny needs binding data as a dataframe
+        sample_gr <- prepped_data$binding_profiles_data
+        mcols(sample_gr) <- mcols(sample_gr)[, sample, drop=FALSE]
+        bprof <- as.data.frame(sample_gr)
+        bprof <- bprof[, c("seqnames", "start", "end", sample)]
+        colnames(bprof) <- c("chr", "start", "end", sample) # Rename for safety
         loadBedGraphTrack(session, "igv",
             tbl = preptbl(bprof), autoscale = FALSE,
             min = track_scales$bp_min, max = track_scales$bp_max,
@@ -243,7 +248,7 @@
         )
 
         output$region_table <- DT::renderDT({
-            show_cols <- intersect(c("region_name", "logFC", "enriched", "gene_names", "gene_ids"), names(prepped_data$region_tab))
+            show_cols <- intersect(c("region_name", "logFC", "enriched", "gene_name", "gene_id"), names(prepped_data$region_tab))
             DT::datatable(
                 prepped_data$region_tab[, show_cols, drop = FALSE],
                 rownames = FALSE, selection = "single",
