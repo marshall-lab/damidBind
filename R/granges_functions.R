@@ -1,78 +1,73 @@
-#' Compute average occupancy for each gene, using DamID binding profiles
+#' Compute occupancy for genomic regions
 #'
-#' For each gene in the provided annotation, this function calculates the average
-#' log2 score by taking a weighted mean of all overlapping fragments from the
-#' binding data. The weighting is based on the width of the overlap between
-#' each fragment and the gene body.
+#' For each interval in the `regions` GRanges object, this function finds all
+#' overlapping fragments in `binding_data` and computes a weighted mean of their
+#' signal values. Any metadata columns present in the input `regions`
+#' object are preserved in the output data.frame.
 #'
 #' @param binding_data A data.frame as produced by `build_dataframes()`. It must
-#'   contain columns 'chr', 'start', 'end', and then one numeric column per sample.
-#' @param ensdb_genes A GRanges object of gene annotations. A custom GRanges
-#'   object can be provided, but it must contain metadata columns 'gene_name'
-#'   and 'gene_id'. If not provided, it is retrieved via `get_ensdb_genes`.
-#' @param buffer Integer. Number of bases to extend gene boundaries on both sides
-#'   before calculating overlaps. Default is 0.
+#'   contain columns 'chr', 'start', 'end', followed by numeric sample columns.
+#' @param regions A GRanges object of genomic intervals (e.g., genes or reduced peaks)
+#'   over which to calculate occupancy.
+#' @param buffer Optional integer. Number of base pairs to expand each interval
+#'   in `regions` on both sides before calculating occupancy. Default is 0.
 #' @param BPPARAM A BiocParallel parameter object for parallel computation.
-#'   Default: `BiocParallel::bpparam()`.
+#'   Default is `BiocParallel::bpparam()`.
 #'
-#' @return A data.frame where rows are genes and columns include one per sample
-#'   (containing the weighted mean occupancy), plus annotation columns such as
-#'   gene name, number of overlapping fragments ('nfrags'), and gene ID.
+#' @return A data.frame with one row per region from the input `regions` object.
+#'   The output includes the weighted mean occupancy for each sample, `nfrags`
+#'   (number of overlapping fragments), and all original metadata columns from `regions`.
+#'   Rownames are generated from region coordinates to ensure uniqueness.
 #' @export
 #' @examples
-#' # Create a GRanges object for gene annotations
-#' genes_gr <- GenomicRanges::GRanges(
-#'     "chrY",
-#'     IRanges::IRanges(c(1000, 3000), width = 500),
-#'     gene_name = c("gene1", "gene2"),
-#'     gene_id = c("ID1", "ID2")
+#' # Create a set of regions with metadata
+#' regions_gr <- GenomicRanges::GRanges(
+#'     "chrX", IRanges::IRanges(start = c(100, 500), width = 100),
+#'     gene_name = c("MyGene1", "MyGene2"), score = c(10, 20)
 #' )
 #'
-#' # Create mock binding data
-#' binding_df <- data.frame(
-#'     chr = "chrY",
-#'     start = c(950, 1200, 3100),
-#'     end = c(1050, 1300, 3200),
-#'     sampleA = c(1.5, 2.0, 0.5),
-#'     sampleB = c(1.8, 2.2, 0.4)
+#' # Create a mock binding data GRanges object
+#' binding_gr <- GenomicRanges::GRanges(
+#'     seqnames = "chrX",
+#'     ranges = IRanges::IRanges(
+#'         start = c(90, 150, 480, 550),
+#'         end = c(110, 170, 520, 580)
+#'     ),
+#'     sampleA = c(1.2, 0.8, 2.5, 3.0),
+#'     sampleB = c(1.0, 0.9, 2.8, 2.9)
 #' )
 #'
-#' # Calculate average gene occupancy
+#' # Calculate occupancy over the regions
 #' # Use BiocParallel::SerialParam() for deterministic execution in examples
 #' if (requireNamespace("BiocParallel", quietly = TRUE)) {
-#'     gene_occ <- gene_occupancy(binding_df, genes_gr,
+#'     occupancy_data <- calculate_occupancy(binding_gr, regions_gr,
 #'         BPPARAM = BiocParallel::SerialParam()
 #'     )
-#'     print(gene_occ)
+#'     print(occupancy_data)
 #' }
-gene_occupancy <- function(
-    binding_data,
-    ensdb_genes = get_ensdb_genes()$genes,
-    buffer = 0,
-    BPPARAM = BiocParallel::bpparam()) {
-    if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as returned by build_dataframes().")
-    if (!is(ensdb_genes, "GRanges")) stop("'ensdb_genes' must be a GRanges object.")
-    if (is.null(mcols(ensdb_genes)$gene_name)) stop("ensdb_genes must have a metadata column 'gene_name' with gene names.")
+calculate_occupancy <- function(
+        binding_data,
+        regions,
+        buffer = 0,
+        BPPARAM = BiocParallel::bpparam()) {
 
-    message("Calculating average occupancy per gene ...")
+    # Input Validation
+    if (!is(binding_data, "GRanges")) {
+        stop("'binding_data' must be a GRanges object.")
+    }
+    if (!is(regions, "GRanges")) {
+        stop("'regions' must be a GRanges object.")
+    }
+    message(sprintf("Calculating average occupancy for %d regions...", length(regions)))
 
-    # Convert fragments to GRanges
-    frag_gr <- GRanges(
-        seqnames = binding_data$chr,
-        IRanges(start = binding_data$start, end = binding_data$end)
-    )
-
-    # Extend genes by buffer
-    gene_gr <- suppressWarnings(
-        trim(
-            resize(
-                ensdb_genes,
-                width = width(ensdb_genes) + buffer * 2,
-                fix = "center"
-            )
+    # Apply buffer if specified
+    if (buffer != 0) {
+        regions <- suppressWarnings(
+            trim(resize(regions, width = width(regions) + buffer * 2, fix = "center"))
         )
-    )
+    }
 
+    # Resolve potential duplicate coordinates to create unique keys
     resolve_dups <- function(gr) {
         key <- sprintf("%s:%d-%d", seqnames(gr), start(gr), end(gr))
         dup_pos <- 1
@@ -83,198 +78,77 @@ gene_occupancy <- function(
         }
         return(key)
     }
+    region_keys <- resolve_dups(regions)
+    mcols(regions)$`.internal_name` <- region_keys
 
-    locs <- resolve_dups(gene_gr)
-    mcols(gene_gr)$gene_loc <- locs
+    # Get sample column names
+    sample_cols <- colnames(mcols(binding_data))
 
-    # Find overlaps between genes and fragments
-    overlaps <- findOverlaps(gene_gr, frag_gr)
+    overlaps <- findOverlaps(regions, binding_data)
 
-    # For each gene, aggregate overlapping fragment scores (weighted)
-    gene_names <- as.character(mcols(gene_gr)$gene_name)
-    gene_id <- as.character(mcols(gene_gr)$gene_id)
-    gene_loc <- as.character(mcols(gene_gr)$gene_loc)
-    sample_cols <- setdiff(colnames(binding_data), c("chr", "start", "end"))
-
-    calc_occupancy <- function(i) {
-        gene_hits <- subjectHits(overlaps)[queryHits(overlaps) == i]
-        if (length(gene_hits) == 0) {
-            return(rep(NA, length(sample_cols) + 4))
-        }
-
-        # Get covered fragment intervals and intersect size with gene
-        gene_range <- ranges(gene_gr)[i]
-
-        frag_starts <- binding_data$start[gene_hits]
-        frag_ends <- binding_data$end[gene_hits]
-
-        # Trim frags to gene body
-        overlap_starts <- pmax(start(gene_range), frag_starts)
-        overlap_ends <- pmin(end(gene_range), frag_ends)
-
-        # Fragment lengths for weighted mean
-        blens <- overlap_ends - overlap_starts + 1
-        if (any(blens < 1)) blens[blens < 1] <- 0
-
-        res <- vapply(sample_cols, function(col) {
-            vals <- binding_data[[col]][gene_hits]
-            weighted.mean(vals, w = blens, na.rm = TRUE)
-        }, FUN.VALUE = numeric(1))
-
-        # Return loc/name, nfrags, Averages, gene_name, gene_id
-        c(
-            name = gene_loc[i],
-            nfrags = length(gene_hits),
-            res,
-            gene_names = gene_names[i],
-            gene_ids = gene_id[i]
-        )
-    }
-
-    results <- BiocParallel::bplapply(seq_along(gene_gr), calc_occupancy, BPPARAM = BPPARAM)
-    results <- do.call(rbind, results)
-
-    results_df <- as.data.frame(results)
-    cols_to_convert <- c("nfrags", sample_cols)
-    results_df[, cols_to_convert] <- lapply(results_df[, cols_to_convert], as.numeric)
-    results_df <- na.omit(results_df)
-
-    # Rownames
-    rownames(results_df) <- results_df$name
-
-    results_df
-}
-
-
-#' Compute occupancy (average) per region over a set of GRanges
-#'
-#' For each interval in the `regions` GRanges object, this function finds all
-#' overlapping fragments in `binding_data` and computes a weighted mean of their
-#' signal values. The mean is weighted by the length of the overlap between each
-#' fragment and the region.
-#'
-#' @param binding_data A data.frame as returned by `build_dataframes()`. It must
-#'   contain columns 'chr', 'start', 'end', followed by numeric sample columns.
-#' @param regions A GRanges object of genomic intervals (e.g., reduced peaks)
-#'   over which to calculate occupancy.
-#' @param buffer Optional integer. Number of base pairs to expand each interval
-#'   in `regions` on both sides before calculating occupancy. Default is 0.
-#' @param BPPARAM A BiocParallel parameter object for parallel computation.
-#'   Default is `BiocParallel::bpparam()`.
-#'
-#' @return A data.frame with one row per region from the input `regions` object.
-#'   Columns include 'name', 'nfrags' (number of overlapping fragments), and one
-#'   column for the calculated weighted mean occupancy for each sample.
-#' @export
-#' @examples
-#' # 1. Create a set of regions (e.g., reduced peaks)
-#' regions_gr <- GenomicRanges::GRanges("chrX", IRanges::IRanges(start = c(100, 500), width = 100))
-#' S4Vectors::mcols(regions_gr)$name <- paste0(
-#'     GenomicRanges::seqnames(regions_gr), ":",
-#'     GenomicRanges::start(regions_gr), "-", GenomicRanges::end(regions_gr)
-#' )
-#'
-#' # 2. Create a mock binding data data.frame
-#' binding_df <- data.frame(
-#'     chr = "chrX",
-#'     start = c(90, 150, 480, 550),
-#'     end = c(110, 170, 520, 580),
-#'     sampleA = c(1.2, 0.8, 2.5, 3.0),
-#'     sampleB = c(1.0, 0.9, 2.8, 2.9)
-#' )
-#'
-#' # 3. Calculate occupancy over the regions
-#' # Use BiocParallel::SerialParam() for deterministic execution in examples
-#' if (requireNamespace("BiocParallel", quietly = TRUE)) {
-#'     occupancy_data <- gr_occupancy(binding_df, regions_gr,
-#'         BPPARAM = BiocParallel::SerialParam()
-#'     )
-#'     print(occupancy_data)
-#' }
-gr_occupancy <- function(
-    binding_data,
-    regions,
-    buffer = 0,
-    BPPARAM = BiocParallel::bpparam()) {
-    if (!is(binding_data, "data.frame")) stop("'binding_data' must be a data.frame as from build_dataframes().")
-    if (!is(regions, "GRanges")) stop("'regions' must be a GRanges object.")
-
-    message("Calculating average occupancy per region ...")
-    if (buffer != 0) {
-        regions <- suppressWarnings(
-            trim(
-                resize(
-                    regions,
-                    width = width(regions) + buffer * 2,
-                    fix = "center"
-                )
-            )
-        )
-    }
-    frag_gr <- GRanges(
-        seqnames = binding_data$chr,
-        IRanges(start = binding_data$start, end = binding_data$end)
-    )
-    sample_cols <- setdiff(colnames(binding_data), c("chr", "start", "end"))
-
-    # Name regions if they don't have names
-    if (!"name" %in% names(mcols(regions))) {
-        mcols(regions)$name <- paste0(seqnames(regions), ":", start(regions), "-", end(regions))
-    }
-
-    # Perform a single findOverlaps call - this is the key efficiency gain
-    overlaps <- findOverlaps(regions, frag_gr)
-
-    calc_occupancy <- function(i) {
+    # Worker function to calculate occupancy over one region
+    calc_one_region <- function(i) {
+        # Find which fragments overlap the current region 'i'
         region_hits <- subjectHits(overlaps)[queryHits(overlaps) == i]
+
+        # If no fragments overlap, return NA
         if (length(region_hits) == 0) {
-            return(rep(NA, length(sample_cols) + 2))
+            return(rep(NA, length(sample_cols) + 1))
         }
 
+        # Get the genomic range for the current region
         region_range <- ranges(regions)[i]
-        frag_starts <- binding_data$start[region_hits]
-        frag_ends <- binding_data$end[region_hits]
 
+        # Get the coordinates of all overlapping fragments using robust accessors
+        overlapping_fragments <- binding_data[region_hits]
+        frag_starts <- start(overlapping_fragments)
+        frag_ends <- end(overlapping_fragments)
+
+        # Calculate the width of the precise overlap for each fragment
         overlap_starts <- pmax(start(region_range), frag_starts)
         overlap_ends <- pmin(end(region_range), frag_ends)
+        overlap_widths <- overlap_ends - overlap_starts + 1
+        overlap_widths[overlap_widths < 1] <- 0
 
-        blens <- overlap_ends - overlap_starts + 1
-        if (any(blens < 1)) blens[blens < 1] <- 0
-
+        # Calculate the weighted mean for each sample column
         avg_scores <- vapply(sample_cols, function(col) {
-            vals <- binding_data[[col]][region_hits]
-            weighted.mean(vals, w = blens, na.rm = TRUE)
+            # Use the correct 'binding_data' object
+            vals <- mcols(overlapping_fragments)[[col]]
+            if (sum(overlap_widths, na.rm = TRUE) == 0) return(NA_real_)
+            weighted.mean(vals, w = overlap_widths, na.rm = TRUE)
         }, FUN.VALUE = numeric(1))
 
-        return(c(mcols(regions)$name[i], length(region_hits), avg_scores))
+        # Return the number of fragments and the calculated scores
+        return(c(nfrags = length(region_hits), avg_scores))
     }
 
-    results <- BiocParallel::bplapply(seq_along(regions), calc_occupancy, BPPARAM = BPPARAM)
-    results <- do.call(rbind, results)
+    # Run the calculation in parallel for all regions
+    results_matrix <- do.call(rbind, bplapply(seq_along(regions), calc_one_region, BPPARAM = BPPARAM))
 
-    # Handle cases where no regions had overlaps
-    if (is.null(results) || nrow(results) == 0) {
-        # Return an empty dataframe with correct structure
-        outdf <- data.frame(
-            name = character(0),
-            nfrags = integer(0),
-            stringsAsFactors = FALSE
-        )
-        for (col in sample_cols) outdf[[col]] <- numeric(0)
-        return(outdf)
+    # Convert the matrix of results to a data.frame
+    results_df <- as.data.frame(results_matrix)
+    colnames(results_df) <- c("nfrags", sample_cols)
+    cols_to_convert <- colnames(results_df) # All are numeric
+    results_df[cols_to_convert] <- lapply(results_df[cols_to_convert], as.numeric)
+
+    # Get all original metadata from the input regions
+    original_metadata_df <- as.data.frame(mcols(regions))
+
+    # Combine the calculated results with the original metadata
+    final_df <- cbind(original_metadata_df, results_df)
+
+    final_df <- na.omit(final_df)
+    rownames(final_df) <- final_df$`.internal_name`
+
+    # Rename the internal name column to 'name' for consistency
+    if(".internal_name" %in% colnames(final_df)){
+        colnames(final_df)[colnames(final_df) == ".internal_name"] <- "name"
     }
 
-    results_df <- as.data.frame(results, stringsAsFactors = FALSE)
-    colnames(results_df) <- c("name", "nfrags", sample_cols)
-
-    # Convert appropriate columns to numeric
-    numeric_cols <- c("nfrags", sample_cols)
-    results_df[, numeric_cols] <- lapply(results_df[, numeric_cols], as.numeric)
-
-    results_df <- na.omit(results_df)
-    rownames(results_df) <- results_df$name
-    return(results_df)
+    return(final_df)
 }
+
+
 
 #' Reduce a list of GRanges to unique, non-overlapping regions
 #'
@@ -326,27 +200,7 @@ reduce_regions <- function(peaks) {
 #'   query region. An empty string `""` indicates no overlap.}
 #'   \item{ids}{A character vector with the corresponding `gene_id` values, if
 #'   the `gene_id` column exists in the subject.}
-#'
-#' @export
-#' @examples
-#' # Create a query GRanges object with regions of interest
-#' query_regions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100, 500), width = 50))
-#'
-#' # Create a subject GRanges object with gene annotations
-#' gene_annotations <- GenomicRanges::GRanges(
-#'     "chr1",
-#'     IRanges::IRanges(c(90, 200, 525), width = c(30, 50, 50)),
-#'     gene_name = c("geneA", "geneB", "geneC"),
-#'     gene_id = c("FBgn01", "FBgn02", "FBgn03")
-#' )
-#'
-#' # Find overlaps (query 1 overlaps geneA; query 2 overlaps geneC)
-#' overlaps <- all_overlaps_to_original(query_regions, gene_annotations, maxgap = 0)
-#' print(overlaps)
-#'
-#' # With a larger gap, query 1 now also overlaps geneB
-#' overlaps_gapped <- all_overlaps_to_original(query_regions, gene_annotations, maxgap = 50)
-#' print(overlaps_gapped)
+#' @noRd
 all_overlaps_to_original <- function(query, subject, maxgap = 0) {
     if (!is(query, "GRanges")) stop("'query' must be a GRanges object.")
     if (!is(subject, "GRanges")) stop("'subject' must be a GRanges object.")
