@@ -14,8 +14,8 @@ make_dummy_catada_data_list <- function() {
         chr = c("chrA", "chrA", "chrB", "chrB", "chrC", "chrC"),
         start = c(10, 110, 20, 120, 30, 130),
         end = c(100, 200, 110, 210, 120, 220),
-        gene_names = c("GeneX", "GeneY", "", "GeneZ", "GeneA", "GeneB"),
-        gene_ids = c("ID_X", "ID_Y", "ID_none", "ID_Z", "ID_A", "ID_B"),
+        gene_name = c("GeneX", "GeneY", "", "GeneZ", "GeneA", "GeneB"),
+        gene_id = c("ID_X", "ID_Y", "ID_none", "ID_Z", "ID_A", "ID_B"),
         nfrags = c(5, 8, 3, 6, 7, 9),
         CondA_rep1 = c(100, 50, 10, 20, 150, 30), # High in A
         CondA_rep2 = c(110, 55, 12, 22, 160, 33),
@@ -43,11 +43,11 @@ test_that("differential_accessibility returns expected structure and values", {
     expect_s4_class(res, "DamIDResults")
     expect_s3_class(analysisTable(res), "data.frame")
     expect_true(all(rownames(analysisTable(res)) == rownames(dl_catada$occupancy)))
-    expect_true(all(c("logFC", "minuslogp", "gene_names", "gene_ids") %in% colnames(analysisTable(res))))
+    expect_true(all(c("logFC", "minuslogp", "gene_name", "gene_id") %in% colnames(analysisTable(res))))
 
     # Check gene annotations are transferred
-    expect_equal(analysisTable(res)["peak1", "gene_names"], "GeneX")
-    expect_equal(analysisTable(res)["peak3", "gene_names"], "")
+    expect_equal(analysisTable(res)["peak1", "gene_name"], "GeneX")
+    expect_equal(analysisTable(res)["peak3", "gene_name"], "")
 
     expect_equal(nrow(enrichedCond1(res)), 2)
     expect_true(all(c("peak1", "peak5") %in% rownames(enrichedCond1(res))))

@@ -44,47 +44,51 @@ test_that("gene_occupancy calculates weighted mean correctly", {
     )
 
     # Binding data with specific values for calculation
-    binding_df <- data.frame(
-        chr = "chr1",
-        start = c(950, 1050, 1400, 2900, 3200, 3400),
-        end = c(1049, 1149, 1499, 2999, 3299, 3499),
+    binding_gr <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(
+            start = c(950, 1050, 1400, 2900, 3200, 3400),
+            end = c(1049, 1149, 1499, 2999, 3299, 3499)
+        ),
         val1 = c(10, 20, 30, 5, 15, 25),
         val2 = c(11, 21, 31, 6, 16, 26)
     )
 
-    res <- gene_occupancy(binding_df, ensdb_genes = dummy_genes_gr, BPPARAM = BiocParallel:::SerialParam()) # Use serial for test consistency
+    res <- calculate_occupancy(binding_gr, dummy_genes_gr, BPPARAM = BiocParallel:::SerialParam()) # Use serial for test consistency
 
     expect_s3_class(res, "data.frame")
     expect_equal(nrow(res), 2)
-    expect_true(all(c("name", "nfrags", "val1", "val2", "gene_names", "gene_ids") %in% colnames(res)))
+    expect_true(all(c("name", "nfrags", "val1", "val2", "gene_name", "gene_id") %in% colnames(res)))
 
     # Check GeneA
     expect_equal(res["chr1:1000-1500", "val1"], 22)
     expect_equal(res["chr1:1000-1500", "val2"], 23)
     expect_equal(res["chr1:1000-1500", "nfrags"], 3)
-    expect_equal(res["chr1:1000-1500", "gene_names"], "GeneA")
-    expect_equal(res["chr1:1000-1500", "gene_ids"], "TestGene1")
+    expect_equal(res["chr1:1000-1500", "gene_name"], "GeneA")
+    expect_equal(res["chr1:1000-1500", "gene_id"], "TestGene1")
 
     # Check GeneB
     expect_equal(res["chr1:3000-3500", "val1"], 20)
     expect_equal(res["chr1:3000-3500", "val2"], 21)
     expect_equal(res["chr1:3000-3500", "nfrags"], 2)
-    expect_equal(res["chr1:3000-3500", "gene_names"], "GeneB")
-    expect_equal(res["chr1:3000-3500", "gene_ids"], "TestGene2")
+    expect_equal(res["chr1:3000-3500", "gene_name"], "GeneB")
+    expect_equal(res["chr1:3000-3500", "gene_id"], "TestGene2")
 })
 
 
-test_that("gr_occupancy calculates weighted mean for arbitrary regions", {
+test_that("calculate_occupancy calculates weighted mean for arbitrary regions", {
     regions_gr <- GRanges("chr1", IRanges(start = c(100, 300), end = c(150, 350)))
-    binding_df <- data.frame(
-        chr = "chr1",
-        start = c(90, 110, 280, 305),
-        end = c(110, 130, 310, 320),
+    binding_gr <- GenomicRanges::GRanges(
+        seqnames = "chr1",
+        ranges = IRanges::IRanges(
+            start = c(90, 110, 280, 305),
+            end = c(110, 130, 310, 320)
+        ),
         signal_a = c(10, 20, 5, 15),
         signal_b = c(100, 200, 50, 150)
     )
 
-    res <- gr_occupancy(binding_df, regions_gr, BPPARAM = BiocParallel::SerialParam())
+    res <- calculate_occupancy(binding_gr, regions_gr, BPPARAM = BiocParallel::SerialParam())
 
     expect_s3_class(res, "data.frame")
     expect_equal(nrow(res), 2)

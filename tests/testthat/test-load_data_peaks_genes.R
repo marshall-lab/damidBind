@@ -2,6 +2,7 @@ library(testthat)
 library(damidBind)
 library(GenomicRanges)
 library(S4Vectors)
+library(dplyr)
 
 # Source helper function
 source(test_path("_test_helper.R"))
@@ -29,16 +30,16 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
     expect_named(dl, c("binding_profiles_data", "peaks", "pr", "occupancy", "test_category"))
 
     # Check binding_profiles_data
-    expect_s3_class(dl$binding_profiles_data, "data.frame")
-    expect_true(nrow(dl$binding_profiles_data) > 0)
+    expect_s4_class(dl$binding_profiles_data, "GRanges")
+    expect_true(length(dl$binding_profiles_data) > 0)
+    # Check for metadata columns in the GRanges object
     expect_true(all(c(
-        "chr", "start", "end",
         "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm"
     ) %in%
-        colnames(dl$binding_profiles_data)))
+        names(mcols(dl$binding_profiles_data))))
 
     # Check peaks (list of GRanges)
     expect_type(dl$peaks, "list")
@@ -59,7 +60,7 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
         "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm",
-        "gene_names", "gene_ids"
+        "gene_name", "gene_id"
     ) %in%
         colnames(dl$occupancy)))
     expect_true(all(rownames(dl$occupancy) == dl$occupancy$name))
@@ -68,12 +69,11 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
     expect_equal(dl$test_category, "bound")
 
     # Check for gene annotations (from dummy ensdb_genes)
-    expect_true(any(dl$occupancy$gene_names != ""))
-    expect_true(any(dl$occupancy$gene_ids != ""))
+    expect_true(any(dl$occupancy$gene_name != ""))
+    expect_true(any(dl$occupancy$gene_id != ""))
 })
 
 test_that("load_data_peaks works with quantile_norm = TRUE", {
-    # temp_extdata_dir <- copy_extdata_to_temp()
     data_dir <- system.file("extdata", package = "damidBind")
     binding_profiles_path <- data_dir
     peaks_path <- data_dir
@@ -85,25 +85,24 @@ test_that("load_data_peaks works with quantile_norm = TRUE", {
         BPPARAM = BiocParallel::SerialParam()
     )
 
+    # Check for renamed, quantile-normalised metadata columns
     expect_true(all(c(
-        "chr", "start", "end",
         "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm_qnorm",
         "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm_qnorm",
         "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm",
         "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm"
     ) %in%
-        colnames(dl_qnorm$binding_profiles_data)))
+        names(mcols(dl_qnorm$binding_profiles_data))))
 
     # Check that values are indeed normalised
-    signal_cols_qnorm <- dl_qnorm$binding_profiles_data %>%
-        dplyr::select(dplyr::starts_with("Bsh_Dam_L")) %>%
-        as.matrix()
+    # Correctly extract the matrix from the GRanges mcols
+    signal_cols_qnorm <- as.matrix(mcols(dl_qnorm$binding_profiles_data))
 
-    col_means <- colMeans(signal_cols_qnorm)
+    col_means <- colMeans(signal_cols_qnorm, na.rm = TRUE)
     # Quantile normalization makes distributions similar; mean/median should converge
     expect_true(sd(col_means) < 0.5) # Using noisy real data
     # Also check that sample medians are similar
-    sample_medians <- apply(signal_cols_qnorm, 2, median)
+    sample_medians <- apply(signal_cols_qnorm, 2, median, na.rm = TRUE)
     expect_true(sd(sample_medians) < 0.5)
 })
 
@@ -141,32 +140,32 @@ test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files co
     expect_named(dl, c("binding_profiles_data", "occupancy", "test_category"))
 
     # Check binding_profiles_data
-    expect_s3_class(dl$binding_profiles_data, "data.frame")
-    expect_true(nrow(dl$binding_profiles_data) > 0)
+    expect_s4_class(dl$binding_profiles_data, "GRanges")
+    expect_true(length(dl$binding_profiles_data) > 0)
     expect_true(all(c(
-        "chr", "start", "end",
         "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm"
     ) %in%
-        colnames(dl$binding_profiles_data)))
+        names(mcols(dl$binding_profiles_data))))
 
     # Check occupancy
     expect_s3_class(dl$occupancy, "data.frame")
     expect_true(nrow(dl$occupancy) > 0)
+    # Filenames in occupancy should not have ".gatc"
     expect_true(all(c(
         "name", "nfrags",
         "Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm",
         "Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm",
-        "gene_names", "gene_ids"
+        "gene_name", "gene_id"
     ) %in% colnames(dl$occupancy)))
 
     # Verify some expected values from the occupancy dataframe
-    expect_true(any(grepl("gene", dl$occupancy$gene_names, ignore.case = TRUE)))
-    expect_true(any(grepl("FBgn", dl$occupancy$gene_ids, ignore.case = TRUE)))
+    expect_true(any(grepl("gene", dl$occupancy$gene_name, ignore.case = TRUE)))
+    expect_true(any(grepl("FBgn", dl$occupancy$gene_id, ignore.case = TRUE)))
 
     # Check test_category
     expect_equal(dl$test_category, "expressed")
@@ -183,13 +182,21 @@ test_that("load_data_genes works with quantile_norm = TRUE", {
         BPPARAM = BiocParallel::SerialParam()
     )
 
-    # Check that values were normalised in the occupancy dataframe
+    # Check quantile normalisation in the binding_profiles_data object
+    qnorm_mcols <- mcols(dl_qnorm$binding_profiles_data)
+    expect_true(all(grepl("_qnorm$", names(qnorm_mcols))))
+
+    # Check that occupancy values were calculated from the normalised data
+    # The occupancy df colnames should have the _qnorm suffix
+    expect_true(all(grepl("_qnorm", grep("Bsh_Dam_L", colnames(dl_qnorm$occupancy), value = TRUE))))
+
+    # Check that values are indeed normalised
     signal_cols_qnorm <- dl_qnorm$occupancy %>%
-        dplyr::select(dplyr::starts_with("Bsh_Dam_L")) %>%
+        select(ends_with("_qnorm")) %>%
         as.matrix()
 
-    col_means <- colMeans(signal_cols_qnorm)
+    col_means <- colMeans(signal_cols_qnorm, na.rm = TRUE)
     expect_true(sd(col_means) < 0.5)
-    sample_medians <- apply(signal_cols_qnorm, 2, median)
+    sample_medians <- apply(signal_cols_qnorm, 2, median, na.rm = TRUE)
     expect_true(sd(sample_medians) < 0.5)
 })

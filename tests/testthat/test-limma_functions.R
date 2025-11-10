@@ -10,8 +10,8 @@ make_minimal_data_list <- function() {
         chr = c("chrA", "chrA", "chrB", "chrB"),
         start = c(1, 101, 1, 101),
         end = c(100, 200, 100, 200),
-        gene_names = c("GeneA", "GeneB", "", "GeneC"),
-        gene_ids = c("ID_A", "ID_B", "ID_none", "ID_C"),
+        gene_name = c("GeneA", "GeneB", "", "GeneC"),
+        gene_id = c("ID_A", "ID_B", "ID_none", "ID_C"),
         CondA_rep1 = c(10, 50, 10, 20),
         CondA_rep2 = c(12, 52, 11, 22),
         CondB_rep1 = c(5, 10, 20, 40),
@@ -41,7 +41,7 @@ test_that("differential_binding processes data and returns correct structure", {
     expect_equal(nrow(analysisTable(res)), 4)
 
     # Check essential columns are present and correctly derived
-    expect_true(all(c("logFC", "adj.P.Val", "minuslogp", "gene_names", "gene_ids", "CondA_mean", "CondB_mean") %in% colnames(analysisTable(res))))
+    expect_true(all(c("logFC", "adj.P.Val", "minuslogp", "gene_name", "gene_id", "CondA_mean", "CondB_mean") %in% colnames(analysisTable(res))))
     # Check that minuslogp is correctly calculated from the adj.P.Val in the results of this specific run
     expect_equal(analysisTable(res)$minuslogp, -log10(analysisTable(res)$adj.P.Val))
 
@@ -53,8 +53,8 @@ test_that("differential_binding processes data and returns correct structure", {
     expect_equal(sort(rownames(enrichedCond2(res))), sort(c("loc3", "loc4")))
 
     # Check gene annotations and condition means
-    expect_equal(analysisTable(res)["loc1", "gene_names"], "GeneA")
-    expect_equal(analysisTable(res)["loc3", "gene_names"], "")
+    expect_equal(analysisTable(res)["loc1", "gene_name"], "GeneA")
+    expect_equal(analysisTable(res)["loc3", "gene_name"], "")
     expect_equal(analysisTable(res)["loc2", "CondA_mean"], mean(c(50, 52)))
     expect_equal(analysisTable(res)["loc4", "CondB_mean"], mean(c(40, 41)))
 
@@ -87,7 +87,7 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     # 'non_sig': not significant
     occupancy_df <- data.frame(
         name = c("neg_sig", "pos_sig", "non_sig"),
-        gene_names = c("GeneNeg", "GenePos", "GeneNon"),
+        gene_name = c("GeneNeg", "GenePos", "GeneNon"),
         CondA_rep1 = c(-0.9, 3.1, 1.0),
         CondA_rep2 = c(-1.1, 2.9, 1.1),
         CondB_rep1 = c(-2.9, 1.1, 1.0),

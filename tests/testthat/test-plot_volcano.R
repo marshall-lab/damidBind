@@ -12,7 +12,7 @@ make_dummy_diff_results <- function() {
         adj.P.Val = c(0.001, 0.005, 0.1, 0.002, 0.08, 0.5),
         minuslogp = -log10(c(0.001, 0.005, 0.1, 0.002, 0.08, 0.5)),
         B = c(5, 4, -1, 3, 0, -2), # Dummy B-statistics
-        gene_names = c("GENE_SIG_UP1", "GENE_SIG_DOWN1", "GENE_NONSIG1", "GENE_SIG_UP2", "GENE_NONSIG2", "GENE_NONSIG_SMALL"),
+        gene_name = c("GENE_SIG_UP1", "GENE_SIG_DOWN1", "GENE_NONSIG1", "GENE_SIG_UP2", "GENE_NONSIG2", "GENE_NONSIG_SMALL"),
         row.names = c("L1", "L2", "L3", "L4", "L5", "L6")
     )
 

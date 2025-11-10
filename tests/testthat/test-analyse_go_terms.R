@@ -12,8 +12,8 @@ make_dummy_diff_results_for_go <- function() {
     analysis_table <- data.frame(
         logFC = c(2.5, -3.0, 0.5, 1.8, -1.2, 0.1, 0, 0, 0, 0, 0),
         adj.P.Val = c(0.001, 0.005, 0.1, 0.002, 0.08, 0.5, 1, 1, 1, 1, 1),
-        gene_names = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "geneG", "geneH", "geneI", "geneJ", "geneK"),
-        gene_ids = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007", "FBgn008", "FBgn009", "FBgn010", "FBgn011"),
+        gene_name = c("geneA", "geneB", "geneC", "geneD", "geneE", "geneF", "geneG", "geneH", "geneI", "geneJ", "geneK"),
+        gene_id = c("FBgn001", "FBgn002", "FBgn003", "FBgn004", "FBgn005", "FBgn006", "FBgn007", "FBgn008", "FBgn009", "FBgn010", "FBgn011"),
         row.names = c("Locus1", "Locus2", "Locus3", "Locus4", "Locus5", "Locus6", "Locus7", "Locus8", "Locus9", "Locus10", "Locus11")
     )
 
@@ -148,7 +148,7 @@ test_that("analyse_go_enrichment handles cases with no significant genes", {
 
     expect_message(
         res <- analyse_go_enrichment(diff_res_no_sig, org_db = dummy_org_db),
-        "No significant genes for direction 'cond1' (Condition_X). Returning NULL.",
+        "No significant genes for direction 'cond1' (Condition_X) within the defined universe. Returning NULL.",
         fixed = TRUE
     )
     expect_null(res)
