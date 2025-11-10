@@ -1,4 +1,4 @@
-#' @title Check and Coerce List Input for Configuration
+#' @title Check and coerce config inputs
 #'
 #' @description
 #' This helper function validates and processes user-provided configuration inputs.
@@ -41,7 +41,7 @@ check_list_input <- function(default_list, config_input) {
 }
 
 
-#' @title Manage Volcano Plot Configurations
+#' @title Manage colcano plot configurations
 #' @description Merges user-provided configurations with defaults and returns a
 #'   single list of all settings.
 #' @param diff_results A `DamIDResults` object.
@@ -83,7 +83,7 @@ check_list_input <- function(default_list, config_input) {
             legend.position = c(0.97, 0.05),
             legend.justification = c(1, 0)
         ),
-        label_fill = TRUE, text_col = FALSE
+        label_fill = FALSE, text_col = FALSE
     )
     final_highlight_config <- check_list_input(highlight_defaults, highlight_config)
 
@@ -119,7 +119,7 @@ check_list_input <- function(default_list, config_input) {
 }
 
 
-#' @title Prepare Data for Highlight and Label Layers
+#' @title Prepare data for highlight and label layers
 #' @description Generates dataframes for ggplot highlight and label layers.
 #' @return A list with `highlight_df` (for geom_point), `label_df` (for ggrepel),
 #'   and `highlight_colours` (named vector).
@@ -198,7 +198,7 @@ check_list_input <- function(default_list, config_input) {
 }
 
 
-#' Volcano Plot of Differentially Bound/Expressed Loci
+#' Volcano plot of differentially bound/expressed loci
 #'
 #' @description
 #' Creates a volcano plot from the results of a differential analysis. The plot
@@ -208,6 +208,13 @@ check_list_input <- function(default_list, config_input) {
 #'
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
+#' @param fdr_filter_threshold Numeric or NULL. If a value (e.g., 0.05) is provided,
+#'   the volcano plot will only include loci that have an FDR value less than or
+#'   equal to this threshold in at least one replicate of the two conditions
+#'   being plotted. This requires that the data was loaded using
+#'   `load_data_genes` with `calculate_fdr = TRUE`, which generates the
+#'   necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
+#'   performed.
 #' @param plot_config List. Names to override plot details (title, axes, size,
 #'   colours, etc); see details.
 #'   \itemize{
@@ -222,7 +229,8 @@ check_list_input <- function(default_list, config_input) {
 #' @param label_config List. Fine-grained label controls; if missing or `NULL`,
 #'   no labels are added (see details).
 #'   \itemize{
-#'     \item \code{genes}: character vector to restrict labels to a subset (default: label all significant).
+#'     \item \code{genes}: character vector to restrict labels to a subset
+#'       (default: label all significant).
 #'     \item \code{label_size}: label size (numeric).
 #'     \item \code{clean_names}: logical; if `TRUE`, applies regex filtering to labels.
 #'     \item \code{names_clean}, \code{names_clean_extra}: regex to exclude from labels
@@ -245,8 +253,10 @@ check_list_input <- function(default_list, config_input) {
 #'     \item \code{label_size}: Numeric; label size (default: 4).
 #'     \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
 #'     \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
-#'     \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
-#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+#'     \item \code{legend_inside}: Logical; whether to draw the plot legend for
+#'       the highlight groups inside the plot (default: TRUE).
+#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position
+#'       for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
 #'     \item \code{label_fill}: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)
 #'     \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
 #'   }
@@ -295,26 +305,29 @@ check_list_input <- function(default_list, config_input) {
 #' # Generate a default volcano plot
 #' plot_volcano(diff_results)
 #'
-#' # Generate a plot with a highlighted gene group, but no other labels
-#' L4_genes_to_highlight <- c("ap", "dpr1", "side", "mav")
-#' plot_volcano(
-#'     diff_results,
-#'     label_config = NULL,
-#'     highlight = list("Key L4 Genes" = L4_genes_to_highlight)
-#' )
-#'
 #' @export
 plot_volcano <- function(
-    diff_results,
-    plot_config = list(),
-    label_config = list(),
-    highlight = NULL,
-    highlight_config = list(),
-    save = NULL) {
+        diff_results,
+        fdr_filter_threshold = NULL,
+        plot_config = list(),
+        label_config = list(),
+        highlight = NULL,
+        highlight_config = list(),
+        save = NULL) {
     stopifnot(is(diff_results, "DamIDResults"))
 
     # Prepare data and configurations
     analysis_table <- analysisTable(diff_results)
+
+    # Filter loci by gene expression FDR, if requested
+    if (!is.null(fdr_filter_threshold) && is.numeric(fdr_filter_threshold)) {
+        kept_loci <- filter_on_fdr(diff_results, fdr_filter_threshold)
+        analysis_table <- analysis_table[kept_loci, , drop = FALSE]
+        if (nrow(analysis_table) == 0) {
+            warning("After FDR filtering, no loci remain to be plotted. The plot will be empty.")
+        }
+    }
+
     configs <- .manage_volcano_configs(diff_results, plot_config, label_config, highlight_config, save)
     plot_cfg <- configs$plot
     if (!plot_cfg$ystat %in% names(analysis_table)) {
@@ -327,7 +340,7 @@ plot_volcano <- function(
     plot_df <- analysis_table
     plot_df$id <- rownames(plot_df)
     plot_df$sig <- plot_df$id %in% c(rownames(enrichedCond1(diff_results)), rownames(enrichedCond2(diff_results)))
-    gene_labels_all <- if ("gene_names" %in% names(plot_df)) plot_df$gene_names else plot_df$id
+    gene_labels_all <- if ("gene_name" %in% names(plot_df)) plot_df$gene_name else plot_df$id
     layer_data <- .prepare_highlight_and_label_data(plot_df, gene_labels_all, highlight, configs)
 
     # Build plot layers
@@ -340,14 +353,15 @@ plot_volcano <- function(
             scale_colour_manual(name = NULL, values = layer_data$highlight_colours, guide = if (isTRUE(configs$highlight$legend)) "legend" else "none")
     }
 
+    # Add labels
     if (!is.null(layer_data$label_df)) {
         label_size <- if (!is.null(configs$label)) configs$label$label_size else configs$highlight$label_size
         max_overlaps <- if (!is.null(configs$label)) configs$label$max_overlaps else configs$highlight$max_overlaps
 
         if (isTRUE(configs$highlight$label_fill)) {
-            p <- p + ggrepel::geom_label_repel(data = layer_data$label_df, aes(label = .data$label_to_display, fill = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1, color = "black")+
-            ggplot2::scale_fill_manual(name = NULL, values = layer_data$highlight_colours, guide = "none")
-        } else if (isTRUE(configs$highlight$label_col)) {
+            p <- p + ggrepel::geom_label_repel(data = layer_data$label_df, aes(label = .data$label_to_display, fill = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1, color = "black") +
+                ggplot2::scale_fill_manual(name = NULL, values = layer_data$highlight_colours, guide = "none")
+        } else if (isTRUE(configs$highlight$text_col)) {
             p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display, colour = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
         } else {
             p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
