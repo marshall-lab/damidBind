@@ -34,8 +34,11 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
     }
 
     # Identify sample columns from the occupancy data frame
-    base_cols <- c("chr", "start", "end", "name", "gene_names", "gene_ids", "nfrags")
+    base_cols <- c("chr", "start", "end", "name", "gene_name", "gene_id", "nfrags")
     all_sample_cols <- setdiff(colnames(occupancy_df), base_cols)
+
+    # Explicitly remove any FDR columns from the list of potential sample columns
+    all_sample_cols <- all_sample_cols[!grepl("_FDR$", all_sample_cols)]
 
     if (length(all_sample_cols) < 2) {
         stop("At least two sample columns are required for differential analysis.")
@@ -140,10 +143,10 @@ prep_data_for_differential_analysis <- function(data_list, cond, cond_names = NU
 #' @noRd
 ._report_results <- function(ctype_name, loci) {
     num <- nrow(loci)
-    num.adj <- sum(loci$gene_names != "" & !is.na(loci$gene_names))
+    num.adj <- sum(loci$gene_name != "" & !is.na(loci$gene_name))
     message(sprintf("\n%d loci enriched in %s", num, ctype_name))
     if (num.adj > 0) {
-        top_genes <- loci$gene_names[loci$gene_names != "" & !is.na(loci$gene_names)]
+        top_genes <- loci$gene_name[loci$gene_name != "" & !is.na(loci$gene_name)]
         message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
     }
     invisible(NULL)
