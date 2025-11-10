@@ -1,4 +1,4 @@
-#' Quantile Normalisation
+#' Quantile normalisation (native R code version)
 #'
 #' Performs quantile normalisation of a numeric matrix in native R, matching
 #' the algorithm used by `preprocessCore` (including its tie-handling rule).
