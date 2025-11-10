@@ -39,7 +39,7 @@ DamID [@Steensel2000; @Steensel2001] is a highly-sensitive means to profile the 
 
 Despite the technique's growing popularity and adoption, no formal analysis pipeline or R package exists to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The `r Biocpkg('damidBind')` package provides this functionality.
 
-`r Biocpkg('damidBind')` imports processed data from DamID-seq experiments in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `r Biocpkg("limma")` (for conventional log2 ratio DamID binding data) or `r Biocpkg("NOIseq")` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots, Venn diagrams) for downstream data exploration and analysis. An interactive IGV genome browser interface (powered by `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`) allows users to rapidly and intuitively assess significant differentially-bound regions.
+`r Biocpkg('damidBind')` imports processed data from DamID-seq experiments in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either `r Biocpkg("limma")` (for conventional log2 ratio DamID binding data) or `r Biocpkg("NOIseq")` (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GO enrichment plots, Venn diagrams) for downstream data exploration and analysis. An interactive IGV genome browser interface (powered by `r CRANpkg("Shiny")` and `r Biocpkg("igvShiny")`) allows users to rapidly and intuitively assess significant differentially-bound regions.
 
 Although extensive customisation options are available if required, much of the data handling by `r Biocpkg('damidBind')` is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.
 
@@ -261,7 +261,7 @@ The use of `cond_names` here is optional, and provides display names for the con
 
 Note that when run, `differential_binding` (or `differential_accessibility`) will list the replicates found under each condition. The package attempts to ensure that condition search overlaps are avoided, but please check that all replicates have been correctly assigned.
 
-The functions' output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis was worked correctly, and does not imply any special value to the listed genes beyond that.
+The functions' output provides a quick "top ten" list of genes associated with the most significant, differentially bound loci. This is provided for a quick verification that the analysis has worked correctly, and does not imply any special value to the listed genes beyond that.
 
 Both `differential_binding()` and `differential_accessibility()` return a `DamIDResults` S4 object, that forms the basis of downstream analysis. Printing the object will provide a simple summary of the analysis results.
 
@@ -271,6 +271,15 @@ diff.bsh
 ```
 
 To fully explore the differentially bound loci, use one of the visualisation functions below.
+
+## Analysing differential expression
+
+The sample dataset provided is a transcription factor binding dataset, with pre-called peaks.  If analysing gene expression datasets via RNA Polymerase DamID and `load_data_genes()`, the analysis pipeline is similar, with some exceptions:
+
+1. No peaks are required. `r Biocpkg('damidBind')` calculates signal occupancy over genes directly, and all downstream analyses are conducted on gene loci.
+2. Optional FDR calling via `load_data_genes(calculate_fdr = TRUE)`.  `r Biocpkg('damidBind')` can determine the FDR for enriched occupancy of RNA Polymerase over gene bodies, which we have previously shown to be a proxy for gene expression [@Southall2013; @Marshall2016].
+3. FDR values are not used for DEG analysis, but when present these can and should be used to filter the Venn and volcano plot outputs via the `fdr_filter_threshold` parameter, so that only genes deemed to be expressed are shown.
+4. The accessor method `expressed()` provides a quick means to obtain the list of genes passing an FDR threshold for one of the analysed conditions.
 
 ## Visualising data
 
@@ -370,7 +379,7 @@ An example of the interface is shown below:
 
 The table on the left side of the window can be sorted by clicking on the column headers, and clicking on any entry will move the IGV browser window to that locus (+/- a sensible buffer region). All sample reps are shown, together with the unified binding peaks and a simple pair of tracks that show the loci that are enriched in both conditions.
 
-### GSEA plots
+### Gene Ontology (GO) enrichment plots
 
 Gene ontology is a powerful means of understanding which biological processes may be changing between two sets of data. Using `r Biocpkg("clusterProfiler")` as the backend, `r Biocpkg('damidBind')` provides the function `analyse_go_enrichment()` to explore enrichment of genes associated with bound peaks, accessible regions, or differential expression. In all cases, the underlying gene IDs, rather than gene names, are used for enrichment analysis.
 
@@ -384,22 +393,18 @@ go.bsh_l4 <- analyse_go_enrichment(
 
 The return value of this function includes the full analysis table, including the names of all enriched loci within an ontology term.
 
-## Further analysis
+## Accessor methods and further analysis
 
-The `DamIDResults` object returned by `differential_binding()` and `differential_accessibility()` contains a slot named `analysis` (a dataframe) that can be used for any additional downstream data exploration, filtering, or analysis. You access this slot using the `analysisTable()` accessor.
+The `DamIDResults` object returned by `differential_binding()` and `differential_accessibility()` provides accessor methods for accessing data for further analysis.
 
-Below are the first 20 lines of `analysisTable(diff.bsh)` to illustrate the structure.
+The following accessor functions are available for a `DamIDResults` object.
 
-```{r paged_table, echo=FALSE, results='asis'}
-# Display the data frame as a paged table
-DT::datatable(
-    head(analysisTable(diff.bsh), n = 20),
-    options = list(
-        pageLength = 10,
-        scrollX = TRUE
-    )
-) %>% DT::formatRound(columns = c(1:8, 11), digits = 2)
-```
+* `analysisTable(object)`: Returns the full differential analysis table (a `data.frame`).
+* `enrichedCond1(object)`: Returns a `data.frame` of regions significantly enriched in the first condition.
+* `enrichedCond2(object)`: Returns a `data.frame` of regions significantly enriched in the second condition.
+* `conditionNames(object)`: Returns a named character vector mapping display names to internal identifiers.
+* `inputData(object)`: Returns a list containing the original input data used for the analysis.
+* `expressed(object, condition, fdr = 0.05, which = "any")`: Returns a `data.frame` of genes considered expressed in 'condition', based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via `load_data_genes(calculate_fdr = TRUE)`.
 
 # References
 
