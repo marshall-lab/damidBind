@@ -1,13 +1,20 @@
-#' Draw Proportional Venn Diagram for differential binding analysis
+#' Draw proportional Venn diagrams for differential binding analysis
 #'
-#' Generates a two-set Venn/proportional diagram summarising the results of the differential binding analysis.
-#' The set union represents significant binding peaks that fail to show significant differences in occupancy;
-#' the exclusive regions of each set represent regions with enriched differential binding in that condition.
+#' Generates a two-set proportional Venn diagram summarising the results of the
+#' differential binding analysis.  The set union represents significant binding
+#' peaks that fail to show significant differences in occupancy; the exclusive
+#' regions of each set represent regions with enriched differential binding in that condition.
 #' Note that regions can be bound in both conditions, and still show differential occupancy.
+#' For gene expression analysis, the set of analysed genes can optionally be
+#' filtered by FDR such that the universe is restricted to only genes deemed
+#' expressed, as is typically expected for DEG representations.
 #'
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
-#' @param title Plot title to use.
+#' @param fdr_filter_threshold Numeric or NULL. If a value (e.g., 0.05) is provided, the universe of
+#'   loci considered for the Venn diagram will be restricted to those that pass this FDR threshold in
+#'   at least one sample.  Used for illustrating DEGs with RNA Pol TaDa. If NULL (default), all tested loci are used.
+#' @param title Plot title to use (default: generated from test condition context)
 #' @param subtitle Subtitle to use (default is empty).
 #' @param set_labels Character vector of length 2. Names for the two sets/circles (defaults to the analysis condition names).
 #' @param filename Character. Path at which to save the diagram, if not NULL.
@@ -49,14 +56,15 @@
 #'
 #' @export
 plot_venn <- function(
-    diff_results,
-    title = "Enriched binding at loci",
-    subtitle = "",
-    set_labels = NULL,
-    filename = NULL,
-    font = "sans",
-    format = c("pdf", "svg"),
-    region_colours = c("#FFA500", "#2288DD", "#CCCCCC")) {
+        diff_results,
+        title = NULL,
+        subtitle = "",
+        set_labels = NULL,
+        filename = NULL,
+        font = "sans",
+        format = c("pdf", "svg"),
+        region_colours = c("#FFA500", "#2288DD", "#CCCCCC"),
+        fdr_filter_threshold = NULL) {
     # Argument and field checks
     stopifnot(is(diff_results, "DamIDResults"))
 
@@ -64,9 +72,19 @@ plot_venn <- function(
         set_labels <- names(conditionNames(diff_results))
     }
 
+    if (is.null(title)) {
+        title <- sprintf("Differentially %s loci",inputData(diff_results)$test_category)
+    }
+
     upCond1 <- rownames(enrichedCond1(diff_results))
     upCond2 <- rownames(enrichedCond2(diff_results))
     all_ids <- rownames(analysisTable(diff_results))
+
+    # Filter the universe of loci by FDR if requested
+    if (!is.null(fdr_filter_threshold) && is.numeric(fdr_filter_threshold)) {
+        all_ids <- filter_on_fdr(diff_results, fdr_filter_threshold)
+    }
+
     # Defensive: remove NAs or empty
     upCond1 <- upCond1[!is.na(upCond1) & nchar(upCond1) > 0]
     upCond2 <- upCond2[!is.na(upCond2) & nchar(upCond2) > 0]
@@ -74,10 +92,10 @@ plot_venn <- function(
 
     # Check minimum viable dataset
     if (length(all_ids) < 2) {
-        stop("Not enough loci for Venn diagram (need at least 2 in 'all').")
+        stop("Not enough loci for Venn diagram (need at least 2 in the universe).")
     }
 
-    # Non-significant set
+    # Non-significant set (within potentially filtered universe)
     nonsig <- setdiff(all_ids, union(upCond1, upCond2))
     Cond1_full <- union(upCond1, nonsig)
     Cond2_full <- union(upCond2, nonsig)
