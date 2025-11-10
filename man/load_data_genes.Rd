@@ -9,6 +9,8 @@ load_data_genes(
   binding_profiles = NULL,
   quantile_norm = FALSE,
   organism = "drosophila melanogaster",
+  calculate_fdr = FALSE,
+  fdr_iterations = 50000,
   ensdb_genes = NULL,
   BPPARAM = BiocParallel::bpparam()
 )
@@ -23,6 +25,10 @@ containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') support
 
 \item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 Defautls to "drosophila melanogaster".}
+
+\item{calculate_fdr}{Calculate FDR based on RNA Pol occupancy (see details) (default: FALSE)}
+
+\item{fdr_iterations}{Number of iterations to use to determine null model for FDR (default: 50000)}
 
 \item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained from `organism` if NULL.}
 
@@ -45,6 +51,16 @@ One of `binding_profiles_path` or `binding_profiles` must be provided.
 When supplying GRanges lists, each GRanges should contain exactly one numeric
 metadata column representing the signal, and `binding_profiles` must be a
 named list, with element names used as sample names.
+
+
+The algorithm for determining gene occupancy FDR (as a proxy for gene expression)
+is based on `polii.gene.call`, which in turn was based on that described in
+Southall et al. (2013). Dev Cell, 26(1), 101–12. doi:10.1016/j.devcel.2013.05.020.
+Briefly, the algorithm establishes a null model by simulating the distribution of mean occupancy scores
+from random fragments.  It fits a two-tiered regression to predict the False Discovery Rate (FDR), based
+on fragment count and score. For each gene, the true weighted mean occupancy and fragment count are
+calculated from the provided binding profile. Finally, the pre-computed regression models are used
+to assign a specific FDR to each gene based on its observed occupancy and fragment count.
 }
 \examples{
 # Create a mock GRanges object for gene annotations

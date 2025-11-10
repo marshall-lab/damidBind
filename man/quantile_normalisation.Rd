@@ -3,7 +3,7 @@
 \name{quantile_normalisation}
 \alias{quantile_normalisation}
 \alias{quantile_normalization}
-\title{Quantile Normalisation}
+\title{Quantile normalisation (native R code version)}
 \usage{
 quantile_normalisation(x)
 }

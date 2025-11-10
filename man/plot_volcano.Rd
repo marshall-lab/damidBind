@@ -2,10 +2,11 @@
 % Please edit documentation in R/plot_volcano.R
 \name{plot_volcano}
 \alias{plot_volcano}
-\title{Volcano Plot of Differentially Bound/Expressed Loci}
+\title{Volcano plot of differentially bound/expressed loci}
 \usage{
 plot_volcano(
   diff_results,
+  fdr_filter_threshold = NULL,
   plot_config = list(),
   label_config = list(),
   highlight = NULL,
@@ -16,6 +17,14 @@ plot_volcano(
 \arguments{
 \item{diff_results}{A `DamIDResults` object, as returned by
 `differential_binding()` or `differential_accessibility()`.}
+
+\item{fdr_filter_threshold}{Numeric or NULL. If a value (e.g., 0.05) is provided,
+the volcano plot will only include loci that have an FDR value less than or
+equal to this threshold in at least one replicate of the two conditions
+being plotted. This requires that the data was loaded using
+`load_data_genes` with `calculate_fdr = TRUE`, which generates the
+necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
+performed.}
 
 \item{plot_config}{List. Names to override plot details (title, axes, size,
 colours, etc); see details.
@@ -32,7 +41,8 @@ colours, etc); see details.
 \item{label_config}{List. Fine-grained label controls; if missing or `NULL`,
 no labels are added (see details).
 \itemize{
-  \item \code{genes}: character vector to restrict labels to a subset (default: label all significant).
+  \item \code{genes}: character vector to restrict labels to a subset
+    (default: label all significant).
   \item \code{label_size}: label size (numeric).
   \item \code{clean_names}: logical; if `TRUE`, applies regex filtering to labels.
   \item \code{names_clean}, \code{names_clean_extra}: regex to exclude from labels
@@ -57,8 +67,12 @@ defaults are used.
   \item \code{label_size}: Numeric; label size (default: 4).
   \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
   \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
-  \item \code{legend_inside}: Logical; whether to draw the plot legend for the highlight groups inside the plot (default: TRUE).
-  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+  \item \code{legend_inside}: Logical; whether to draw the plot legend for
+    the highlight groups inside the plot (default: TRUE).
+  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position
+    for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+  \item \code{label_fill}: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)
+  \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
 }}
 
 \item{save}{List or `NULL`. Controls saving the plot to a file.
@@ -112,13 +126,5 @@ diff_results <- .generate_example_results()
 
 # Generate a default volcano plot
 plot_volcano(diff_results)
-
-# Generate a plot with a highlighted gene group, but no other labels
-L4_genes_to_highlight <- c("ap", "dpr1", "side", "mav")
-plot_volcano(
-    diff_results,
-    label_config = NULL,
-    highlight = list("Key L4 Genes" = L4_genes_to_highlight)
-)
 
 }

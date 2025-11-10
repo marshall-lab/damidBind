@@ -2,7 +2,7 @@
 % Please edit documentation in R/noiseq_functions.R
 \name{differential_accessibility}
 \alias{differential_accessibility}
-\title{Differential Accessibility Analysis for CATaDa (NOISeq based)}
+\title{Differential accessibility analysis for CATaDa (NOISeq based)}
 \usage{
 differential_accessibility(
   data_list,
@@ -47,8 +47,8 @@ performs NOISeq analysis, and returns differentially-accessible loci.
 # Create a mock data_list with plausible count data
 mock_occupancy_counts <- data.frame(
     name = c("peak1", "peak2", "peak3"),
-    gene_names = c("GeneA", "GeneB", "GeneC"),
-    gene_ids = c("ID_A", "ID_B", "ID_C"),
+    gene_name = c("GeneA", "GeneB", "GeneC"),
+    gene_id = c("ID_A", "ID_B", "ID_C"),
     GroupA_rep1 = c(100, 20, 50), GroupA_rep2 = c(110, 25, 45),
     GroupB_rep1 = c(10, 200, 55), GroupB_rep2 = c(15, 220, 60),
     row.names = c("peak1", "peak2", "peak3")

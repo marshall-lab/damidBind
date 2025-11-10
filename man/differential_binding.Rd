@@ -2,7 +2,7 @@
 % Please edit documentation in R/limma_functions.R
 \name{differential_binding}
 \alias{differential_binding}
-\title{Differential Binding/Expression Analysis (limma)}
+\title{Differential binding/expression analysis (limma)}
 \usage{
 differential_binding(
   data_list,

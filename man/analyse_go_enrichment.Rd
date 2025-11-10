@@ -3,7 +3,7 @@
 \name{analyse_go_enrichment}
 \alias{analyse_go_enrichment}
 \alias{analyze_go_enrichment}
-\title{Perform Gene Ontology (GO) Enrichment Analysis for Differentially Bound/Expressed Regions}
+\title{Perform Gene Ontology (GO) enrichment analysis for differentially bound/expressed regions}
 \usage{
 analyse_go_enrichment(
   diff_results,
@@ -20,6 +20,7 @@ analyse_go_enrichment(
   abbrev_terms = FALSE,
   abbrevs = c(regulation = "reg."),
   theme_size = 14,
+  use_gse = FALSE,
   save = NULL,
   save_results_path = NULL,
   maxGSSize = 1000,
@@ -63,6 +64,9 @@ Default: 50.}
 
 \item{theme_size}{Integer. Base theme size to set. Default: 14.}
 
+\item{use_gse}{Logical. Whether to use GSEA via `gseGO` rather than
+GO enrichment analysis (via `enrichGO`).  (Default: FALSE)}
+
 \item{save}{List or `NULL`. Controls saving the plot to a file (dot plot).
 If `NULL`, `FALSE`, or `0`, the plot is not saved.
 If a `list`, it specifies saving parameters:
@@ -93,12 +97,13 @@ A list containing:
 \description{
 This function performs Gene Ontology (GO) enrichment analysis using `clusterProfiler`
 for either the up-regulated or down-regulated regions/genes identified by
-`differential_binding()` or `differential_accessibility()`. It automatically extracts the relevant gene IDs (FBgnIDs)
+`differential_binding()` or `differential_accessibility()`. It automatically
+extracts the relevant gene IDs (gene_ids)
 and the background universe from the input `DamIDResults` object.
 }
 \details{
 This function assumes that the `analysis` slot in the `diff_results`
-object contains a `gene_ids` column.   If this column is not present,
+object contains a `gene_id` column.   If this column is not present,
 or cannot be processed, the function will return NULL.
 }
 \examples{

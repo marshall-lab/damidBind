@@ -2,24 +2,25 @@
 % Please edit documentation in R/plot_venn.R
 \name{plot_venn}
 \alias{plot_venn}
-\title{Draw Proportional Venn Diagram for differential binding analysis}
+\title{Draw proportional Venn diagrams for differential binding analysis}
 \usage{
 plot_venn(
   diff_results,
-  title = "Enriched binding at loci",
+  title = NULL,
   subtitle = "",
   set_labels = NULL,
   filename = NULL,
   font = "sans",
   format = c("pdf", "svg"),
-  region_colours = c("#FFA500", "#2288DD", "#CCCCCC")
+  region_colours = c("#FFA500", "#2288DD", "#CCCCCC"),
+  fdr_filter_threshold = NULL
 )
 }
 \arguments{
 \item{diff_results}{A `DamIDResults` object, as returned by
 `differential_binding()` or `differential_accessibility()`.}
 
-\item{title}{Plot title to use.}
+\item{title}{Plot title to use (default: generated from test condition context)}
 
 \item{subtitle}{Subtitle to use (default is empty).}
 
@@ -32,15 +33,23 @@ plot_venn(
 \item{format}{Character. Output plot format, "pdf" or "svg" (default "pdf").}
 
 \item{region_colours}{Character vector of length 2 or 3. Fill colours for each set region (default: c("#FFA500", "#2288DD", "#CCCCCC")).}
+
+\item{fdr_filter_threshold}{Numeric or NULL. If a value (e.g., 0.05) is provided, the universe of
+loci considered for the Venn diagram will be restricted to those that pass this FDR threshold in
+at least one sample.  Used for illustrating DEGs with RNA Pol TaDa. If NULL (default), all tested loci are used.}
 }
 \value{
 The function is called to generating a plot. It invisibly returns `NULL`.
 }
 \description{
-Generates a two-set Venn/proportional diagram summarising the results of the differential binding analysis.
-The set union represents significant binding peaks that fail to show significant differences in occupancy;
-the exclusive regions of each set represent regions with enriched differential binding in that condition.
+Generates a two-set proportional Venn diagram summarising the results of the
+differential binding analysis.  The set union represents significant binding
+peaks that fail to show significant differences in occupancy; the exclusive
+regions of each set represent regions with enriched differential binding in that condition.
 Note that regions can be bound in both conditions, and still show differential occupancy.
+For gene expression analysis, the set of analysed genes can optionally be
+filtered by FDR such that the universe is restricted to only genes deemed
+expressed, as is typically expected for DEG representations.
 }
 \examples{
 # Helper function to create a sample DamIDResults object
