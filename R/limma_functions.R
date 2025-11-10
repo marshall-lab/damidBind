@@ -1,4 +1,4 @@
-#' Differential Binding/Expression Analysis (limma)
+#' Differential binding/expression analysis (limma)
 #'
 #' Setup and differential analysis for occupancy/binding experiments
 #' using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
@@ -130,14 +130,14 @@ differential_binding <- function(
 
     # Gene annotation
     occupancy_df <- data_list$occupancy
-    if ("gene_names" %in% colnames(occupancy_df) && "gene_ids" %in% colnames(occupancy_df)) {
-        gene_names_annot <- occupancy_df[rownames(result_table), "gene_names"]
-        gene_ids_annot <- occupancy_df[rownames(result_table), "gene_ids"]
-        result_table[, "gene_names"] <- gene_names_annot
-        result_table[, "gene_ids"] <- gene_ids_annot
+    if ("gene_name" %in% colnames(occupancy_df) && "gene_id" %in% colnames(occupancy_df)) {
+        gene_name_annot <- occupancy_df[rownames(result_table), "gene_name"]
+        gene_id_annot <- occupancy_df[rownames(result_table), "gene_id"]
+        result_table[, "gene_name"] <- gene_name_annot
+        result_table[, "gene_id"] <- gene_id_annot
     } else {
-        result_table[, "gene_names"] <- NA_character_
-        result_table[, "gene_ids"] <- NA_character_
+        result_table[, "gene_name"] <- NA_character_
+        result_table[, "gene_id"] <- NA_character_
     }
 
     result_table$minuslogp <- -log10(result_table$adj.P.Val) # Adjusted P values
