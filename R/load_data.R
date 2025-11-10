@@ -1,4 +1,4 @@
-#' Internal Helper: Process Binding Profile Inputs
+#' Process binding profile inputs
 #'
 #' This internal function encapsulates the logic for loading binding profiles,
 #' whether from file paths or from a list of GRanges objects. It performs
@@ -36,13 +36,21 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
         message("Building binding profile dataframe from supplied GRanges objects ...")
         binding_profiles_data <- build_dataframes_from_granges(binding_profiles)
     }
-    return(binding_profiles_data)
+
+    # Convert back to GRanges post-merge
+    binding_profiles_gr <- GenomicRanges::GRanges(
+        seqnames = S4Vectors::Rle(binding_profiles_data$chr),
+        ranges = IRanges::IRanges(start = binding_profiles_data$start, end = binding_profiles_data$end)
+    )
+    # Add the sample data to the metadata columns
+    mcols(binding_profiles_gr) <- binding_profiles_data[, !(names(binding_profiles_data) %in% c("chr", "start", "end")), drop = FALSE]
+    return(binding_profiles_gr)
 }
 
-#' Internal Helper: Apply Quantile Normalisation
+#' Apply quantile normalisation
 #'
 #' This internal function applies quantile normalisation to a binding profile
-#' data.frame if the user requests it. It is not exported.
+#' data.frame if the user requests it.
 #'
 #' @param binding_profiles_data The data.frame of binding profiles.
 #' @param quantile_norm Logical. If TRUE, normalisation is applied.
@@ -51,12 +59,7 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
 apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
     if (isTRUE(quantile_norm)) {
         message("Applying quantile normalisation")
-
-        coord_col_names <- c("chr", "start", "end")
-        signal_col_names <- setdiff(colnames(binding_profiles_data), coord_col_names)
-
-        coord_cols <- binding_profiles_data[, coord_col_names, drop = FALSE]
-        signal_mat <- as.matrix(binding_profiles_data[, signal_col_names, drop = FALSE])
+        signal_mat <- as.matrix(mcols(binding_profiles_data))
 
         if (ncol(signal_mat) == 0) {
             warning("No signal columns found for quantile normalisation. Returning original data.")
@@ -66,7 +69,7 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
         qnorm_mat <- quantile_normalisation(signal_mat)
         colnames(qnorm_mat) <- paste0(colnames(signal_mat), "_qnorm")
 
-        binding_profiles_data <- cbind(coord_cols, as.data.frame(qnorm_mat))
+        mcols(binding_profiles_data) <- as.data.frame(qnorm_mat)
     }
     return(binding_profiles_data)
 }
@@ -185,12 +188,12 @@ load_data_peaks <- function(
     # Process peaks and calculate occupancy
     pr <- reduce_regions(peaks)
     message("Calculating occupancy over peaks")
-    occupancy <- gr_occupancy(binding_profiles_data, pr, BPPARAM = BPPARAM)
+    occupancy <- calculate_occupancy(binding_profiles_data, pr, BPPARAM = BPPARAM)
 
     gene_overlaps <- all_overlaps_to_original(pr, ensdb_genes, maxgap = maxgap_loci)
-    occupancy$gene_names <- gene_overlaps$genes
+    occupancy$gene_name <- gene_overlaps$genes
     if (!is.null(gene_overlaps$ids)) {
-        occupancy$gene_ids <- gene_overlaps$ids
+        occupancy$gene_id <- gene_overlaps$ids
     }
 
     list(
@@ -222,6 +225,8 @@ load_data_peaks <- function(
 #' @param quantile_norm Logical (default: FALSE) quantile-normalise across all signal columns if TRUE.
 #' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 #'   Defautls to "drosophila melanogaster".
+#' @param calculate_fdr Calculate FDR based on RNA Pol occupancy (see details) (default: FALSE)
+#' @param fdr_iterations Number of iterations to use to determine null model for FDR (default: 50000)
 #' @param ensdb_genes GRanges object: gene annotation. Automatically obtained from `organism` if NULL.
 #' @param BPPARAM BiocParallel function (defaults to BiocParallel::bpparam())
 #'
@@ -229,6 +234,16 @@ load_data_peaks <- function(
 #'   \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns.}
 #'   \item{occupancy}{data.frame of occupancy values summarised over genes.}
 #'   \item{test_category}{Character scalar; will be "expressed".}
+#'
+#' @details
+#' The algorithm for determining gene occupancy FDR (as a proxy for gene expression)
+#' is based on `polii.gene.call`, which in turn was based on that described in
+#' Southall et al. (2013). Dev Cell, 26(1), 101–12. doi:10.1016/j.devcel.2013.05.020.
+#' Briefly, the algorithm establishes a null model by simulating the distribution of mean occupancy scores
+#' from random fragments.  It fits a two-tiered regression to predict the False Discovery Rate (FDR), based
+#' on fragment count and score. For each gene, the true weighted mean occupancy and fragment count are
+#' calculated from the provided binding profile. Finally, the pre-computed regression models are used
+#' to assign a specific FDR to each gene based on its observed occupancy and fragment count.
 #'
 #' @examples
 #' # Create a mock GRanges object for gene annotations
@@ -265,6 +280,8 @@ load_data_genes <- function(
     binding_profiles = NULL,
     quantile_norm = FALSE,
     organism = "drosophila melanogaster",
+    calculate_fdr = FALSE,
+    fdr_iterations = 50000,
     ensdb_genes = NULL,
     BPPARAM = BiocParallel::bpparam()) {
     if (is.null(ensdb_genes)) {
@@ -278,7 +295,17 @@ load_data_genes <- function(
     binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
 
     # Calculate occupancy over genes
-    occupancy <- gene_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
+    occupancy <- calculate_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
+
+    # Optionally, calculate and add FDR columns
+    if (isTRUE(calculate_fdr)) {
+        occupancy <- calculate_and_add_fdr(
+            binding_data = binding_profiles_data,
+            occupancy_df = occupancy,
+            fdr_iterations = fdr_iterations,
+            BPPARAM = BPPARAM
+        )
+    }
 
     list(
         binding_profiles_data = binding_profiles_data,
@@ -398,7 +425,7 @@ locate_files <- function(paths, pattern = NULL) {
                 files <- c(files, dir_files)
             }
         }
-        # Include expanded gene_names
+        # Include expanded gene_name
         files <- c(files, expanded[grepl(pattern, expanded, ignore.case = TRUE)])
     }
     files <- unique(files)
