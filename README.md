@@ -16,7 +16,7 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 # Then install the damidBind package
-BiocManager::install("marshall-lab/damidBind")
+BiocManager::install("damidBind")
 ```
 
 # Vignette
