@@ -11,7 +11,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -114,17 +114,17 @@ Defaults to 'any'.</p></dd>
 <span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L4 Neurons"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Found 2 FDR columns for condition 'L4 Neurons': L4_rep1_FDR, L4_rep2_FDR</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 3 genes/loci passed the FDR &lt;= 0.05 filter for condition 'L4 Neurons' with rule 'any'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneA     geneA  FBgn01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneB     geneB  FBgn02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ min_fdr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneA     geneA  FBgn01     NaN    0.01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneB     geneB  FBgn02     NaN    0.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03     NaN    0.04</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Get genes expressed in L5 neurons with a stricter fdr</span></span></span>
 <span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L5"</span>, fdr <span class="op">=</span> <span class="fl">0.02</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Found 1 FDR columns for condition 'L5': L5_rep1_FDR</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 1 genes/loci passed the FDR &lt;= 0.02 filter for condition 'L5' with rule 'any'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ min_fdr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03     NaN    0.01</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -15,7 +15,7 @@ and the background universe from the input `DamIDResults` object."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -229,8 +229,8 @@ or cannot be processed, the function will return NULL.</p>
 <span class="r-in"><span>        <span class="op">)</span></span></span>
 <span class="r-in"><span>        <span class="va">diff_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="differential_binding.html">differential_binding</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>            <span class="va">loaded_data</span>,</span></span>
-<span class="r-in"><span>            cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4"</span>, <span class="st">"L5"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>            cond_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 Neurons"</span>, <span class="st">"L5 Neurons"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>            cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 Neurons"</span> <span class="op">=</span> <span class="st">"L4"</span>,</span></span>
+<span class="r-in"><span>                     <span class="st">"L5 Neurons"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>        <span class="op">)</span></span></span>
 <span class="r-in"><span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">}</span></span></span>
@@ -259,20 +259,25 @@ or cannot be processed, the function will return NULL.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition display names were sanitized for internal data:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L4 Neurons' -&gt; 'L4.Neurons'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L5 Neurons' -&gt; 'L5.Neurons'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying filter: Loci must have occupancy &gt; 0 in at least 2 samples of at least one condition.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Filtered out 12 loci. 1196 loci remain for analysis.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Differential analysis setup:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1: 'L4' (display as 'L4 Neurons')</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1 Display Name: 'L4 Neurons' (Internal: 'L4.Neurons', Match Pattern: 'L4')</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 2: 'L5' (display as 'L5 Neurons')</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 2 Display Name: 'L5 Neurons' (Internal: 'L5.Neurons', Match Pattern: 'L5')</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4-L5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4.Neurons-L5.Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 277 loci enriched in L4 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 284 loci enriched in L4 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> br, br, br, br, br, br, br, br, br, br</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,17 @@
       <small>Source: <a href="https://github.com/marshall-lab/damidBind/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.6" id="damidbind-0996">damidBind 0.99.6<a class="anchor" aria-label="anchor" href="#damidbind-0996"></a></h2>
+<ul><li>NEW: Differential analyses now optionally screen out loci with negative signal in a specified number of replicates per sample (default is 2). These loci are removed before differential analysis.</li>
+<li>NEW: Geneset universe calculations now take into account the low-signal screening; universe is determined only on the loci passing filter.</li>
+<li>NEW: Loci labels are optionally sampled to allow labels even in highly-dense plot regions. Sampling algorithm determines a KNN graph from points, then uses this to select only a subset of total labelled points. A default parameter is provided, but all algorithm parameters are fully customisable.</li>
+<li>NEW: Test conditions specified via the <code>cond</code> parameter can now use regexes, when <code>regex = TRUE</code> is set.</li>
+<li>CHANGED: Test conditions specified via <code>cond</code> now use a simple named vector, merging <code>cond</code> and <code>cond_names</code>.</li>
+<li>CHANGED: Improved and fixed underlying logic and tests to handle the <code>cond</code> parameter change</li>
+<li>CHANGED: Substantially improved legend guide handling parameters and logic for volcano plots</li>
+<li>FIXED: a number of minor bugfixes, code refactoring and tidying.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.4" id="damidbind-0994">damidBind 0.99.4<a class="anchor" aria-label="anchor" href="#damidbind-0994"></a></h2>
 <ul><li>NEW: Added in FDR modelling and calculation routines for RNA Polymerase occupancy</li>

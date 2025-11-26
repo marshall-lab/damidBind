@@ -13,7 +13,7 @@ labelling, and highlighting specific groups of loci."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,7 @@ labelling, and highlighting specific groups of loci.</p>
 <span>  label_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  highlight <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  highlight_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  label_display <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  save <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -123,13 +124,40 @@ defaults are used.</p><ul><li><p><code>alpha</code>: Numeric; transparency for h
     provided, a default hue palette is used.</p></li>
 <li><p><code>label_size</code>: Numeric; label size (default: 4).</p></li>
 <li><p><code>max_overlaps</code>: Integer; maximum ggrepel overlaps for highlight labels (default: 10).</p></li>
+<li><p><code>sig_labels_only</code>: Logical; whether to only label significant loci in the set</p></li>
 <li><p><code>legend</code>: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).</p></li>
 <li><p><code>legend_inside</code>: Logical; whether to draw the plot legend for
     the highlight groups inside the plot (default: TRUE).</p></li>
-<li><p><code>legend_pos</code>: list; when legend_inside is TRUE, internal position
-    for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).</p></li>
+<li><p><code>legend_inside_pos</code>: String, either 'r' (right) or 'l' (left).
+    Presets for internal legend position in the bottom right or left corners
+    of the plot.  (default: 'r')</p></li>
+<li><p><code>legend_position_override</code>: Numeric. Manual override for internal
+    legend positioning when not set to the default, NULL.</p></li>
+<li><p><code>legend_justification_override</code>: Numeric. Manual override for internal
+    legend justification when not set to the default, NULL.</p></li>
 <li><p><code>label_fill</code>: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)</p></li>
 <li><p><code>text_col</code>: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)</p></li>
+<li><p><code>text_luminosity</code>: Numeric (0-100).  When using `text_col`, setting
+    a non-zero value will darken the luminosity of the highlight colour on text
+    labels for increased contrast.  0 = no change; 100 = black.  (Default: 0)</p></li>
+</ul></dd>
+
+
+<dt id="arg-label-display">label_display<a class="anchor" aria-label="anchor" href="#arg-label-display"></a></dt>
+<dd><p>List. Additional label display options for sampling dense
+labels in all groups.  Uses KNN-based sampling to optimise display when not
+NULL.</p><ul><li><p><code>scale</code>: Logical; if <code>TRUE</code>, labelled coordinate data are centred
+    and scaled (using <code>scale(center = TRUE, scale = TRUE)</code>) before
+    sampling.  Note: this does not affect plotted values. (default: <code>TRUE</code>).</p></li>
+<li><p><code>r</code>: Numeric or <code>"auto"</code>; the sampling exclusion radius. If <code>"auto"</code>,
+     <code>r</code> is set to the median distance to the <code>k_for_r</code>-th
+     nearest neighbour across all points. A smaller <code>r</code> keeps more
+     points. (Default: 0.2).</p></li>
+<li><p><code>k_search</code>: Integer; maximum number of neighbours to find in the initial KNN search. Must be ≥ both <code>k</code> and <code>k_for_r</code> (default: 30).</p></li>
+<li><p><code>k_priority</code>: Integer; number of neighbours used to infer the
+    isolation priority score. Must be ≤ <code>k_search</code> (default: 30).</p></li>
+<li><p><code>k_for_r</code>: Integer; which neighbour to use for the
+    <code>"auto"</code> <code>r</code> calculation (default: 30).</p></li>
 </ul></dd>
 
 
@@ -172,8 +200,8 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="va">diff_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="differential_binding.html">differential_binding</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>        <span class="va">loaded_data</span>,</span></span>
-<span class="r-in"><span>        cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4"</span>, <span class="st">"L5"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        cond_names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 Neurons"</span>, <span class="st">"L5 Neurons"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>        cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 Neurons"</span> <span class="op">=</span> <span class="st">"L4"</span>,</span></span>
+<span class="r-in"><span>                 <span class="st">"L5 Neurons"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
@@ -188,20 +216,25 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition display names were sanitized for internal data:</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L4 Neurons' -&gt; 'L4.Neurons'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L5 Neurons' -&gt; 'L5.Neurons'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying filter: Loci must have occupancy &gt; 0 in at least 2 samples of at least one condition.</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Filtered out 12 loci. 1196 loci remain for analysis.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Differential analysis setup:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1: 'L4' (display as 'L4 Neurons')</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1 Display Name: 'L4 Neurons' (Internal: 'L4.Neurons', Match Pattern: 'L4')</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 2: 'L5' (display as 'L5 Neurons')</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 2 Display Name: 'L5 Neurons' (Internal: 'L5.Neurons', Match Pattern: 'L5')</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4-L5</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4.Neurons-L5.Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 277 loci enriched in L4 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 284 loci enriched in L4 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
@@ -211,7 +244,7 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Generate a default volcano plot</span></span></span>
 <span class="r-in"><span><span class="fu">plot_volcano</span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ggrepel: 313 unlabeled data points (too many overlaps). Consider increasing max.overlaps</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Label sampling: coordinates have been centred and scaled.</span>
 <span class="r-plt img"><img src="plot_volcano-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

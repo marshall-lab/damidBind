@@ -3,7 +3,7 @@ pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   damidBind_vignette: damidBind_vignette.html
-last_built: 2025-11-10T04:07Z
+last_built: 2025-11-26T11:10Z
 urls:
   reference: https://marshall-lab/damidBind/reference
   article: https://marshall-lab/damidBind/articles
