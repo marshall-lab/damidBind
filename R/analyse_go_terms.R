@@ -98,11 +98,10 @@
 #' filter by FDR if requested, and extract query and universe gene_id lists.
 #' @param diff_results A `DamIDResults` object.
 #' @param direction The user-specified direction ("cond1", "cond2", etc.).
-#' @param fdr_universe_threshold Optional FDR threshold for filtering the universe.
 #' @return A list with `query_gene_ids`, `universe_gene_ids`, and `selected_display_name`,
 #' or NULL if no valid genes are found.
 #' @noRd
-._prepare_go_gene_ids <- function(diff_results, direction, fdr_universe_threshold = NULL) {
+._prepare_go_gene_ids <- function(diff_results, direction) {
     analysis_df <- analysisTable(diff_results)
     cond <- conditionNames(diff_results)
     cond_display_names <- names(cond)
@@ -489,8 +488,8 @@
 #'         )
 #'         diff_results <- differential_binding(
 #'             loaded_data,
-#'             cond = c("L4", "L5"),
-#'             cond_names = c("L4 Neurons", "L5 Neurons")
+#'             cond = c("L4 Neurons" = "L4",
+#'                      "L5 Neurons" = "L5")
 #'         )
 #'         return(diff_results)
 #'     }
