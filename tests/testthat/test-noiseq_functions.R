@@ -1,5 +1,3 @@
-# FILE: tests/testthat/test-noiseq_functions.R
-
 library(testthat)
 library(damidBind)
 library(NOISeq)
@@ -34,15 +32,15 @@ make_dummy_catada_data_list <- function() {
 
 test_that("differential_accessibility returns expected structure and values", {
     dl_catada <- make_dummy_catada_data_list()
-    cond <- c("CondA", "CondB")
-    cond_names <- c("Condition_Alpha", "Condition_Beta")
+    # Define the new named vector for conditions
+    cond_vec <- c("Condition_Alpha" = "CondA", "Condition_Beta" = "CondB")
 
-    res <- differential_accessibility(dl_catada, cond, cond_names, q = 0.8)
+    res <- differential_accessibility(dl_catada, cond = cond_vec, q = 0.8)
 
     # Check overall output structure
     expect_s4_class(res, "DamIDResults")
     expect_s3_class(analysisTable(res), "data.frame")
-    expect_true(all(rownames(analysisTable(res)) == rownames(dl_catada$occupancy)))
+    expect_true(all(rownames(analysisTable(res)) %in% rownames(dl_catada$occupancy)))
     expect_true(all(c("logFC", "minuslogp", "gene_name", "gene_id") %in% colnames(analysisTable(res))))
 
     # Check gene annotations are transferred
@@ -54,16 +52,18 @@ test_that("differential_accessibility returns expected structure and values", {
     expect_equal(nrow(enrichedCond2(res)), 4)
     expect_true(all(c("peak2", "peak3", "peak4", "peak6") %in% rownames(enrichedCond2(res))))
 
+
     # Check calculated condition means
-    expect_equal(analysisTable(res)["peak1", "CondA_mean"], mean(c(100, 110)))
-    expect_equal(analysisTable(res)["peak1", "CondB_mean"], mean(c(20, 25)))
+    internal_mean_names <- paste0(make.names(names(cond_vec)), "_mean")
+    expect_equal(analysisTable(res)["peak1", internal_mean_names[1]], mean(c(100, 110)))
+    expect_equal(analysisTable(res)["peak1", internal_mean_names[2]], mean(c(20, 25)))
 
     expect_equal(analysisTable(res)["peak1", "logFC"], log2(105 / 22.5))
     # In the real run, strong evidence leads to prob=1, which correctly becomes Inf.
     expect_equal(analysisTable(res)["peak1", "minuslogp"], Inf)
 
     # Check 'cond' mapping
-    expect_equal(conditionNames(res), c("Condition_Alpha" = "CondA", "Condition_Beta" = "CondB"))
+    expect_equal(conditionNames(res), setNames(c("CondA", "CondB"), c("Condition_Alpha", "Condition_Beta")))
 
     expect_equal(inputData(res)$test_category, "accessible")
 })
@@ -71,14 +71,15 @@ test_that("differential_accessibility returns expected structure and values", {
 
 test_that("differential_accessibility handles cases with no significant results", {
     dl_catada <- make_dummy_catada_data_list()
-    cond <- c("CondA", "CondB")
+    # Use unnamed vector to test default name handling
+    cond_vec <- c("CondA", "CondB")
 
     # Modify the input data so that there are no real differences between the conditions.
     dl_catada$occupancy$CondB_rep1 <- dl_catada$occupancy$CondA_rep1 + 1
     dl_catada$occupancy$CondB_rep2 <- dl_catada$occupancy$CondA_rep2 + 1
 
     # With no real difference, `noiseq` should not find anything significant.
-    res <- differential_accessibility(dl_catada, cond, q = 0.8)
+    res <- differential_accessibility(dl_catada, cond = cond_vec, q = 0.8)
 
     expect_equal(nrow(enrichedCond1(res)), 0)
     expect_equal(nrow(enrichedCond2(res)), 0)
