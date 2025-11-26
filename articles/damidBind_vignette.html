@@ -630,11 +630,13 @@ chromosome 2L only)
 </p>
 </div>
 <p>Already, that’s becoming a lot clearer.</p>
-<p>Note that the relative absence of labels on the L4 side of the plot
-does not reflect a paucity of loci, but rather the density of loci on
-the plot that prevents labels being drawn without overlaps. To increase
-the allowed label overlaps, set the <code>max_overlaps</code> parameter
-in the <code>label_config</code> parameter list.</p>
+<p>Note that not every locus will get a label when the loci density is
+high, as there simply is not room to fit all the labels in.
+<code>damidBind</code> tries to maximise the number of labels even
+within dense regions, and the <code>label_config</code> and
+<code>label_display</code> parameter list options to
+<code>plot_volcano</code> provide additional configuration options to
+allow any plot labels to be optimised.</p>
 </div>
 <div class="section level5">
 <h5 id="highlighting-gene-groups">Highlighting gene groups<a class="anchor" aria-label="anchor" href="#highlighting-gene-groups"></a>
