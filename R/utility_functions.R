@@ -112,12 +112,16 @@ filter_genes_by_fdr <- function(data, fdr = 0.05, condition, which = "any") {
         stop("The 'occupancy' table is missing row names, cannot perform filtering.")
     }
 
+    common_cols <- c("gene_id","gene_name","nfrags","name")
+    sample_and_fdr_cols <- setdiff(colnames(occupancy_df),common_cols)
+
     # Find relevant FDR columns
-    all_fdr_cols <- grep("_FDR$", colnames(occupancy_df), value = TRUE)
+    all_fdr_cols <- grep("_FDR$", sample_and_fdr_cols, value = TRUE)
     if (length(all_fdr_cols) == 0) {
         warning("No '_FDR' columns found in the data. Returning an empty data frame.")
         return(data.frame(gene_name = character(0), gene_id = character(0)))
     }
+    all_sample_cols <- setdiff(sample_and_fdr_cols,all_fdr_cols)
 
     # Determine the internal condition identifier to search for
     internal_condition_id <- condition
@@ -127,6 +131,7 @@ filter_genes_by_fdr <- function(data, fdr = 0.05, condition, which = "any") {
 
     # Filter FDR columns to those belonging to the specified condition
     relevant_fdr_cols <- grep(internal_condition_id, all_fdr_cols, value = TRUE, fixed = TRUE)
+    relevant_sample_cols <- grep(internal_condition_id, all_sample_cols, value = TRUE, fixed = TRUE)
 
     if (length(relevant_fdr_cols) == 0) {
         warning(sprintf("No FDR columns found matching the condition '%s'.", condition))
@@ -154,7 +159,10 @@ filter_genes_by_fdr <- function(data, fdr = 0.05, condition, which = "any") {
     }
 
     # Format and return
-    result_df <- occupancy_df[keep_indices, c("gene_name", "gene_id"), drop = FALSE]
+    result_df <- occupancy_df[keep_indices, c("gene_name", "gene_id", relevant_sample_cols,relevant_fdr_cols), drop = FALSE]
+    result_df$avg_occ <- apply(result_df[relevant_sample_cols],1,mean)
+    result_df$min_fdr <- apply(result_df[relevant_fdr_cols],1,min)
+    result_df <- result_df[c("gene_name", "gene_id","avg_occ","min_fdr")]
 
     message(
         sprintf("%d genes/loci passed the FDR <= %s filter for condition '%s' with rule '%s'.",
@@ -179,7 +187,8 @@ filter_genes_by_fdr <- function(data, fdr = 0.05, condition, which = "any") {
 #'   along with a warning.
 #' @noRd
 filter_on_fdr <- function(diff_results, fdr_filter_threshold, row_names_to_filter=NULL) {
-    occupancy_df <- inputData(diff_results)$occupancy
+    input_data <- inputData(diff_results)
+    occupancy_df <- input_data$occupancy
 
     if (is.null(occupancy_df)) {
         warning("fdr_filter_threshold was set, but no 'occupancy' data found. Returning all loci unfiltered.")
@@ -197,14 +206,25 @@ filter_on_fdr <- function(diff_results, fdr_filter_threshold, row_names_to_filte
         row_names_to_filter <- rownames(analysisTable(diff_results))
     }
 
-    cond_identifiers <- as.character(conditionNames(diff_results))
-    pattern <- paste(cond_identifiers, collapse = "|")
-    relevant_fdr_cols <- grep(pattern, all_fdr_cols, value = TRUE)
+    relevant_fdr_cols <- character(0)
+    if (!is.null(input_data$matched_samples) && is.list(input_data$matched_samples)) {
+        message("Using pre-matched samples for FDR filtering.")
+        matched_samples <- unlist(input_data$matched_samples)
+        fdr_col_names <- paste0(matched_samples, "_FDR")
+        relevant_fdr_cols <- intersect(fdr_col_names, all_fdr_cols)
+    } else {
+        # Fallback to old regex-based method
+        warning("Falling back to regex-based FDR column matching. This may be unreliable with complex condition patterns.")
+        cond_identifiers <- as.character(conditionNames(diff_results))
+        pattern <- paste(cond_identifiers, collapse = "|")
+        relevant_fdr_cols <- grep(pattern, all_fdr_cols, value = TRUE)
+    }
 
     if (length(relevant_fdr_cols) == 0) {
+        cond_display <- names(conditionNames(diff_results))
         warning(sprintf(
             "fdr_filter_threshold was set, but no '_FDR' columns matching conditions '%s' or '%s' were found. Returning all loci unfiltered.",
-            cond_identifiers[1], cond_identifiers[2]
+            cond_display[1], cond_display[2]
         ))
         return(row_names_to_filter)
     }
@@ -232,3 +252,4 @@ filter_on_fdr <- function(diff_results, fdr_filter_threshold, row_names_to_filte
 
     return(filtered_row_names)
 }
+
