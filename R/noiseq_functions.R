@@ -1,19 +1,22 @@
-#' Differential accessibility analysis for CATaDa (NOISeq based)
+#' Differential accessibility analysis for CATaDa (`NOISeq` based)
 #'
-#' Setup and differential analysis for CATaDa chromatin accessibility experiments using NOISeq.
-#' Accepts output from load_data_peaks, prepares count matrix,
-#' performs NOISeq analysis, and returns differentially-accessible loci.
+#' Setup and differential analysis for CATaDa chromatin accessibility experiments
+#' using `NOISeq`. Accepts output from `load_data_peaks`, prepares a count matrix,
+#' performs `NOISeq` analysis, and returns differentially-accessible loci.
 #'
 #' @param data_list List. Output from load_data_peaks.
-#' @param cond Vector (character). Two strings identifying the two conditions to compare.
-#'   The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.
-#' @param cond_names Vector (character, optional). Custom display names for
-#'   the two conditions in outputs/plots. Order maps to `cond`.
+#' @param cond A named or unnamed character vector of length two. The values are
+#'   strings or regular expressions used to identify samples for each condition.
+#'   If the vector is named, the names are used as user-friendly display names
+#'   for the conditions in plots and outputs. If unnamed, the match strings are
+#'   used as display names. The order determines the contrast, e.g., `cond[1]` vs `cond[2]`.
+#' @param regex Logical. If `TRUE`, the strings in `cond` are treated as
+#'   regular expressions for matching sample names. If `FALSE` (the default),
+#'   fixed string matching is used.
 #' @param q Numeric. Q-value threshold for NOISeq significance (default 0.8).
 #' @param norm Normalisation method passed to NOISeq.  Defaults to "n" (no normalisation), but "uqua"
 #'   (upper quantile) or "tmm" (trimmed mean of M) are options if needed
-#' @return A `DamIDResults` object containing the results. Access slots using the `@`
-#'   accessor (e.g., `analysisTable(results)`). The object includes:
+#' @return A `DamIDResults` object containing the results. Access slots using accessors (e.g., `analysisTable(results)`). The object includes:
 #'   \item{upCond1}{data.frame of regions enriched in condition 1}
 #'   \item{upCond2}{data.frame of regions enriched in condition 2}
 #'   \item{analysis}{data.frame of full results for all tested regions}
@@ -42,7 +45,7 @@
 #' # Run differential accessibility analysis
 #' diff_access_results <- differential_accessibility(
 #'     mock_data_list,
-#'     cond = c("GroupA", "GroupB")
+#'     cond = c("Group A" = "GroupA", "Group B" = "GroupB")
 #' )
 #'
 #' # View the results summary
@@ -50,25 +53,28 @@
 #'
 #' @export
 differential_accessibility <- function(
-    data_list,
-    cond,
-    cond_names = NULL,
-    norm = "n",
-    q = 0.8) {
+        data_list,
+        cond,
+        regex = FALSE,
+        norm = "n",
+        q = 0.8) {
     # Prep data for analysis
     prep_results <- prep_data_for_differential_analysis(
         data_list = data_list,
         cond = cond,
-        cond_names = cond_names
+        regex = regex,
+        filter_negative_occupancy = NULL # no negatives in count data
     )
 
     mat <- prep_results$mat
     factors <- prep_results$factors
     cond_internal <- prep_results$cond_internal
     cond_display <- prep_results$cond_display
+    cond_matches <- prep_results$cond_matches
     occupancy_df <- prep_results$occupancy_df
+    data_list <- prep_results$data_list
 
-    # Ensure 'mat' is a numeric matrix for limma
+    # Ensure 'mat' is a numeric matrix
     mat <- as.matrix(mat)
 
     # Prepare NOISeq input
@@ -93,14 +99,14 @@ differential_accessibility <- function(
     noiseq_df <- as.data.frame(noiseq_res@results[[1]])
 
     # Condition means
-    mean1_name <- sprintf("%s_mean", gsub("-", ".", cond_internal[1]))
-    mean2_name <- sprintf("%s_mean", gsub("-", ".", cond_internal[2]))
+    mean1_name <- sprintf("%s_mean", cond_internal[1])
+    mean2_name <- sprintf("%s_mean", cond_internal[2])
 
     mat1_samples <- rownames(factors[factors$condition == cond_internal[1], , drop = FALSE])
     mat2_samples <- rownames(factors[factors$condition == cond_internal[2], , drop = FALSE])
 
-    noiseq_df[[mean1_name]] <- rowMeans(mat[, mat1_samples, drop = FALSE])
-    noiseq_df[[mean2_name]] <- rowMeans(mat[, mat2_samples, drop = FALSE])
+    noiseq_df[[mean1_name]] <- rowMeans(mat[rownames(noiseq_df), mat1_samples, drop = FALSE], na.rm = TRUE)
+    noiseq_df[[mean2_name]] <- rowMeans(mat[rownames(noiseq_df), mat2_samples, drop = FALSE], na.rm = TRUE)
 
     # Log2 ratio and -log10(p) for consistency with limma output
     noiseq_df$logFC <- noiseq_df$M
@@ -123,8 +129,8 @@ differential_accessibility <- function(
     upCond1 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_up_res), , drop = FALSE]
     upCond2 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_down_res), , drop = FALSE]
 
-    # Prepare mapping for output
-    mapping_cond <- setNames(cond_internal, cond_display)
+    # Prepare mapping for output: Display Name -> Match Pattern
+    mapping_cond <- setNames(cond_matches, cond_display)
 
     # User-friendly output summary and top genes
     ._report_results(cond_display[1], upCond1)
