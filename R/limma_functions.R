@@ -1,15 +1,22 @@
-#' Differential binding/expression analysis (limma)
+#' Differential binding/expression analysis (`limma`)
 #'
 #' Setup and differential analysis for occupancy/binding experiments
-#' using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
-#' prepares experiment matrix, fits linear models, and returns DE loci.
+#' using `limma`. Accepts output from `load_data_peaks` or `load_data_genes`,
+#' prepares an experiment matrix, fits linear models, and returns DE loci.
 #'
 #' @param data_list List. Output from load_data_peaks or load_data_genes.
-#' @param cond Vector (character). Two strings identifying the two conditions to compare.
-#'   The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.
-#' @param cond_names Vector (character, optional). Custom display names for
-#'   the two conditions in outputs/plots. Order maps to `cond`.
+#' @param cond A named or unnamed character vector of length two. The values are
+#'   strings or regular expressions used to identify samples for each condition.
+#'   If the vector is named, the names are used as user-friendly display names
+#'   for the conditions in plots and outputs. If unnamed, the match strings are
+#'   used as display names. The order determines the contrast, e.g., `cond[1]` vs `cond[2]`.
+#' @param regex Logical. If `TRUE`, the strings in `cond` are treated as
+#'   regular expressions for matching sample names. If `FALSE` (the default),
+#'   fixed string matching is used.
 #' @param fdr Numeric. FDR threshold for significance (default 0.05).
+#' @param filter_negative_occupancy NULL or integer.  If a positive integer, only
+#'   loci with positive occupancy in fewer than this number of samples per condition
+#'   will be filtered out prior to differential analysis. (default: 2).
 #' @param filter_positive_enrichment Logical. If `TRUE` (default), regions
 #'   are only considered significantly enriched if the mean score in the
 #'   enriched condition is greater than zero. For example, for a region to be
@@ -53,8 +60,7 @@
 #' # Run differential binding analysis
 #' diff_results <- differential_binding(
 #'     loaded_data,
-#'     cond = c("L4", "L5"),
-#'     cond_names = c("L4 Neurons", "L5 Neurons")
+#'     cond = c("L4 Neurons" = "L4", "L5 Neurons" = "L5")
 #' )
 #'
 #' # View the results summary
@@ -62,23 +68,27 @@
 #'
 #' @export
 differential_binding <- function(
-    data_list,
-    cond,
-    cond_names = NULL,
-    fdr = 0.05,
-    filter_positive_enrichment = TRUE) {
+        data_list,
+        cond,
+        regex = FALSE,
+        fdr = 0.05,
+        filter_negative_occupancy = 2,
+        filter_positive_enrichment = TRUE) {
     # Prep data for analysis
     prep_results <- prep_data_for_differential_analysis(
         data_list = data_list,
         cond = cond,
-        cond_names = cond_names
+        regex = regex,
+        filter_negative_occupancy = filter_negative_occupancy
     )
 
     mat <- prep_results$mat
     factors <- prep_results$factors
     cond_internal <- prep_results$cond_internal
     cond_display <- prep_results$cond_display
+    cond_matches <- prep_results$cond_matches
     occupancy_df <- prep_results$occupancy_df
+    data_list <- prep_results$data_list # Get the updated data_list
 
     # Ensure 'mat' is a numeric matrix for limma
     mat <- as.matrix(mat)
@@ -104,20 +114,20 @@ differential_binding <- function(
 
     # Handle case where topTable could return no rows (e.g., empty input).
     if (nrow(result_table) == 0) {
-        message("limma::topTable returned no results. Returning empty results list.")
-        mapping_cond <- setNames(cond_internal, cond_display)
-        return(list(
-            upCond1 = result_table[0, ],
-            upCond2 = result_table[0, ],
-            analysis = result_table,
-            cond = mapping_cond,
-            data_list = data_list
+        message("limma::topTable returned no results. Returning empty DamIDResults object.")
+        mapping_cond <- setNames(cond_matches, cond_display)
+        return(new("DamIDResults",
+                   upCond1 = result_table[0, ],
+                   upCond2 = result_table[0, ],
+                   analysis = result_table,
+                   cond = mapping_cond,
+                   data = data_list
         ))
     }
 
     # Condition means
-    mean1_name <- sprintf("%s_mean", gsub("-", ".", cond_internal[1]))
-    mean2_name <- sprintf("%s_mean", gsub("-", ".", cond_internal[2]))
+    mean1_name <- sprintf("%s_mean", cond_internal[1])
+    mean2_name <- sprintf("%s_mean", cond_internal[2])
 
     mat1_samples <- rownames(factors[factors$condition == cond_internal[1], , drop = FALSE])
     mat2_samples <- rownames(factors[factors$condition == cond_internal[2], , drop = FALSE])
@@ -125,11 +135,10 @@ differential_binding <- function(
     # Reorder 'mat' by the rownames of result_table before calculating means
     reordered_mat <- mat[rownames(result_table), , drop = FALSE]
 
-    result_table[[mean1_name]] <- rowMeans(reordered_mat[, mat1_samples, drop = FALSE])
-    result_table[[mean2_name]] <- rowMeans(reordered_mat[, mat2_samples, drop = FALSE])
+    result_table[[mean1_name]] <- rowMeans(reordered_mat[, mat1_samples, drop = FALSE], na.rm = TRUE)
+    result_table[[mean2_name]] <- rowMeans(reordered_mat[, mat2_samples, drop = FALSE], na.rm = TRUE)
 
     # Gene annotation
-    occupancy_df <- data_list$occupancy
     if ("gene_name" %in% colnames(occupancy_df) && "gene_id" %in% colnames(occupancy_df)) {
         gene_name_annot <- occupancy_df[rownames(result_table), "gene_name"]
         gene_id_annot <- occupancy_df[rownames(result_table), "gene_id"]
@@ -166,8 +175,8 @@ differential_binding <- function(
         upCond2 <- upCond2_all
     }
 
-    # Prepare mapping for output
-    mapping_cond <- setNames(cond_internal, cond_display)
+    # Prepare mapping for output: Display Name -> Match Pattern
+    mapping_cond <- setNames(cond_matches, cond_display)
 
     # User-friendly output summary and top genes
     ._report_results(cond_display[1], upCond1)
