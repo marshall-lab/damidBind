@@ -40,8 +40,201 @@ check_list_input <- function(default_list, config_input) {
     }
 }
 
+#' Sample data points based on local isolation
+#'
+#' @description
+#' An issue with labelling points on dense plots (e.g., volcano plots) is that
+#' high point density prevents clear labelling, even with tools like `ggrepel`.
+#' This function addresses this by retaining isolated points while sampling from
+#' points in higher-density regions. It takes a dataframe with Cartesian coordinates
+#' and returns a logical vector identifying which points to select for labelling.
+#' The result is a less cluttered plot where labels are present even in crowded areas,
+#' providing a better representation of the underlying data.
+#'
+#' @details
+#' Algorithm in detail:
+#' 1.  If `scale = TRUE`, the coordinate data is centred and scaled.
+#' 2.  An approximate k-nearest neighbour (KNN) search for all points is conducted
+#'     using the HNSW algorithm.
+#' 3.  A priority score is calculated for each point, defined as the median distance
+#'     to its `k` nearest neighbours, where higher scores signify greater isolation.
+#' 4.  The function iterates through the sorted list of points in descending order:
+#'     a. If a point has not yet been processed, it is marked to be 'kept'.
+#'     b. All neighbours of this point within the specified exclusion radius `r`
+#'        are then marked as 'processed' and will be ignored in subsequent iterations.
+#' 5.  A logical vector is returned, where `TRUE` corresponds to a point
+#'     that should be kept for labelling.
+#'
+#' @param df A dataframe containing the point coordinates.
+#' @param x_col A character string with the name of the column containing x-coordinates.
+#' @param y_col A character string with the name of the column containing y-coordinates.
+#' @param scale A logical value. If `TRUE`, the coordinate data is centred and scaled
+#'   (using `scale(center=TRUE, scale=TRUE)`) before distance calculations.
+#'   Defaults: `TRUE`.
+#' @param r The exclusion radius. This can be a positive numeric value or the
+#'   string "auto". If "auto", the radius is calculated as the median distance to
+#'   the `k_for_r`-th nearest neighbour across all points. A smaller `r` will
+#'   result in more points being kept. Note: The interpretation of `r` depends
+#'   on whether `scale` is `TRUE`.
+#' @param k_priority An integer for calculating the isolation priority score.
+#'   Must be less than or equal to `k_search`. Default: 50.
+#' @param k_search The maximum number of neighbours to find in the initial KNN search.
+#'   This value must be greater than or equal to both `k` and `k_for_r`.
+#' @param k_for_r An integer specifying which neighbour to use for the 'auto' `r`
+#'   calculation. Default: 5.
+#'
+#' @return A logical vector of length `nrow(df)`. `TRUE` indicates the point
+#'   at that index should be kept for labelling.
+#'
+#' @export
+#'
+#' @examples
+#' library(ggplot2)
+#' library(ggrepel)
+#'
+#' # Generate sample data with a dense cluster
+#' set.seed(42)
+#' n_points <- 1000
+#' cluster_data <- data.frame(
+#'   x = rnorm(n_points, mean = 5, sd = 1),
+#'   y = rnorm(n_points, mean = 5, sd = 1),
+#'   label = paste("Point", 1:n_points)
+#' )
+#'
+#' # Use the function to get a logical vector for filtering
+#' kept_labels <- sample_labels_by_isolation(
+#'   df = cluster_data,
+#'   x_col = "x",
+#'   y_col = "y",
+#'   scale = FALSE,
+#'   r = "auto",
+#'   k = 5,
+#'   k_search = 100,
+#'   k_for_r = 10
+#' )
+#'
+#' # Create the label dataframe for ggplot
+#' label_df <- cluster_data[kept_labels, ]
+#'
+#' # Plot the results
+#' ggplot(cluster_data, aes(x = x, y = y)) +
+#'   geom_point(colour = "grey70", alpha = 0.7) +
+#'   geom_point(data = label_df, colour = "firebrick") +
+#'   geom_text_repel(
+#'     data = label_df,
+#'     aes(label = label),
+#'     min.segment.length = 0,
+#'     box.padding = 0.25,
+#'     max.overlaps = Inf
+#'   ) +
+#'   coord_fixed() +
+#'   labs(
+#'     title = "Sampled Labels",
+#'     subtitle = paste(sum(kept_labels), "of", nrow(cluster_data), "points labelled"),
+#'     caption = "Red points are selected for labelling."
+#'   ) +
+#'   theme_bw()
+sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, scale = TRUE, k_search = 30, k_for_r = 5) {
 
-#' @title Manage colcano plot configurations
+    # Input validation
+    if (!is.data.frame(df)) stop("'df' must be a data frame.", call. = FALSE)
+    if (!all(c(x_col, y_col) %in% names(df))) {
+        stop("'", x_col, "' and '", y_col, "' must be valid column names in 'df'.", call. = FALSE)
+    }
+    if (!is.logical(scale) || length(scale) != 1) {
+        stop("'scale' must be a logical value (TRUE or FALSE).", call. = FALSE)
+    }
+
+    k_priority <- as.integer(k_priority)
+    k_search <- as.integer(k_search)
+    k_for_r <- as.integer(k_for_r)
+
+    if (is.na(k_priority) || k_priority <= 0 ) {
+        stop("'k_priority' must be a positive integer.", call. = FALSE)
+    }
+    if (is.na(k_search) || k_search <= 0 ) {
+        stop("'k_search' must be a positive integer.", call. = FALSE)
+    }
+    if (is.na(k_for_r) || k_for_r <= 0 ) {
+        stop("'k_for_r' must be a positive integer.", call. = FALSE)
+    }
+
+    # param validation
+    n_points <- nrow(df)
+
+    # Sanity check
+    if (2*k_search > n_points) {
+        return(rep(TRUE, n_points))
+        message("  Label sampling: too few points to effectively sample; all will be labelled.")
+    }
+    if (k_priority > k_search) {
+        k_priority <- k_search
+        message("  Label sampling: 'k_priority' was too large, is set to 'k_search'.")
+    }
+    if (k_for_r > k_priority) {
+        k_for_r <- k_priority
+        message("  Label sampling: 'k_for_r' was too large, is set to 'k'.")
+    }
+
+
+    coords <- as.matrix(df[, c(x_col, y_col)])
+
+    # Coordinate scaling
+    if (isTRUE(scale)) {
+        coords <- scale(coords, center = TRUE, scale = TRUE)
+        message("  Label sampling: coordinates have been centred and scaled.")
+    }
+
+    # KNN search
+    nn_data <- RcppHNSW::hnsw_knn(X = coords, k = k_search)
+
+    # Exclusion radius (r)
+    if (identical(r, "auto")) {
+        if (k_for_r > k_search) {
+            stop("'k_for_r' cannot be greater than 'k_search'.", call. = FALSE)
+        }
+        # Use the k_for_r-th neighbour's distance for auto-calculation
+        distances_to_kth_nn <- nn_data$dist[, k_for_r]
+        r_calculated <- median(distances_to_kth_nn)
+        message(sprintf(
+            "  Label sampling: auto-calculated radius 'r' (median distance to %d-th nearest neighbour): %0.3f",
+            k_for_r, r_calculated)
+        )
+        r <- r_calculated
+    } else if (!is.numeric(r) || r <= 0) {
+        stop("'r' must be a positive numeric value or the string 'auto'.", call. = FALSE)
+    }
+
+    # Priority rank score (median distance to first 'k' neighbours)
+    k_priority <- min(k_priority, ncol(nn_data$dist))
+    priority_scores <- apply(nn_data$dist[, seq_len(k_priority), drop = FALSE], 1, median)
+
+    # Get the order of points to process: from most isolated to least.
+    sorted_indices <- order(priority_scores, decreasing = TRUE)
+
+    processed <- rep(FALSE, n_points)
+    kept <- rep(FALSE, n_points)
+
+    for (i in sorted_indices) {
+        if (processed[i]) {
+            next
+        }
+
+        kept[i] <- TRUE
+        processed[i] <- TRUE
+
+        neighbour_indices <- nn_data$idx[i, ]
+        neighbour_distances <- nn_data$dist[i, ]
+
+        indices_to_discard <- neighbour_indices[neighbour_distances < r & neighbour_distances > 0] # Exclude self-distance if 0
+        processed[indices_to_discard] <- TRUE
+    }
+
+    return(kept)
+}
+
+
+#' @title Manage volcano plot configurations
 #' @description Merges user-provided configurations with defaults and returns a
 #'   single list of all settings.
 #' @param diff_results A `DamIDResults` object.
@@ -49,7 +242,7 @@ check_list_input <- function(default_list, config_input) {
 #' @return A list containing the final, merged configurations (`plot`, `label`,
 #'   `highlight`, `save`).
 #' @noRd
-.manage_volcano_configs <- function(diff_results, plot_config, label_config, highlight_config, save) {
+.manage_volcano_configs <- function(diff_results, plot_config, label_config, highlight_config, label_display, save) {
     cond_display <- names(conditionNames(diff_results))
     test_category <- inputData(diff_results)$test_category
 
@@ -78,14 +271,26 @@ check_list_input <- function(default_list, config_input) {
 
     highlight_defaults <- list(
         alpha = 1, size = 2, label = TRUE, colour = NULL, label_size = 4,
-        max_overlaps = 10, legend = TRUE, legend_inside = TRUE,
-        legend_pos = list(
-            legend.position = c(0.97, 0.05),
-            legend.justification = c(1, 0)
-        ),
-        label_fill = FALSE, text_col = FALSE
+        max_overlaps = 10,
+        legend = TRUE,
+        legend_inside = TRUE,
+        legend_inside_pos = 'r',
+        legend_position_override = NULL,
+        legend_justification_override = NULL,
+        sig_labels_only = FALSE,
+        label_fill = FALSE, text_col = FALSE,
+        text_luminosity = 0
     )
     final_highlight_config <- check_list_input(highlight_defaults, highlight_config)
+
+    label_display_defaults <- list(
+        k_priority = 30,
+        r = 0.2,
+        k_for_r = 10,
+        k_search = 30,
+        scale = TRUE
+    )
+    final_label_display <- check_list_input(label_display_defaults, label_display)
 
     save_defaults <- list(
         filename = "damidBind_volcano_plot", format = "pdf",
@@ -97,6 +302,7 @@ check_list_input <- function(default_list, config_input) {
         plot = final_plot_config,
         label = final_label_config,
         highlight = final_highlight_config,
+        label_display = final_label_display,
         save = final_save_config
     )
 }
@@ -130,8 +336,11 @@ check_list_input <- function(default_list, config_input) {
     highlighted_ids <- character(0)
     highlight_config <- configs$highlight
     label_config <- configs$label
+    sig_indices <- which(plot_df$sig)
 
-    # Process highlight groups
+    highlight_colours <- NULL
+    highlight_text_colours <- NULL
+
     if (!is.null(highlight) && length(highlight) > 0) {
         num_groups <- length(highlight)
         pal <- if (is.null(highlight_config$colour) || length(highlight_config$colour) < num_groups) {
@@ -140,20 +349,39 @@ check_list_input <- function(default_list, config_input) {
             highlight_config$colour
         }
         names(pal) <- names(highlight)
+        highlight_colours <- pal
+
+        if (is.numeric(highlight_config$text_luminosity) && highlight_config$text_luminosity > 0) {
+            luminosity_reduction <- highlight_config$text_luminosity / 100
+            highlight_text_colours <- colorspace::darken(highlight_colours, amount = luminosity_reduction)
+            names(highlight_text_colours) <- names(highlight_colours)
+        } else {
+            highlight_text_colours <- highlight_colours
+        }
 
         for (i in seq_along(highlight)) {
             group_name <- names(highlight)[i]
             indices <- .find_element_indices(gene_labels_all, highlight[[i]])
 
+            indices_remove_labels <- NULL
+            if (isTRUE(highlight_config$sig_labels_only)) {
+                indices_remove_labels <- setdiff(indices, sig_indices)
+            }
+
             if (length(indices) > 0) {
-                group_df <- plot_df[indices, , drop = FALSE]
+                group_df <- plot_df
                 group_df$highlight_group_name <- group_name
-                split_labels <- strsplit(gene_labels_all[indices], split = ",")
+                split_labels <- strsplit(gene_labels_all, split = ",")
                 group_df$label_to_display <- vapply(split_labels, function(vec) {
                     matched <- intersect(trimws(vec), highlight[[i]])
                     stringr::str_c(if (length(matched) == 0) vec else matched, collapse = ",")
                 }, FUN.VALUE = character(1L))
 
+                # Remove unwanted label
+                group_df$label_to_display[indices_remove_labels] <- ""
+
+                # Now filter on highlight indices
+                group_df <- group_df[indices, , drop = FALSE]
                 highlight_dfs[[group_name]] <- group_df
                 if (isTRUE(highlight_config$label)) {
                     label_dfs[[group_name]] <- group_df
@@ -161,14 +389,10 @@ check_list_input <- function(default_list, config_input) {
                 }
             }
         }
-        highlight_colours <- pal
-    } else {
-        highlight_colours <- NULL
     }
 
     # Process general labels, avoid overlap with highlight labels
     if (!is.null(label_config)) {
-        sig_indices <- which(plot_df$sig)
         candidate_indices <- if (!is.null(label_config$genes)) {
             intersect(sig_indices, .find_element_indices(gene_labels_all, label_config$genes))
         } else {
@@ -194,7 +418,12 @@ check_list_input <- function(default_list, config_input) {
     final_highlight_df <- if (length(highlight_dfs) > 0) do.call(rbind, highlight_dfs) else NULL
     final_label_df <- if (length(label_dfs) > 0) do.call(rbind, label_dfs) else NULL
 
-    list(highlight_df = final_highlight_df, label_df = final_label_df, highlight_colours = highlight_colours)
+    list(
+        highlight_df = final_highlight_df,
+        label_df = final_label_df,
+        highlight_colours = highlight_colours,
+        highlight_text_colours = highlight_text_colours
+    )
 }
 
 
@@ -252,13 +481,39 @@ check_list_input <- function(default_list, config_input) {
 #'       provided, a default hue palette is used.
 #'     \item \code{label_size}: Numeric; label size (default: 4).
 #'     \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
+#'     \item \code{sig_labels_only}: Logical; whether to only label significant loci in the set
 #'     \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
 #'     \item \code{legend_inside}: Logical; whether to draw the plot legend for
 #'       the highlight groups inside the plot (default: TRUE).
-#'     \item \code{legend_pos}: list; when legend_inside is TRUE, internal position
-#'       for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+#'     \item \code{legend_inside_pos}: String, either 'r' (right) or 'l' (left).
+#'       Presets for internal legend position in the bottom right or left corners
+#'       of the plot.  (default: 'r')
+#'     \item \code{legend_position_override}: Numeric. Manual override for internal
+#'       legend positioning when not set to the default, NULL.
+#'     \item \code{legend_justification_override}: Numeric. Manual override for internal
+#'       legend justification when not set to the default, NULL.
 #'     \item \code{label_fill}: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)
 #'     \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
+#'     \item \code{text_luminosity}: Numeric (0-100).  When using `text_col`, setting
+#'       a non-zero value will darken the luminosity of the highlight colour on text
+#'       labels for increased contrast.  0 = no change; 100 = black.  (Default: 0)
+#'   }
+#' @param label_display List. Additional label display options for sampling dense
+#'   labels in all groups.  Uses KNN-based sampling to optimise display when not
+#'   NULL.
+#'   \itemize{
+#'     \item \code{scale}: Logical; if \code{TRUE}, labelled coordinate data are centred
+#'       and scaled (using \code{scale(center = TRUE, scale = TRUE)}) before
+#'       sampling.  Note: this does not affect plotted values. (default: \code{TRUE}).
+#'     \item \code{r}: Numeric or \code{"auto"}; the sampling exclusion radius. If \code{"auto"},
+#'        \code{r} is set to the median distance to the \code{k_for_r}-th
+#'        nearest neighbour across all points. A smaller \code{r} keeps more
+#'        points. (Default: 0.2).
+#'     \item \code{k_search}: Integer; maximum number of neighbours to find in the initial KNN search. Must be ≥ both \code{k} and \code{k_for_r} (default: 30).
+#'     \item \code{k_priority}: Integer; number of neighbours used to infer the
+#'       isolation priority score. Must be ≤ \code{k_search} (default: 30).
+#'     \item \code{k_for_r}: Integer; which neighbour to use for the
+#'       \code{"auto"} \code{r} calculation (default: 30).
 #'   }
 #' @param save List or `NULL`. Controls saving the plot to a file.
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
@@ -295,8 +550,8 @@ check_list_input <- function(default_list, config_input) {
 #'     )
 #'     diff_results <- differential_binding(
 #'         loaded_data,
-#'         cond = c("L4", "L5"),
-#'         cond_names = c("L4 Neurons", "L5 Neurons")
+#'         cond = c("L4 Neurons" = "L4",
+#'                  "L5 Neurons" = "L5")
 #'     )
 #'     return(diff_results)
 #' }
@@ -313,6 +568,7 @@ plot_volcano <- function(
         label_config = list(),
         highlight = NULL,
         highlight_config = list(),
+        label_display = list(),
         save = NULL) {
     stopifnot(is(diff_results, "DamIDResults"))
 
@@ -328,7 +584,8 @@ plot_volcano <- function(
         }
     }
 
-    configs <- .manage_volcano_configs(diff_results, plot_config, label_config, highlight_config, save)
+    configs <- .manage_volcano_configs(diff_results, plot_config, label_config,
+                                       highlight_config, label_display, save)
     plot_cfg <- configs$plot
     if (!plot_cfg$ystat %in% names(analysis_table)) {
         stop(sprintf(
@@ -343,18 +600,45 @@ plot_volcano <- function(
     gene_labels_all <- if ("gene_name" %in% names(plot_df)) plot_df$gene_name else plot_df$id
     layer_data <- .prepare_highlight_and_label_data(plot_df, gene_labels_all, highlight, configs)
 
+    if (!is.null(layer_data$label_df) && nrow(layer_data$label_df) > 0 && !is.null(configs$label_display)) {
+        kept_mask <- sample_labels_by_isolation(
+            df = layer_data$label_df,
+            x_col = "logFC",
+            y_col = plot_cfg$ystat,
+            r = configs$label_display$r,
+            k_priority = configs$label_display$k_priority,
+            k_for_r = configs$label_display$k_for_r,
+            k_search = configs$label_display$k_search
+        )
+        layer_data$label_df <- layer_data$label_df[kept_mask, ]
+    }
+
     # Build plot layers
     p <- ggplot(plot_df, aes(x = .data$logFC, y = .data[[plot_cfg$ystat]])) +
         geom_point(data = ~ subset(., !sig), colour = plot_cfg$nonsig_colour, alpha = plot_cfg$nonsig_alpha, size = plot_cfg$nonsig_size, shape = 20) +
         geom_point(data = ~ subset(., sig), colour = plot_cfg$sig_colour, alpha = plot_cfg$sig_alpha, size = plot_cfg$sig_size, shape = 20)
 
     if (!is.null(layer_data$highlight_df)) {
-        p <- p + geom_point(data = layer_data$highlight_df, aes(colour = .data$highlight_group_name), alpha = configs$highlight$alpha, size = configs$highlight$size, shape = 20) +
-            scale_colour_manual(name = NULL, values = layer_data$highlight_colours, guide = if (isTRUE(configs$highlight$legend)) "legend" else "none")
+        p <- p +
+            geom_point(data = layer_data$highlight_df, aes(colour = .data$highlight_group_name), alpha = configs$highlight$alpha, size = configs$highlight$size, shape = 20) +
+            scale_colour_manual(
+                name = NULL,
+                values = layer_data$highlight_colours,
+                guide = if (isTRUE(configs$highlight$legend)) "legend" else "none"
+            )
+    }
+
+    if (
+        !is.null(layer_data$highlight_df) &&
+        isTRUE(configs$highlight$legend) &&
+        isTRUE(configs$highlight$legend_inside)
+        ) {
+        # This awkward kludge exists because of issues with ggnewscale
+        p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3), position = "inside"))
     }
 
     # Add labels
-    if (!is.null(layer_data$label_df)) {
+    if (!is.null(layer_data$label_df) && nrow(layer_data$label_df) > 0) {
         label_size <- if (!is.null(configs$label)) configs$label$label_size else configs$highlight$label_size
         max_overlaps <- if (!is.null(configs$label)) configs$label$max_overlaps else configs$highlight$max_overlaps
 
@@ -362,7 +646,20 @@ plot_volcano <- function(
             p <- p + ggrepel::geom_label_repel(data = layer_data$label_df, aes(label = .data$label_to_display, fill = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1, color = "black") +
                 ggplot2::scale_fill_manual(name = NULL, values = layer_data$highlight_colours, guide = "none")
         } else if (isTRUE(configs$highlight$text_col)) {
-            p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display, colour = .data$highlight_group_name), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
+            # Using a separate colour scale for text to allow darker text
+            p <- p +
+                ggnewscale::new_scale_colour() +
+                ggrepel::geom_text_repel(
+                    data = layer_data$label_df,
+                    aes(label = .data$label_to_display, colour = .data$highlight_group_name),
+                    size = label_size, max.overlaps = max_overlaps,
+                    min.segment.length = 0, box.padding = 0.1, point.padding = 0.1
+                ) +
+                scale_colour_manual(
+                    name = NULL,
+                    values = layer_data$highlight_text_colours,
+                    guide = "none"
+                )
         } else {
             p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
         }
@@ -373,11 +670,26 @@ plot_volcano <- function(
     if (!is.null(layer_data$highlight_df)) {
         if (isTRUE(configs$highlight$legend)) {
             if (isTRUE(configs$highlight$legend_inside)) {
-                p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3), position = "inside"))
+
+                if (configs$highlight$legend_inside_pos == 'r') {
+                    legend.position <- c(0.97, 0.05)
+                    legend.justification <- c(1, 0)
+                } else if (configs$highlight$legend_inside_pos == 'l') {
+                    legend.position <- c(0.03, 0.05)
+                    legend.justification <- c(0, 0)
+                }
+
+                if (!is.null(configs$highlight$legend_position_override)) {
+                    legend.position <- configs$highlight$legend_position_override
+                }
+                if (!is.null(configs$highlight$legend_justification_override)) {
+                    legend.justification <- configs$highlight$legend_justification_override
+                }
+
                 p <- p +
                     theme(
-                        legend.position.inside = configs$highlight$legend_pos$legend.position,
-                        legend.justification = configs$highlight$legend_pos$legend.justification,
+                        legend.position.inside = legend.position,
+                        legend.justification = legend.justification,
                         legend.background = ggplot2::element_rect(fill = alpha("white", 0.7), colour = "grey20", linewidth = 0.3),
                         legend.key = ggplot2::element_rect(fill = "transparent", colour = NA)
                     )
@@ -401,3 +713,5 @@ plot_volcano <- function(
     }
     p
 }
+
+
