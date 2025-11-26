@@ -73,8 +73,8 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.
     )
     diff_results <- differential_binding(
         loaded_data,
-        cond = c("L4", "L5"),
-        cond_names = c("L4 Neurons", "L5 Neurons")
+        cond = c("L4 Neurons" = "L4",
+                 "L5 Neurons" = "L5")
     )
     return(diff_results)
 }

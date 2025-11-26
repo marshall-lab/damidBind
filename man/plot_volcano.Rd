@@ -11,6 +11,7 @@ plot_volcano(
   label_config = list(),
   highlight = NULL,
   highlight_config = list(),
+  label_display = list(),
   save = NULL
 )
 }
@@ -66,13 +67,40 @@ defaults are used.
     provided, a default hue palette is used.
   \item \code{label_size}: Numeric; label size (default: 4).
   \item \code{max_overlaps}: Integer; maximum ggrepel overlaps for highlight labels (default: 10).
+  \item \code{sig_labels_only}: Logical; whether to only label significant loci in the set
   \item \code{legend}: Logical; whether to draw a plot legend for the highlight groups (default: TRUE).
   \item \code{legend_inside}: Logical; whether to draw the plot legend for
     the highlight groups inside the plot (default: TRUE).
-  \item \code{legend_pos}: list; when legend_inside is TRUE, internal position
-    for the legend box (default: list(legend.position = c(0.97, 0.05), legend.justification = c(1, 0)) ).
+  \item \code{legend_inside_pos}: String, either 'r' (right) or 'l' (left).
+    Presets for internal legend position in the bottom right or left corners
+    of the plot.  (default: 'r')
+  \item \code{legend_position_override}: Numeric. Manual override for internal
+    legend positioning when not set to the default, NULL.
+  \item \code{legend_justification_override}: Numeric. Manual override for internal
+    legend justification when not set to the default, NULL.
   \item \code{label_fill}: logical; if `TRUE`, uses `geom_label_repel`, else `geom_text_repel` (default: FALSE)
   \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
+  \item \code{text_luminosity}: Numeric (0-100).  When using `text_col`, setting
+    a non-zero value will darken the luminosity of the highlight colour on text
+    labels for increased contrast.  0 = no change; 100 = black.  (Default: 0)
+}}
+
+\item{label_display}{List. Additional label display options for sampling dense
+labels in all groups.  Uses KNN-based sampling to optimise display when not
+NULL.
+\itemize{
+  \item \code{scale}: Logical; if \code{TRUE}, labelled coordinate data are centred
+    and scaled (using \code{scale(center = TRUE, scale = TRUE)}) before
+    sampling.  Note: this does not affect plotted values. (default: \code{TRUE}).
+  \item \code{r}: Numeric or \code{"auto"}; the sampling exclusion radius. If \code{"auto"},
+     \code{r} is set to the median distance to the \code{k_for_r}-th
+     nearest neighbour across all points. A smaller \code{r} keeps more
+     points. (Default: 0.2).
+  \item \code{k_search}: Integer; maximum number of neighbours to find in the initial KNN search. Must be ≥ both \code{k} and \code{k_for_r} (default: 30).
+  \item \code{k_priority}: Integer; number of neighbours used to infer the
+    isolation priority score. Must be ≤ \code{k_search} (default: 30).
+  \item \code{k_for_r}: Integer; which neighbour to use for the
+    \code{"auto"} \code{r} calculation (default: 30).
 }}
 
 \item{save}{List or `NULL`. Controls saving the plot to a file.
@@ -117,8 +145,8 @@ labelling, and highlighting specific groups of loci.
     )
     diff_results <- differential_binding(
         loaded_data,
-        cond = c("L4", "L5"),
-        cond_names = c("L4 Neurons", "L5 Neurons")
+        cond = c("L4 Neurons" = "L4",
+                 "L5 Neurons" = "L5")
     )
     return(diff_results)
 }

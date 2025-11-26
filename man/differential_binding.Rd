@@ -2,26 +2,35 @@
 % Please edit documentation in R/limma_functions.R
 \name{differential_binding}
 \alias{differential_binding}
-\title{Differential binding/expression analysis (limma)}
+\title{Differential binding/expression analysis (`limma`)}
 \usage{
 differential_binding(
   data_list,
   cond,
-  cond_names = NULL,
+  regex = FALSE,
   fdr = 0.05,
+  filter_negative_occupancy = 2,
   filter_positive_enrichment = TRUE
 )
 }
 \arguments{
 \item{data_list}{List. Output from load_data_peaks or load_data_genes.}
 
-\item{cond}{Vector (character). Two strings identifying the two conditions to compare.
-The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.}
+\item{cond}{A named or unnamed character vector of length two. The values are
+strings or regular expressions used to identify samples for each condition.
+If the vector is named, the names are used as user-friendly display names
+for the conditions in plots and outputs. If unnamed, the match strings are
+used as display names. The order determines the contrast, e.g., `cond[1]` vs `cond[2]`.}
 
-\item{cond_names}{Vector (character, optional). Custom display names for
-the two conditions in outputs/plots. Order maps to `cond`.}
+\item{regex}{Logical. If `TRUE`, the strings in `cond` are treated as
+regular expressions for matching sample names. If `FALSE` (the default),
+fixed string matching is used.}
 
 \item{fdr}{Numeric. FDR threshold for significance (default 0.05).}
+
+\item{filter_negative_occupancy}{NULL or integer.  If a positive integer, only
+loci with positive occupancy in fewer than this number of samples per condition
+will be filtered out prior to differential analysis. (default: 2).}
 
 \item{filter_positive_enrichment}{Logical. If `TRUE` (default), regions
 are only considered significantly enriched if the mean score in the
@@ -42,8 +51,8 @@ A `DamIDResults` object containing the results. Access slots using
 }
 \description{
 Setup and differential analysis for occupancy/binding experiments
-using limma. Accepts output from `load_data_peaks` or `load_data_genes`,
-prepares experiment matrix, fits linear models, and returns DE loci.
+using `limma`. Accepts output from `load_data_peaks` or `load_data_genes`,
+prepares an experiment matrix, fits linear models, and returns DE loci.
 }
 \examples{
 # Create a mock GRanges object for gene annotations
@@ -73,8 +82,7 @@ loaded_data <- load_data_peaks(
 # Run differential binding analysis
 diff_results <- differential_binding(
     loaded_data,
-    cond = c("L4", "L5"),
-    cond_names = c("L4 Neurons", "L5 Neurons")
+    cond = c("L4 Neurons" = "L4", "L5 Neurons" = "L5")
 )
 
 # View the results summary

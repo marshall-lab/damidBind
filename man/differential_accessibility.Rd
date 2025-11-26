@@ -2,24 +2,22 @@
 % Please edit documentation in R/noiseq_functions.R
 \name{differential_accessibility}
 \alias{differential_accessibility}
-\title{Differential accessibility analysis for CATaDa (NOISeq based)}
+\title{Differential accessibility analysis for CATaDa (`NOISeq` based)}
 \usage{
-differential_accessibility(
-  data_list,
-  cond,
-  cond_names = NULL,
-  norm = "n",
-  q = 0.8
-)
+differential_accessibility(data_list, cond, regex = FALSE, norm = "n", q = 0.8)
 }
 \arguments{
 \item{data_list}{List. Output from load_data_peaks.}
 
-\item{cond}{Vector (character). Two strings identifying the two conditions to compare.
-The order matters: `cond[1]` is used as Condition 1, `cond[2]` as Condition 2.}
+\item{cond}{A named or unnamed character vector of length two. The values are
+strings or regular expressions used to identify samples for each condition.
+If the vector is named, the names are used as user-friendly display names
+for the conditions in plots and outputs. If unnamed, the match strings are
+used as display names. The order determines the contrast, e.g., `cond[1]` vs `cond[2]`.}
 
-\item{cond_names}{Vector (character, optional). Custom display names for
-the two conditions in outputs/plots. Order maps to `cond`.}
+\item{regex}{Logical. If `TRUE`, the strings in `cond` are treated as
+regular expressions for matching sample names. If `FALSE` (the default),
+fixed string matching is used.}
 
 \item{norm}{Normalisation method passed to NOISeq.  Defaults to "n" (no normalisation), but "uqua"
 (upper quantile) or "tmm" (trimmed mean of M) are options if needed}
@@ -27,8 +25,7 @@ the two conditions in outputs/plots. Order maps to `cond`.}
 \item{q}{Numeric. Q-value threshold for NOISeq significance (default 0.8).}
 }
 \value{
-A `DamIDResults` object containing the results. Access slots using the `@`
-  accessor (e.g., `analysisTable(results)`). The object includes:
+A `DamIDResults` object containing the results. Access slots using accessors (e.g., `analysisTable(results)`). The object includes:
   \item{upCond1}{data.frame of regions enriched in condition 1}
   \item{upCond2}{data.frame of regions enriched in condition 2}
   \item{analysis}{data.frame of full results for all tested regions}
@@ -36,9 +33,9 @@ A `DamIDResults` object containing the results. Access slots using the `@`
   \item{data}{The original `data_list` input}
 }
 \description{
-Setup and differential analysis for CATaDa chromatin accessibility experiments using NOISeq.
-Accepts output from load_data_peaks, prepares count matrix,
-performs NOISeq analysis, and returns differentially-accessible loci.
+Setup and differential analysis for CATaDa chromatin accessibility experiments
+using `NOISeq`. Accepts output from `load_data_peaks`, prepares a count matrix,
+performs `NOISeq` analysis, and returns differentially-accessible loci.
 }
 \examples{
 # NOTE: This example uses mock counts data, as the package's sample
@@ -62,7 +59,7 @@ mock_data_list <- list(
 # Run differential accessibility analysis
 diff_access_results <- differential_accessibility(
     mock_data_list,
-    cond = c("GroupA", "GroupB")
+    cond = c("Group A" = "GroupA", "Group B" = "GroupB")
 )
 
 # View the results summary

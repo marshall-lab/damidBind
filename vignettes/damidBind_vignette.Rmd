@@ -17,7 +17,9 @@ output:
 bibliography: damidbind.bib
 csl: embo.csl
 abstract: |
-  The damidBind package provides a means of determining differential binding/gene transcription/chromatin accessibility for DamID-seq data (differential binding = conventional DamID / TaDa for TFs; differential transcription = TaDa for RNA polymerase occupancy; chromatin accessibility = CATaDa).  The package loads processed bedgraphs and peaks files, processes these, uses limma (for DamID log2 ratios) or NOIseq (for CATaDa counts data) to determine differentially bound/transcribed/accessible loci, and then provides visualisation via volcano plots, GSEA lollipop plots, Venn diagrams, and an igvShiny interface to quickly view each differentially bound locus in an IGV browser, with the ranked, sorted differentially bound loci listed in an adjacent interactable table.
+  The damidBind package provides a straightforward formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, either as external raw files in the form of binding bedGraphs and GFF/BED peak calls, or as internal lists of GRanges objects. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes.  For RNA Polymerase DamID data, the package calculates occupancy over genes, and optionally calcualates the FDR of significantly-enriched gene occupancy. 
+    damidBind then uses either limma (for conventional log2 ratio DamID binding data) or NOIseq (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions, or differentially epxressed genes, between two conditions. 
+    The package provides a number of visualisation tools (volcano plots, Gene Ontology enrichment plots via ClusterProfiler and proportional Venn diagrams via BioVenn for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by Shiny and igvShiny) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.
 vignette: |
   %\VignetteIndexEntry{damidBind}
   %\VignetteEngine{knitr::rmarkdown}
@@ -53,7 +55,7 @@ if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 # Then install the damidBind package
-BiocManager::install("marshall-lab/damidBind")
+BiocManager::install("damidBind")
 ```
 
 # Quick start guide
@@ -250,8 +252,8 @@ Here, we're not dealing with CATaDa data, so we'll use `differential_binding()` 
 ```{r differential_binding}
 diff.bsh <- differential_binding(
     input.bsh,
-    cond = c("L4", "L5"),
-    cond_names = c("L4 neurons", "L5 neurons")
+    cond = c("L4 neurons" = "L4",
+             "L5 neurons" = "L5")
 )
 ```
 
@@ -340,10 +342,27 @@ plot_volcano(
     )
 )
 ```
+Note that the legend guide masks some labels, when positioned inside the plot on the right-hand side (the default).  `damidBind` comes with a simple shortcut to display the legend on the left side of the plot instead, as shown below.  It is also possible to place the legend outside the plot, or to customise the position of the legend within the plot precisely.
+
+```{r volcanoPlotHighlightedGenesLHS, fig.cap="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in L4 neurons are highlighted.  (Dataset from chromosome 2L only).  Legend is now displayed on the LHS within the plot."}
+plot_volcano(
+    diff.bsh,
+    label_config = NULL,
+    highlight = list(
+        "L4 specific" = L4_only_genes
+    ),
+    highlight_config = list(
+        size = 2,
+        legend_inside_pos = 'l'
+    )
+)
+```
+
+
 
 Although this is just a truncated sample from chr 2L, the link between a subset of Bsh binding and potential upregulation in this lineage is apparent.  (Why do some gene loci label multiple peaks?  This is because a gene may have more than one discrete binding peak associated with it.)
 
-We could also compare this against genes bound by Bsh and only expressed in L5 neurons. For clarity, we'll drop gene labels from this plot.
+We could also compare this against genes bound by Bsh and only expressed in L5 neurons. For clarity, we'll colour the text labels to match the conditions, and we'll reduce the text luminosity to make the labels easier to read.
 
 ```{r volcannoPlotMultipleHighlights, fig.cap="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in each subtype are highlighted.   (Dataset from chromosome 2L only)"}
 L5_only_genes <- c("Ptth", "Nep2", "kek1", "CG4168", "kek3", "CG6959", "Dtg", "ND-23", "Scp2", "Octalpha2R", "Hs6st", "CG16791", "SKIP", "LpR1", "RpL34a", "Ald1", "CG10011", "heph", "nolo", "Act42A", "Fkbp12", "Pkc53E", "AstC-R1", "Muc14A", "CG33543", "ChAT", "Act5C", "Ptpmeg2", "fabp", "CG31221", "Octbeta1R", "CG14669", "sdk", "Shawl", "side-V", "NaCP60E", "sif", "OtopLc", "side-II", "kuz", "CG42540", "Dscam3", "haf", "CG42673", "pdm3", "tinc", "CG42750", "sdt", "Nuak1", "Hk", "scrib", "tsr", "dpr20", "GluRIB", "CG43902", "CG44242", "Dscam2", "CG44422", "lncRNA:CR45312", "Scsalpha1", "Rop", "Con", "Hsc70-3", "dpr8", "eag", "ND-18", "Nrt", "CG17839", "fz", "CG32137", "Rh7", "Sod1", "CG32052", "dpr6", "Hsp67Ba", "axed", "GluRIA", "robo2")
@@ -357,7 +376,10 @@ plot_volcano(
         "L5 specific" = L5_only_genes
     ),
     highlight_config = list(
-        size = 2
+        size = 2,
+        legend_inside_pos = 'l',
+        text_col = TRUE,
+        text_luminosity = 40
     )
 )
 ```
@@ -383,10 +405,12 @@ The table on the left side of the window can be sorted by clicking on the column
 
 Gene ontology is a powerful means of understanding which biological processes may be changing between two sets of data. Using `r Biocpkg("clusterProfiler")` as the backend, `r Biocpkg('damidBind')` provides the function `analyse_go_enrichment()` to explore enrichment of genes associated with bound peaks, accessible regions, or differential expression. In all cases, the underlying gene IDs, rather than gene names, are used for enrichment analysis.
 
-```{r gsea, fig.cap="Enriched GO terms for genes associated with differential Bsh binding in L4 neuron.  Dataset from chromosome 2L only."}
+The example dataset here is minimal, so there is not much to highlight when we look at just the genes enriched in close proximity to L5-specific binding peaks.
+
+```{r gsea, fig.cap="Enriched GO terms for genes associated with differential Bsh binding in L5 neuron.  Dataset from chromosome 2L only."}
 go.bsh_l4 <- analyse_go_enrichment(
     diff.bsh,
-    direction = "L4",
+    direction = "L5",
     org_db = org.Dm.eg.db::org.Dm.eg.db
 )
 ```
