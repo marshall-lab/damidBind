@@ -44,8 +44,8 @@
 #'     )
 #'     diff_results <- differential_binding(
 #'         loaded_data,
-#'         cond = c("L4", "L5"),
-#'         cond_names = c("L4 Neurons", "L5 Neurons")
+#'         cond = c("L4 Neurons" = "L4",
+#'                  "L5 Neurons" = "L5")
 #'     )
 #'     return(diff_results)
 #' }
