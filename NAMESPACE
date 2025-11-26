@@ -7,10 +7,10 @@ importFrom(ggplot2, aes, element_text, expansion, geom_point, geom_segment,
            theme, theme_bw, element_rect, waiver)
 importFrom(ggrepel, geom_label_repel, geom_text_repel)
 importFrom(scales, hue_pal, scientific_format, number_format)
-importFrom(dplyr, rename, select, "%>%")
+importFrom(dplyr, rename, select, "%>%", arrange, mutate, row_number)
 importFrom(tools, file_path_sans_ext)
 importFrom(rlang, .data)
-importFrom(stats, na.omit, weighted.mean, model.matrix, p.adjust, setNames, as.formula, complete.cases, coefficients, lm, predict)
+importFrom(stats, na.omit, weighted.mean, model.matrix, p.adjust, setNames, as.formula, complete.cases, coefficients, lm, predict, median)
 importFrom(BiocParallel, bpparam, bplapply)
 importFrom(GenomicRanges, GRanges, findOverlaps, reduce, trim, resize, width,
            start, end, seqnames)
@@ -31,6 +31,8 @@ importFrom(clusterProfiler, bitr, enrichGO, dotplot)
 importFrom(enrichplot, dotplot)
 importFrom(forcats, fct_reorder)
 importFrom(scales, hue_pal, scientific_format, number_format, alpha)
+importFrom(colorspace, darken)
+importFrom(ggnewscale, new_scale_colour)
 importFrom(methods, is, new, show)
 importFrom(DT, datatable, DTOutput, formatRound, renderDT)
 importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack,
@@ -38,6 +40,7 @@ importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack,
 importFrom(shiny, fluidPage, h4, hr, mainPanel, observeEvent, p, runApp,
            shinyApp, sidebarLayout, sidebarPanel, titlePanel, actionButton,
            icon, HTML, tags, numericInput)
+importFrom(RcppHNSW, hnsw_build, hnsw_knn)
 
 export(load_data_peaks)
 export(load_data_genes)
@@ -55,6 +58,7 @@ export(quantile_normalization)
 export(browse_igv_regions)
 export(analyse_go_enrichment)
 export(analyze_go_enrichment)
+export(sample_labels_by_isolation)
 export(analysisTable)
 export(conditionNames)
 export(enrichedCond1)

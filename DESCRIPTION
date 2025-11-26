@@ -39,11 +39,14 @@ Imports:
     enrichplot,
     forcats,
     scales,
+    colorspace,
+    ggnewscale,
     methods,
     stats,
     igvShiny,
     shiny,
-    DT
+    DT,
+    RcppHNSW
 Suggests:
     testthat,
     knitr,
