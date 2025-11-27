@@ -8,15 +8,18 @@ Although extensive customisation options are available if required, much of the 
 
 # Installation
 
-To install from github, use:
+You can install damidBind either from Bioconductor (stable) or Github (latest)
 
 ``` r
 # Install Bioconductor
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-# Then install the damidBind package
+# Then install the damidBind package from Bioconductor
 BiocManager::install("damidBind")
+
+# ... or to install the latest build from Github
+BiocManager::install("marshall-lab/damidBind")
 ```
 
 # Vignette
