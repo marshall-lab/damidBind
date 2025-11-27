@@ -1,3 +1,6 @@
+# damidBind 0.99.6.1
+*   Unicode removed from documentation to allow latex generation :/
+
 # damidBind 0.99.6
 *   NEW: Differential analyses now optionally screen out loci with negative signal in a specified number of replicates per sample (default is 2).  These loci are removed before differential analysis.
 *   NEW: Geneset universe calculations now take into account the low-signal screening; universe is determined only on the loci passing filter.
