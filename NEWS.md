@@ -1,4 +1,4 @@
-# damidBind 0.99.6.1
+# damidBind 0.99.7
 *   Unicode removed from documentation to allow latex generation :/
 
 # damidBind 0.99.6
