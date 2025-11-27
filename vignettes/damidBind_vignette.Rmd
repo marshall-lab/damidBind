@@ -322,7 +322,7 @@ plot_volcano(
 
 Already, that's becoming a lot clearer. 
 
-Note that the relative absence of labels on the L4 side of the plot does not reflect a paucity of loci, but rather the density of loci on the plot that prevents labels being drawn without overlaps.  To increase the allowed label overlaps, set the `max_overlaps` parameter in the `label_config` parameter list.
+Note that not every locus will get a label when the loci density is high, as there simply is not room to fit all the labels in.  `damidBind` tries to maximise the number of labels even within dense regions, and the `label_config` and `label_display` parameter list options to `plot_volcano` provide additional configuration options to allow any plot labels to be optimised.
 
 #### Highlighting gene groups
 
