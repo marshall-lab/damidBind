@@ -96,9 +96,9 @@ NULL.
      \code{r} is set to the median distance to the \code{k_for_r}-th
      nearest neighbour across all points. A smaller \code{r} keeps more
      points. (Default: 0.2).
-  \item \code{k_search}: Integer; maximum number of neighbours to find in the initial KNN search. Must be ≥ both \code{k} and \code{k_for_r} (default: 30).
+  \item \code{k_search}: Integer; maximum number of neighbours to find in the initial KNN search. Must be greater than or equal to both \code{k} and \code{k_for_r} (default: 30).
   \item \code{k_priority}: Integer; number of neighbours used to infer the
-    isolation priority score. Must be ≤ \code{k_search} (default: 30).
+    isolation priority score. Must be less than or equal to \code{k_search} (default: 30).
   \item \code{k_for_r}: Integer; which neighbour to use for the
     \code{"auto"} \code{r} calculation (default: 30).
 }}

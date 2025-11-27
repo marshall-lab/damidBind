@@ -48,7 +48,7 @@ as new columns to the occupancy data frame.
 }
 \details{
 The FDR calculation algorithm is adapted from the method described in
-Southall et al. (2013), Dev Cell, 26(1), 101–12, and implemented in the
+Southall et al. (2013), Dev Cell, 26(1), 101-12, and implemented in the
 `polii.gene.call` tool. It operates in several stages:
 \enumerate{
   \item For each sample, a null distribution of mean occupancy scores is
