@@ -1,3 +1,6 @@
+# damidBind 0.99.9
+*   FIXED: igvShiny code now correctly handles the new internal GRanges binding profile data objects
+
 # damidBind 0.99.8
 *   Unicode removed from documentation to allow latex generation :/
 
