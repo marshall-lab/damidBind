@@ -27,8 +27,17 @@
     # Get custom condition names
     cond_display_names <- names(conditionNames(diff_results))
 
-    # Process peaks data if it exists
+    # Process binding profiles and peaks data if it exists
     binding_profiles_data <- inputData(diff_results)$binding_profiles_data
+
+    # igvShiny does not place nicely with GRanges, so we shift everything over to
+    # dataframes from here onwards
+    drop_gr_cols <- c("width","strand")
+    binding_profiles_data <- as.data.frame(binding_profiles_data) %>%
+        select(-all_of(intersect(drop_gr_cols, names(.)))) %>%
+        rename(chr = "seqnames")
+
+
     peaks_bed <- NULL
     if ("pr" %in% names(inputData(diff_results))) {
         peaks <- inputData(diff_results)$pr
@@ -38,7 +47,7 @@
     }
 
     # Determine which sample columns to use
-    all_sample_cols <- colnames(mcols(binding_profiles_data))
+    all_sample_cols <- setdiff(names(binding_profiles_data), c("chr", "start", "end"))
     use_samples <- if (is.null(samples)) all_sample_cols else intersect(as.character(samples), all_sample_cols)
     if (length(use_samples) == 0) stop("None of the requested samples are present in the data.")
 
@@ -181,24 +190,19 @@
     # Add binding peaks track if present
     if (!is.null(prepped_data$peaks_bed)) {
         loadBedTrack(session, "igv",
-            tbl = preptbl(prepped_data$peaks_bed), trackHeight = 50,
-            trackName = "Binding peaks", color = peakCol
+                     tbl = preptbl(prepped_data$peaks_bed), trackHeight = 50,
+                     trackName = "Binding peaks", color = peakCol
         )
         message(" - Added 'Binding peaks' track")
     }
 
     # Add sample quantitative tracks
     for (sample in prepped_data$use_samples) {
-        # igvShiny needs binding data as a dataframe
-        sample_gr <- prepped_data$binding_profiles_data
-        mcols(sample_gr) <- mcols(sample_gr)[, sample, drop=FALSE]
-        bprof <- as.data.frame(sample_gr)
-        bprof <- bprof[, c("seqnames", "start", "end", sample)]
-        colnames(bprof) <- c("chr", "start", "end", sample) # Rename for safety
+        bprof <- prepped_data$binding_profiles_data[, c("chr", "start", "end", sample)]
         loadBedGraphTrack(session, "igv",
-            tbl = preptbl(bprof), autoscale = FALSE,
-            min = track_scales$bp_min, max = track_scales$bp_max,
-            trackHeight = trackheight, trackName = sample, color = trackCol
+                          tbl = preptbl(bprof), autoscale = FALSE,
+                          min = track_scales$bp_min, max = track_scales$bp_max,
+                          trackHeight = trackheight, trackName = sample, color = trackCol
         )
         message(sprintf(" - Added sample track: %s", sample))
     }
@@ -211,18 +215,18 @@
 
     if (nrow(upCond1_df) > 0) {
         loadBedGraphTrack(session, "igv",
-            tbl = preptbl(upCond1_df[, c("chr", "start", "end", "logFC")]), autoscale = FALSE,
-            min = 0, max = track_scales$enrich_max,
-            trackName = sprintf("Enriched (%s)", cond1_name), color = colours$cond1
+                          tbl = preptbl(upCond1_df[, c("chr", "start", "end", "logFC")]), autoscale = FALSE,
+                          min = 0, max = track_scales$enrich_max,
+                          trackName = sprintf("Enriched (%s)", cond1_name), color = colours$cond1
         )
         message(sprintf(" - Added 'Enriched in %s' track", cond1_name))
     }
 
     if (nrow(upCond2_df) > 0) {
         loadBedGraphTrack(session, "igv",
-            tbl = preptbl(upCond2_df[, c("chr", "start", "end", "logFC")]), autoscale = FALSE,
-            min = -track_scales$enrich_max, max = 0,
-            trackName = sprintf("Enriched (%s)", cond2_name), color = colours$cond2
+                          tbl = preptbl(upCond2_df[, c("chr", "start", "end", "logFC")]), autoscale = FALSE,
+                          min = -track_scales$enrich_max, max = 0,
+                          trackName = sprintf("Enriched (%s)", cond2_name), color = colours$cond2
         )
         message(sprintf(" - Added 'Enriched in %s' track", cond2_name))
     }
@@ -241,10 +245,10 @@
         })
 
         observeEvent(input$igvReady,
-            {
-                .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol)
-            },
-            once = TRUE
+                     {
+                         .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol)
+                     },
+                     once = TRUE
         )
 
         output$region_table <- DT::renderDT({
@@ -332,17 +336,17 @@
 #' @importFrom shiny actionButton HTML tags icon h4 hr p
 #' @export
 browse_igv_regions <- function(
-    diff_results,
-    samples = NULL,
-    colour_cond1 = "#ff6600",
-    colour_cond2 = "#2288dd",
-    use_genome = NULL,
-    padding_width = 20000,
-    trackHeight = 65,
-    peakColour = "darkgreen",
-    trackColour = "#6666ff",
-    host = "localhost",
-    port = NULL) {
+        diff_results,
+        samples = NULL,
+        colour_cond1 = "#ff6600",
+        colour_cond2 = "#2288dd",
+        use_genome = NULL,
+        padding_width = 20000,
+        trackHeight = 65,
+        peakColour = "darkgreen",
+        trackColour = "#6666ff",
+        host = "localhost",
+        port = NULL) {
 
     # Validate inputs and dependencies
     stopifnot(is(diff_results, "DamIDResults"))
