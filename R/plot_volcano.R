@@ -265,7 +265,7 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
     label_defaults <- list(
         genes = NULL, label_size = 3, clean_names = FALSE,
         names_clean = "snoRNA|snRNA|^CR|tRNA|RNA", names_clean_extra = NULL,
-        max_overlaps = 20
+        max_overlaps = 10
     )
     final_label_config <- check_list_input(label_defaults, label_config)
 
@@ -464,7 +464,7 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'     \item \code{clean_names}: logical; if `TRUE`, applies regex filtering to labels.
 #'     \item \code{names_clean}, \code{names_clean_extra}: regex to exclude from labels
 #'       when \code{clean_names} is `TRUE`.
-#'     \item \code{max_overlaps}: integer; maximum ggrepel overlaps.
+#'     \item \code{max_overlaps}: integer; maximum ggrepel overlaps. (default: 10)
 #'   }
 #' @param highlight List. A simple list where each element is a character vector
 #'   of genes/loci to highlight. Each element of this list will correspond to a
@@ -496,7 +496,7 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'     \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
 #'     \item \code{text_luminosity}: Numeric (0-100).  When using `text_col`, setting
 #'       a non-zero value will darken the luminosity of the highlight colour on text
-#'       labels for increased contrast.  0 = no change; 100 = black.  (Default: 0)
+#'       labels for increased contrast.  0 = no change; 100 = black.  (default: 0)
 #'   }
 #' @param label_display List. Additional label display options for sampling dense
 #'   labels in all groups.  Uses KNN-based sampling to optimise display when not
