@@ -47,7 +47,7 @@ quantile_normalisation <- function(x) {
 
     # Check for missing or non-finite values
     if (anyNA(x)) {
-        stop("Input 'x' contains missing values (NA). Please remove or impute them before normalisation.")
+        stop("Input 'x' contains missing values (NA). Please remove them before normalisation.")
     }
 
     if (any(!is.finite(x))) {
@@ -69,7 +69,7 @@ quantile_normalisation <- function(x) {
     sorted_cols <- apply(x, 2, sort, method = "quick")
     quantile_means <- rowMeans(sorted_cols)
 
-    # Normalise each column using PreprocessCore's tie rule
+    # Normalise each column using preprocessCore's tie rule
     x_norm <- matrix(NA_real_, n_row, n_col)
     for (j in seq_len(n_col)) {
         col <- x[, j]
