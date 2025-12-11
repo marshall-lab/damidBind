@@ -11,9 +11,12 @@
 #'   used as display names. The order determines the contrast, e.g., `cond[1]` vs `cond[2]`.
 #' @param regex logical. If `TRUE`, the strings in `cond` are treated as
 #'   regular expressions for matching sample names. Default is `FALSE` (fixed string matching).
-#' @param filter_negative_occupancy NULL or integer. Filters out any locus with
-#'   occupancy > 0 in fewer than this number of samples of any single condition
-#'   when set.  If set to TRUE, defaults to 2. If FALSE or NULL, no filtering is applied.
+#' @param filter_occupancy NULL or integer. Filters out any locus with
+#'   occupancy > `filter_threshold` in fewer than this number of samples of any single condition
+#'   when set.  If set to TRUE, defaults to the minimum length of the two conditions.
+#'    If FALSE or NULL, no filtering is applied. (default: TRUE)
+#' @param filter_threshold Numeric.  `filter_occupancy` uses this value for thresholding
+#'   the input data.  (default: 0)
 #' @return A list containing:
 #'   \itemize{
 #'     \item `mat`: The matrix of occupancy/counts with sample columns only.
@@ -26,7 +29,7 @@
 #'   }
 #' @importFrom stats setNames
 #' @noRd
-prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, filter_negative_occupancy = 2) {
+prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, filter_occupancy = TRUE, filter_threshold = 0) {
     if (!is.list(data_list)) {
         stop("'data_list' must be the full output of load_data_peaks or load_data_genes.")
     }
@@ -123,31 +126,31 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
     )
 
     # Filter loci with negative occupancy if requested
-    if (isTRUE(filter_negative_occupancy)) filter_negative_occupancy <- 2 # legacy TRUE -> 2
-    if (!is.null(filter_negative_occupancy) && is.numeric(filter_negative_occupancy) && filter_negative_occupancy > 0) {
+    if (isTRUE(filter_occupancy)) filter_occupancy <- min(length(cond1_matches),length(cond2_matches))
+    if (!is.null(filter_occupancy) && is.numeric(filter_occupancy) && filter_occupancy > 0) {
         initial_loci_count <- nrow(mat)
 
-        filter_negative_occupancy <- as.integer(filter_negative_occupancy)
-        if (filter_negative_occupancy <= 0) {
-            stop("'filter_negative_occupancy' must be a positive integer.")
+        filter_occupancy <- as.integer(filter_occupancy)
+        if (filter_occupancy <= 0) {
+            stop("'filter_occupancy' must be a positive integer.")
         }
 
-        minimum_above_zero <- min(
-            filter_negative_occupancy,
+        minimum_above_threshold <- min(
+            filter_occupancy,
             length(samples_cond1),
             length(samples_cond2)
         )
 
-        message(sprintf("Applying filter: Loci must have occupancy > 0 in at least %d samples of at least one condition.",minimum_above_zero))
+        message(sprintf("Applying filter: Loci must have occupancy > %g in at least %d samples of at least one condition.", filter_threshold, minimum_above_threshold))
 
         keep_cond1 <- if (length(samples_cond1) >= 1) {
-            rowSums(mat[, samples_cond1, drop = FALSE] > 0, na.rm=TRUE) >= minimum_above_zero
+            rowSums(mat[, samples_cond1, drop = FALSE] > filter_threshold, na.rm=TRUE) >= minimum_above_threshold
         } else {
             rep(FALSE, nrow(mat))
         }
 
         keep_cond2 <- if (length(samples_cond2) >= 1) {
-            rowSums(mat[, samples_cond2, drop = FALSE] > 0, na.rm=TRUE) >= minimum_above_zero
+            rowSums(mat[, samples_cond2, drop = FALSE] > filter_threshold, na.rm=TRUE) >= minimum_above_threshold
         } else {
             rep(FALSE, nrow(mat))
         }
@@ -232,4 +235,113 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
         message(sprintf("Highest-ranked genes:\n%s", paste0(top_genes[seq_len(min(10, length(top_genes)))], collapse = ", ")))
     }
     invisible(NULL)
+}
+
+
+
+#' @title Drop specified input samples from data objects
+#' @description An internal helper to remove samples based on user-provided names
+#'   or patterns. It operates on the list structure created by `load_data_*`
+#'   functions and can filter binding profiles, peak lists, and occupancy tables.
+#'
+#' @param data_list A list that may contain `binding_profiles_data` (a GRanges
+#'   object), `peaks` (a list of GRanges), and/or `occupancy` (a data.frame).
+#' @param drop_samples A character vector of sample names or patterns to remove.
+#'   The pattern is matched against the sample names of binding profiles, the names
+#'   of peak lists, and the sample columns of the occupancy table.
+#'
+#' @return An updated version of `data_list` with specified samples removed. If
+#'   `drop_samples` is NULL or empty, it returns the original list.
+#' @noRd
+._drop_input_samples <- function(data_list, drop_samples) {
+    # If no samples to drop, return immediately
+    if (is.null(drop_samples) || length(drop_samples) == 0) {
+        return(data_list)
+    }
+
+    # Identify sample names from all potential sources within the data_list
+    binding_profile_names <- if ("binding_profiles_data" %in% names(data_list) && length(S4Vectors::mcols(data_list$binding_profiles_data)) > 0) {
+        colnames(S4Vectors::mcols(data_list$binding_profiles_data))
+    } else {
+        character(0)
+    }
+
+    has_peaks <- "peaks" %in% names(data_list) && is.list(data_list$peaks) && length(data_list$peaks) > 0
+    peak_names <- if (has_peaks) names(data_list$peaks) else NULL
+
+    has_occupancy <- "occupancy" %in% names(data_list) && is.data.frame(data_list$occupancy)
+    occupancy_sample_names <- if (has_occupancy) {
+        base_cols <- c("chr", "start", "end", "name", "gene_name", "gene_id", "nfrags")
+        occ_cols <- colnames(data_list$occupancy)
+        occ_cols <- occ_cols[!grepl("_FDR$", occ_cols)] # Exclude FDR columns
+        setdiff(occ_cols, base_cols)
+    } else {
+        character(0)
+    }
+
+    # For each pattern, find all matching samples across the sources
+    to_drop_binding <- character()
+    to_drop_peaks <- character()
+    to_drop_occupancy <- character()
+
+    for (pattern in drop_samples) {
+        matched_binding <- binding_profile_names[grepl(pattern, binding_profile_names)]
+        matched_peaks <- if (has_peaks) peak_names[grepl(pattern, peak_names)] else character(0)
+        matched_occupancy <- if (has_occupancy) occupancy_sample_names[grepl(pattern, occupancy_sample_names)] else character(0)
+
+        # Issue a warning if a pattern matches nothing at all
+        if (length(matched_binding) == 0 && length(matched_peaks) == 0 && length(matched_occupancy) == 0) {
+            warning(sprintf("The pattern '%s' in 'drop_samples' did not match any binding profiles, peak lists, or occupancy table columns.", pattern), call. = FALSE)
+        }
+
+        to_drop_binding <- c(to_drop_binding, matched_binding)
+        if (has_peaks) to_drop_peaks <- c(to_drop_peaks, matched_peaks)
+        if (has_occupancy) to_drop_occupancy <- c(to_drop_occupancy, matched_occupancy)
+    }
+
+    unique_binding_to_drop <- unique(to_drop_binding)
+    unique_peaks_to_drop <- unique(to_drop_peaks)
+    unique_occupancy_to_drop <- unique(to_drop_occupancy)
+
+    all_dropped_samples <- unique(c(unique_binding_to_drop, unique_peaks_to_drop, unique_occupancy_to_drop))
+
+    if (length(all_dropped_samples) > 0) {
+        message("The following matched samples will be excluded:")
+        message(paste0(" - ", all_dropped_samples, collapse = "\n"))
+
+        # Drop from binding profiles GRanges metadata columns
+        if (length(binding_profile_names) > 0 && length(unique_binding_to_drop) > 0) {
+            cols_to_keep <- setdiff(binding_profile_names, unique_binding_to_drop)
+            if (length(cols_to_keep) > 0) {
+                S4Vectors::mcols(data_list$binding_profiles_data) <- S4Vectors::mcols(data_list$binding_profiles_data)[, cols_to_keep, drop = FALSE]
+            } else {
+                S4Vectors::mcols(data_list$binding_profiles_data) <- S4Vectors::DataFrame(row.names = seq_along(data_list$binding_profiles_data))
+                warning("All binding profile samples have been dropped.", call. = FALSE)
+            }
+        }
+
+        # Drop from peaks list
+        if (has_peaks && length(unique_peaks_to_drop) > 0) {
+            peaks_to_keep <- setdiff(peak_names, unique_peaks_to_drop)
+            if (length(peaks_to_keep) > 0) {
+                data_list$peaks <- data_list$peaks[peaks_to_keep]
+            } else {
+                data_list$peaks <- list()
+                warning("All peak lists have been dropped.", call. = FALSE)
+            }
+        }
+
+        # Drop from occupancy dataframe
+        if (has_occupancy && length(unique_occupancy_to_drop) > 0) {
+            fdr_cols_to_drop <- paste0(unique_occupancy_to_drop, "_FDR")
+            all_cols_to_drop <- c(unique_occupancy_to_drop, fdr_cols_to_drop)
+
+            cols_to_keep <- setdiff(colnames(data_list$occupancy), all_cols_to_drop)
+            data_list$occupancy <- data_list$occupancy[, cols_to_keep, drop = FALSE]
+        }
+    } else {
+        message("No samples matched the patterns in 'drop_samples'. No samples were dropped.")
+    }
+
+    return(data_list)
 }
