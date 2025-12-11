@@ -14,16 +14,24 @@
 #'   regular expressions for matching sample names. If `FALSE` (the default),
 #'   fixed string matching is used.
 #' @param fdr Numeric. FDR threshold for significance (default 0.05).
-#' @param filter_negative_occupancy NULL or integer.  If a positive integer, only
-#'   loci with positive occupancy in fewer than this number of samples per condition
-#'   will be filtered out prior to differential analysis. (default: 2).
+#' @param eBayes_trend Logical. If `TRUE`, the analysis will account for data
+#'   heteroscedasticity, which is common in DamID-seq data. (default: TRUE)
+#' @param eBayes_robust Logical. If `TRUE`, the fitted trend should be robust
+#'   to outliers.  Only useful when `eBayes_trend = TRUE`.  Recommended for DamID-seq
+#'   data. (default: TRUE)
+#' @param plot_diagnostics Logical.  If `TRUE` (default for interactive sessions),
+#'   plots limma diagnostics to assess eBayes moderation, using `plot_limma_diagnostics`.
+#' @param filter_occupancy NULL or integer. Filters out any locus with
+#'   occupancy > `filter_threshold` in fewer than this number of samples of any single condition
+#'   when set.  If set to TRUE, defaults to the minimum length of the two conditions.
+#'    If FALSE or NULL, no filtering is applied. (default: TRUE)
+#' @param filter_threshold Numeric.  `filter_occupancy` uses this value for thresholding
+#'   the input data.  (default: 0)
 #' @param filter_positive_enrichment Logical. If `TRUE` (default), regions
 #'   are only considered significantly enriched if the mean score in the
 #'   enriched condition is greater than zero. For example, for a region to be
 #'   in `upCond1`, its logFC must be positive and its mean score in condition 1
-#'   must be > 0. This is a common biological filter to focus on regions with
-#'   genuine binding enrichment, rather than changes between two states of
-#'   depletion. Set to `FALSE` to include all statistically significant changes.
+#'   must be > 0. Set to `FALSE` to include all statistically significant changes.
 #' @return A `DamIDResults` object containing the results. Access slots using
 #'   accessors:
 #'   \item{enrichedCond1()}{data.frame of regions enriched in condition 1}
@@ -72,15 +80,23 @@ differential_binding <- function(
         cond,
         regex = FALSE,
         fdr = 0.05,
-        filter_negative_occupancy = 2,
+        eBayes_trend = TRUE,
+        eBayes_robust = TRUE,
+        plot_diagnostics = interactive(),
+        filter_occupancy = TRUE,
+        filter_threshold = 0,
         filter_positive_enrichment = TRUE) {
+
     # Prep data for analysis
     prep_results <- prep_data_for_differential_analysis(
         data_list = data_list,
         cond = cond,
         regex = regex,
-        filter_negative_occupancy = filter_negative_occupancy
+        filter_occupancy = filter_occupancy,
+        filter_threshold = filter_threshold
     )
+
+
 
     mat <- prep_results$mat
     factors <- prep_results$factors
@@ -109,7 +125,10 @@ differential_binding <- function(
     )
 
     fit2 <- contrasts.fit(fit, contrast_mat)
-    fit2 <- eBayes(fit2)
+
+    message(sprintf("Applying eBayes moderation with `trend = %s, robust = %s`",as.character(eBayes_trend), as.character(eBayes_robust)))
+    fit2 <- eBayes(fit2, trend = eBayes_trend, robust = eBayes_robust)
+
     result_table <- topTable(fit2, number = Inf, sort.by = "B", adjust.method = "BH")
 
     # Handle case where topTable could return no rows (e.g., empty input).
@@ -183,11 +202,17 @@ differential_binding <- function(
     ._report_results(cond_display[2], upCond2)
 
     # Return a formal S4 object
-    new("DamIDResults",
+    results_object <- new("DamIDResults",
         upCond1 = upCond1,
         upCond2 = upCond2,
         analysis = result_table,
         cond = mapping_cond,
         data = data_list
     )
+
+    if (isTRUE(plot_diagnostics)) {
+        ._plot_limma_diagnostics_internal(fit = fit, fit2 = fit2, mat = mat)
+    }
+
+    return(results_object)
 }
