@@ -121,7 +121,7 @@ test_that("Function displays appropriate messages", {
     )
 })
 
-test_that("filter_negative_occupancy works as expected", {
+test_that("filter_occupancy works as expected", {
     # Corrected data.frame creation
     occupancy_df_filter_test <- data.frame(
         name = paste0("locus_", 1:7),
@@ -143,7 +143,7 @@ test_that("filter_negative_occupancy works as expected", {
         damidBind:::prep_data_for_differential_analysis(
             dl_filter,
             cond_vec,
-            filter_negative_occupancy = TRUE
+            filter_occupancy = TRUE
         ),
         regexp = "Filtered out 3 loci. 4 loci remain for analysis."
     )
@@ -161,7 +161,7 @@ test_that("filter_negative_occupancy works as expected", {
     res_unfiltered <- damidBind:::prep_data_for_differential_analysis(
             dl_filter,
             cond_vec,
-            filter_negative_occupancy = NULL
+            filter_occupancy = NULL
         )
 
     # Check that nothing was filtered
@@ -178,7 +178,7 @@ test_that("filter_negative_occupancy works as expected", {
         damidBind:::prep_data_for_differential_analysis(
             dl_single_rep,
             cond_vec,
-            filter_negative_occupancy = TRUE
+            filter_occupancy = TRUE
         ),
         regexp = "Filtered out 1 loci. 6 loci remain for analysis."
     )

@@ -107,7 +107,7 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     res_unfiltered <- suppressMessages(
         differential_binding(dl, cond = cond_vec, fdr = 0.1,
                              filter_positive_enrichment = FALSE,
-                             filter_negative_occupancy = NULL) # Disable pre-filtering
+                             filter_occupancy = NULL) # Disable pre-filtering
     )
 
     expect_s4_class(res_unfiltered, "DamIDResults")
@@ -122,7 +122,7 @@ test_that("differential_binding can optionally filter for positive enrichment", 
     res_filtered <- suppressMessages(
         differential_binding(dl, cond = cond_vec, fdr = 0.1,
                              filter_positive_enrichment = TRUE,
-                             filter_negative_occupancy = NULL) # Disable pre-filtering
+                             filter_occupancy = NULL) # Disable pre-filtering
     )
 
     expect_s4_class(res_filtered, "DamIDResults")
