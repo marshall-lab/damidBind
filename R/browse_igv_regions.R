@@ -34,9 +34,8 @@
     # dataframes from here onwards
     drop_gr_cols <- c("width","strand")
     binding_profiles_data <- as.data.frame(binding_profiles_data) %>%
-        select(-all_of(intersect(drop_gr_cols, names(.)))) %>%
+        subset(select = setdiff(names(.), drop_gr_cols)) %>%
         rename(chr = "seqnames")
-
 
     peaks_bed <- NULL
     if ("pr" %in% names(inputData(diff_results))) {
@@ -177,9 +176,10 @@
 #' BED, bedGraph, and annotation tracks into the IGV browser.
 #' @param session The Shiny server session object.
 #' @param prepped_data,track_scales,colours,trackheight Data and configuration objects.
+#' @param use_unique_ids When `TRUE`, use simplified unique sample names for display
 #' @return `NULL` invisibly
 #' @noRd
-.load_igv_tracks <- function(session, prepped_data, track_scales, colours, trackheight, peakCol, trackCol) {
+.load_igv_tracks <- function(session, prepped_data, track_scales, colours, trackheight, peakCol, trackCol, use_unique_ids = TRUE) {
     message("IGV browser initialized. Loading tracks...")
     preptbl <- function(tbl) { # A small helper to ensure 'chr' column exists
         if ("seqnames" %in% names(tbl)) tbl <- rename(tbl, chr = "seqnames")
@@ -196,15 +196,31 @@
         message(" - Added 'Binding peaks' track")
     }
 
+    # Generate display names
+    sample_names <- prepped_data$use_samples
+
+    sample_display_names <-  if (isTRUE(use_unique_ids))
+        extract_unique_sample_ids(sample_names) else
+            sample_names
+
+    names(sample_display_names) <- sample_names
+
     # Add sample quantitative tracks
     for (sample in prepped_data$use_samples) {
+        display_name <- sample_display_names[[sample]]
         bprof <- prepped_data$binding_profiles_data[, c("chr", "start", "end", sample)]
+        names(bprof)[names(bprof) == sample] <- display_name
+
         loadBedGraphTrack(session, "igv",
                           tbl = preptbl(bprof), autoscale = FALSE,
                           min = track_scales$bp_min, max = track_scales$bp_max,
-                          trackHeight = trackheight, trackName = sample, color = trackCol
+                          trackHeight = trackheight, trackName = display_name, color = trackCol
         )
-        message(sprintf(" - Added sample track: %s", sample))
+
+        unique_name_info <- if (isTRUE(use_unique_ids))
+            sprintf(" (displayed as %s)", display_name) else
+                ""
+        message(sprintf(" - Added sample track: %s%s", sample, unique_name_info))
     }
 
     # Add differentially-enriched region tracks
@@ -236,9 +252,10 @@
 #' @description This internal function creates the server function for the Shiny
 #' app, defining reactive outputs and event observers.
 #' @param prepped_data,shiny_configs,colours,padding_width,trackheight Data and config objects.
+#' @param use_unique_ids When `TRUE`, use simplified unique sample names for display
 #' @return A Shiny server function.
 #' @noRd
-.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width, trackheight, peakCol, trackCol) {
+.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width, trackheight, peakCol, trackCol, use_unique_ids = TRUE) {
     server_func <- function(input, output, session) {
         output$igv <- renderIgvShiny({
             igvShiny(shiny_configs$igv_options)
@@ -246,7 +263,7 @@
 
         observeEvent(input$igvReady,
                      {
-                         .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol)
+                         .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol, use_unique_ids = use_unique_ids)
                      },
                      once = TRUE
         )
@@ -288,20 +305,22 @@
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
 #' @param samples Optional character vector of sample names to display (default: all in dataset).
-#' @param colour_cond1,colour_cond2  Colours for differentially enriched region tracks.
-#' @param use_genome IGV genome name (inferred from peak annotations if not given).
+#' @param use_unique_ids Logical.  When `TRUE` (default), simplified unique sample names will be
+#'   displayed.  Set as `FALSE` to use the full sample file names from loading.
+#' @param colour_cond1,colour_cond2  Colours for differentially-enriched region tracks.
+#' @param use_genome IGV genome name (inferred from peak annotations if not provided).
 #' @param padding_width Width to pad browser viewbox on either side of the peak (Default: 20000)
 #' @param trackHeight Height of bedGraph tracks (Default: 65)
 #' @param peakColour Colour for significant peaks track (Default: "darkgreen")
 #' @param trackColour Colour for bedGraph tracks (Default: "#6666ff")
 #' @param host Hostname for the server location (Default: "localhost").
 #' @param port Port for connection (if NULL (default) the port is assigned by Shiny).
+#'
 #' @return Invisibly returns the Shiny app object created by `shinyApp()`.
 #'
 #' @examples
-#' \donttest{
-#' # This example launches an interactive Shiny app and is not run by
-#' # automated checks. It requires an internet connection for IGV.
+#' if (isTRUE(curl::has_internet()) && interactive()) {
+#' # This example launches an interactive Shiny app in a web browser
 #'
 #' .generate_example_results <- function() {
 #'     mock_genes_gr <- GenomicRanges::GRanges(
@@ -329,15 +348,15 @@
 #' }
 #' diff_results <- .generate_example_results()
 #'
-#' # Launch the interactive browser (requires network access; uncomment to run)
-#' # browse_igv_regions(diff_results)
+#' # Launch the interactive browser
+#' browse_igv_regions(diff_results)
 #' }
 #'
-#' @importFrom shiny actionButton HTML tags icon h4 hr p
 #' @export
 browse_igv_regions <- function(
         diff_results,
         samples = NULL,
+        use_unique_ids = TRUE,
         colour_cond1 = "#ff6600",
         colour_cond2 = "#2288dd",
         use_genome = NULL,
@@ -383,7 +402,8 @@ browse_igv_regions <- function(
         padding_width = padding_width,
         trackheight = trackHeight,
         peakCol = peakColour,
-        trackCol = trackColour
+        trackCol = trackColour,
+        use_unique_ids = use_unique_ids
     )
 
     # Create and run the Shiny app
