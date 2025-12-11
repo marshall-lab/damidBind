@@ -94,13 +94,26 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'   globs containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') supported.
 #' @param peaks_path Character vector. Path(s) to directories or file globs containing
 #'   the peak calls in GFF or BED format.
-#' @param binding_profiles List of GRanges objects with binding profiles, one per sample.
+#' @param binding_profiles List of GRanges objects with binding profiles, one
+#'   per sample.
 #' @param peaks List of GRanges objects representing peak regions.
-#' @param maxgap_loci Integer, the maximum bp distance between a peak boundary and a gene to associate that peak with the gene. Default: 1000.
-#' @param quantile_norm Logical (default: FALSE). If TRUE, quantile-normalise the signal columns across all datasets.
-#' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Default: "drosophila melanogaster".
-#' @param ensdb_genes GRanges object: gene annotation. Automatically obtained from `organism` if NULL.
+#' @param drop_samples A character vector of sample names or patterns to remove.
+#'   Matching samples are removed from the analysis before normalisation and
+#'   occupancy calculation. This can be useful for excluding samples that fail
+#'   initial quality checks. Default: `NULL` (no samples are dropped).
+#' @param maxgap_loci Integer, the maximum bp distance between a peak boundary
+#'   and a gene to associate that peak with the gene. Default: 1000.
+#' @param quantile_norm Logical (default: FALSE). If TRUE, quantile-normalise
+#'   the signal columns across all datasets.
+#' @param organism Organism string (lower case) to obtain genome annotation from
+#'   (if not providing a custom `ensdb_genes` object)
+#'   Default: "drosophila melanogaster".
+#' @param ensdb_genes GRanges object: gene annotation. Automatically obtained
+#'   from `organism` if NULL.
 #' @param BPPARAM BiocParallel function (defaults to BiocParallel::bpparam())
+#' @param plot_diagnostics Logical. If `TRUE` (the default in interactive sessions),
+#'   diagnostic plots (PCA and correlation heatmap) will be generated and
+#'   displayed for both the raw binding data and the summarised occupancy data.
 #'
 #' @return A list with components:
 #'   \item{binding_profiles_data}{data.frame: Signal matrix for all regions, with columns chr, start, end, sample columns.}
@@ -141,15 +154,17 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'
 #' @export
 load_data_peaks <- function(
-    binding_profiles_path = NULL,
-    peaks_path = NULL,
-    binding_profiles = NULL,
-    peaks = NULL,
-    maxgap_loci = 1000,
-    quantile_norm = FALSE,
-    organism = "drosophila melanogaster",
-    ensdb_genes = NULL,
-    BPPARAM = BiocParallel::bpparam()) {
+        binding_profiles_path = NULL,
+        peaks_path = NULL,
+        binding_profiles = NULL,
+        peaks = NULL,
+        drop_samples = NULL,
+        maxgap_loci = 1000,
+        quantile_norm = FALSE,
+        organism = "drosophila melanogaster",
+        ensdb_genes = NULL,
+        BPPARAM = BiocParallel::bpparam(),
+        plot_diagnostics = interactive()) {
     if (is.null(ensdb_genes)) {
         ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
     }
@@ -158,7 +173,6 @@ load_data_peaks <- function(
     }
 
     binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
-    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
 
     # Validate and load peaks
     if (is.null(peaks_path) && is.null(peaks)) {
@@ -174,6 +188,17 @@ load_data_peaks <- function(
         if (length(peaks_files) == 0) {
             stop("No peak files (.gff or .bed) found in the specified path(s).")
         }
+        # Helper to strip all extensions for consistent naming with binding profiles
+        strip_all_exts_recursive <- function(filepath) {
+            lastpath <- ""
+            while (filepath != lastpath) {
+                lastpath <- filepath
+                filepath <- file_path_sans_ext(filepath)
+            }
+            filepath
+        }
+        # Name the files so the resulting list is named.
+        names(peaks_files) <- vapply(peaks_files, function(p) basename(strip_all_exts_recursive(p)), character(1))
         peaks <- lapply(peaks_files, import_peaks)
     } else {
         if (!is.list(peaks) || is.null(names(peaks))) {
@@ -184,6 +209,22 @@ load_data_peaks <- function(
         }
         message("Using supplied peaks GRanges list.")
     }
+
+    # Consolidate loaded data for potential dropping
+    temp_data_list <- list(
+        binding_profiles_data = binding_profiles_data,
+        peaks = peaks
+    )
+
+    # Drop samples if requested by the user.
+    # This must happen before normalisation or peak reduction.
+    if (!is.null(drop_samples)) {
+        filtered_data <- ._drop_input_samples(temp_data_list, drop_samples)
+        binding_profiles_data <- filtered_data$binding_profiles_data
+        peaks <- filtered_data$peaks
+    }
+
+    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
 
     # Process peaks and calculate occupancy
     pr <- reduce_regions(peaks)
@@ -196,15 +237,18 @@ load_data_peaks <- function(
         occupancy$gene_id <- gene_overlaps$ids
     }
 
-    list(
+    result_list <- list(
         binding_profiles_data = binding_profiles_data,
         peaks = peaks,
         pr = pr,
         occupancy = occupancy,
         test_category = "bound"
     )
+    if (isTRUE(plot_diagnostics)) {
+        plot_input_diagnostics(result_list)
+    }
+    return(result_list)
 }
-
 
 
 #' Load genome-wide binding data for gene expression (RNA polymerase occupancy)
@@ -222,13 +266,22 @@ load_data_peaks <- function(
 #' @param binding_profiles_path Character vector of directories or file globs
 #'   containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') supported.
 #' @param binding_profiles Named list of GRanges objects representing binding profiles.
-#' @param quantile_norm Logical (default: FALSE) quantile-normalise across all signal columns if TRUE.
+#' @param drop_samples A character vector of sample names or patterns to remove.
+#'   Matching samples are removed from the analysis before normalisation and
+#'   occupancy calculation. This can be useful for excluding samples that fail
+#'   initial quality checks. Default: `NULL` (no samples are dropped).
+#' @param quantile_norm Logical (default: FALSE) quantile-normalise across all
+#'   signal columns if TRUE.
 #' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 #'   Defautls to "drosophila melanogaster".
 #' @param calculate_fdr Calculate FDR based on RNA Pol occupancy (see details) (default: FALSE)
 #' @param fdr_iterations Number of iterations to use to determine null model for FDR (default: 50000)
-#' @param ensdb_genes GRanges object: gene annotation. Automatically obtained from `organism` if NULL.
+#' @param ensdb_genes GRanges object: gene annotation. Automatically obtained
+#'   from `organism` if NULL.
 #' @param BPPARAM BiocParallel function (defaults to BiocParallel::bpparam())
+#' @param plot_diagnostics Logical. If `TRUE` (the default in interactive sessions),
+#'   diagnostic plots (PCA and correlation heatmap) will be generated and
+#'   displayed for both the raw binding data and the summarised occupancy data.
 #'
 #' @return List with elements:
 #'   \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns.}
@@ -276,14 +329,16 @@ load_data_peaks <- function(
 #'
 #' @export
 load_data_genes <- function(
-    binding_profiles_path = NULL,
-    binding_profiles = NULL,
-    quantile_norm = FALSE,
-    organism = "drosophila melanogaster",
-    calculate_fdr = FALSE,
-    fdr_iterations = 50000,
-    ensdb_genes = NULL,
-    BPPARAM = BiocParallel::bpparam()) {
+        binding_profiles_path = NULL,
+        binding_profiles = NULL,
+        drop_samples = NULL,
+        quantile_norm = FALSE,
+        organism = "drosophila melanogaster",
+        calculate_fdr = FALSE,
+        fdr_iterations = 50000,
+        ensdb_genes = NULL,
+        BPPARAM = BiocParallel::bpparam(),
+        plot_diagnostics = interactive()) {
     if (is.null(ensdb_genes)) {
         ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
     }
@@ -292,6 +347,15 @@ load_data_genes <- function(
     }
 
     binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
+
+    # Drop samples if requested by the user.
+    # This must happen before normalisation.
+    if (!is.null(drop_samples)) {
+        temp_data_list <- list(binding_profiles_data = binding_profiles_data)
+        filtered_data <- ._drop_input_samples(temp_data_list, drop_samples)
+        binding_profiles_data <- filtered_data$binding_profiles_data
+    }
+
     binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
 
     # Calculate occupancy over genes
@@ -307,11 +371,15 @@ load_data_genes <- function(
         )
     }
 
-    list(
+    result_list <- list(
         binding_profiles_data = binding_profiles_data,
         occupancy = occupancy,
         test_category = "expressed"
     )
+    if (isTRUE(plot_diagnostics)) {
+        plot_input_diagnostics(result_list)
+    }
+    return(result_list)
 }
 
 
