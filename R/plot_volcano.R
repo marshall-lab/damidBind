@@ -52,16 +52,17 @@ check_list_input <- function(default_list, config_input) {
 #' providing a better representation of the underlying data.
 #'
 #' @details
-#' Algorithm in detail:
+#' The algorithm in detail:
 #' 1.  If `scale = TRUE`, the coordinate data is centred and scaled.
-#' 2.  An approximate k-nearest neighbour (KNN) search for all points is conducted
-#'     using the HNSW algorithm.
+#' 2.  An exact k-nearest neighbour (KNN) search for all points is conducted
+#'     using the `dbscan::kNN` function.
 #' 3.  A priority score is calculated for each point, defined as the median distance
-#'     to its `k` nearest neighbours, where higher scores signify greater isolation.
+#'     to its `k_priority` nearest neighbours, and the list of points sorted by this score.
 #' 4.  The function iterates through the sorted list of points in descending order:
-#'     a. If a point has not yet been processed, it is marked to be 'kept'.
-#'     b. All neighbours of this point within the specified exclusion radius `r`
-#'        are then marked as 'processed' and will be ignored in subsequent iterations.
+#'     a. If a point has not yet been processed, it is marked as 'processed' and 'kept'.
+#'     b. A radius search is performed around this point using `dbscan::frNN`.
+#'        All neighbours within the specified exclusion radius `r` are then marked
+#'        as 'processed' and will be ignored in subsequent iterations.
 #' 5.  A logical vector is returned, where `TRUE` corresponds to a point
 #'     that should be kept for labelling.
 #'
@@ -77,9 +78,9 @@ check_list_input <- function(default_list, config_input) {
 #'   result in more points being kept. Note: The interpretation of `r` depends
 #'   on whether `scale` is `TRUE`.
 #' @param k_priority An integer for calculating the isolation priority score.
-#'   Must be less than or equal to `k_search`. Default: 50.
+#'   Must be less than or equal to `k_search`. Default: 30.
 #' @param k_search The maximum number of neighbours to find in the initial KNN search.
-#'   This value must be greater than or equal to both `k` and `k_for_r`.
+#'   This value must be greater than or equal to both `k_priority` and `k_for_r`. Default: 30.
 #' @param k_for_r An integer specifying which neighbour to use for the 'auto' `r`
 #'   calculation. Default: 5.
 #'
@@ -108,9 +109,9 @@ check_list_input <- function(default_list, config_input) {
 #'   y_col = "y",
 #'   scale = FALSE,
 #'   r = "auto",
-#'   k = 5,
-#'   k_search = 100,
-#'   k_for_r = 10
+#'   k_priority = 30,
+#'   k_search = 30,
+#'   k_for_r = 5
 #' )
 #'
 #' # Create the label dataframe for ggplot
@@ -159,23 +160,20 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
         stop("'k_for_r' must be a positive integer.", call. = FALSE)
     }
 
-    # param validation
     n_points <- nrow(df)
 
     # Sanity check
     if (2*k_search > n_points) {
-        return(rep(TRUE, n_points))
         message("  Label sampling: too few points to effectively sample; all will be labelled.")
+        return(rep(TRUE, n_points))
     }
     if (k_priority > k_search) {
         k_priority <- k_search
         message("  Label sampling: 'k_priority' was too large, is set to 'k_search'.")
     }
-    if (k_for_r > k_priority) {
-        k_for_r <- k_priority
-        message("  Label sampling: 'k_for_r' was too large, is set to 'k'.")
+    if (k_for_r > k_search) {
+        stop("'k_for_r' cannot be greater than 'k_search'.", call. = FALSE)
     }
-
 
     coords <- as.matrix(df[, c(x_col, y_col)])
 
@@ -186,14 +184,10 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
     }
 
     # KNN search
-    nn_data <- RcppHNSW::hnsw_knn(X = coords, k = k_search)
+    nn_data <- dbscan::kNN(x = coords, k = k_search)
 
     # Exclusion radius (r)
     if (identical(r, "auto")) {
-        if (k_for_r > k_search) {
-            stop("'k_for_r' cannot be greater than 'k_search'.", call. = FALSE)
-        }
-        # Use the k_for_r-th neighbour's distance for auto-calculation
         distances_to_kth_nn <- nn_data$dist[, k_for_r]
         r_calculated <- median(distances_to_kth_nn)
         message(sprintf(
@@ -205,13 +199,12 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
         stop("'r' must be a positive numeric value or the string 'auto'.", call. = FALSE)
     }
 
-    # Priority rank score (median distance to first 'k' neighbours)
+    # Calculate priority rank scores
     k_priority <- min(k_priority, ncol(nn_data$dist))
     priority_scores <- apply(nn_data$dist[, seq_len(k_priority), drop = FALSE], 1, median)
-
-    # Get the order of points to process: from most isolated to least.
     sorted_indices <- order(priority_scores, decreasing = TRUE)
 
+    # Iteratively select points and exclude neighbours
     processed <- rep(FALSE, n_points)
     kept <- rep(FALSE, n_points)
 
@@ -223,10 +216,13 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
         kept[i] <- TRUE
         processed[i] <- TRUE
 
-        neighbour_indices <- nn_data$idx[i, ]
-        neighbour_distances <- nn_data$dist[i, ]
+        radius_neighbours <- dbscan::frNN(
+            x = coords,
+            eps = r,
+            query = matrix(coords[i, ], nrow = 1)
+        )
 
-        indices_to_discard <- neighbour_indices[neighbour_distances < r & neighbour_distances > 0] # Exclude self-distance if 0
+        indices_to_discard <- radius_neighbours$id[[1]]
         processed[indices_to_discard] <- TRUE
     }
 
@@ -496,7 +492,7 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'     \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
 #'     \item \code{text_luminosity}: Numeric (0-100).  When using `text_col`, setting
 #'       a non-zero value will darken the luminosity of the highlight colour on text
-#'       labels for increased contrast.  0 = no change; 100 = black.  (default: 0)
+#'       labels for increased contrast. 0 = no change; 100 = black. (default: 0)
 #'   }
 #' @param label_display List. Additional label display options for sampling dense
 #'   labels in all groups.  Uses KNN-based sampling to optimise display when not
@@ -610,6 +606,7 @@ plot_volcano <- function(
             k_for_r = configs$label_display$k_for_r,
             k_search = configs$label_display$k_search
         )
+
         layer_data$label_df <- layer_data$label_df[kept_mask, ]
     }
 
