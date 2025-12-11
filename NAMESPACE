@@ -1,16 +1,18 @@
-importFrom(ggrepel, geom_text_repel)
 importFrom(stringr, fixed, str_detect, str_match, str_wrap, str_trunc, str_width)
 importFrom(ggplot2, aes, element_text, expansion, geom_point, geom_segment,
            ggplot, ggsave, guide_colorbar, guide_legend, guides, labs,
            scale_color_gradientn, scale_colour_manual,
            scale_size_continuous, scale_x_continuous, scale_y_discrete,
-           theme, theme_bw, element_rect, waiver)
+           theme, theme_bw, theme_void, element_rect, waiver, coord_fixed,
+           geom_hline, geom_line)
 importFrom(ggrepel, geom_label_repel, geom_text_repel)
-importFrom(scales, hue_pal, scientific_format, number_format)
+importFrom(scales, hue_pal, scientific_format, number_format, alpha)
 importFrom(dplyr, rename, select, "%>%", arrange, mutate, row_number)
 importFrom(tools, file_path_sans_ext)
 importFrom(rlang, .data)
-importFrom(stats, na.omit, weighted.mean, model.matrix, p.adjust, setNames, as.formula, complete.cases, coefficients, lm, predict, median)
+importFrom(stats, na.omit, weighted.mean, model.matrix, p.adjust, setNames,
+           as.formula, complete.cases, coefficients, lm, predict, median,
+           prcomp, cor, pf)
 importFrom(BiocParallel, bpparam, bplapply)
 importFrom(GenomicRanges, GRanges, findOverlaps, reduce, trim, resize, width,
            start, end, seqnames)
@@ -30,7 +32,6 @@ importFrom(grDevices, pdf, dev.off, png, rgb)
 importFrom(clusterProfiler, bitr, enrichGO, dotplot)
 importFrom(enrichplot, dotplot)
 importFrom(forcats, fct_reorder)
-importFrom(scales, hue_pal, scientific_format, number_format, alpha)
 importFrom(colorspace, darken)
 importFrom(ggnewscale, new_scale_colour)
 importFrom(methods, is, new, show)
@@ -40,7 +41,13 @@ importFrom(igvShiny, igvShiny, igvShinyOutput, loadBedGraphTrack, loadBedTrack,
 importFrom(shiny, fluidPage, h4, hr, mainPanel, observeEvent, p, runApp,
            shinyApp, sidebarLayout, sidebarPanel, titlePanel, actionButton,
            icon, HTML, tags, numericInput)
-importFrom(RcppHNSW, hnsw_build, hnsw_knn)
+importFrom(dbscan, kNN, frNN)
+importFrom(circlize, colorRamp2)
+importFrom(ComplexHeatmap, Heatmap, draw)
+importFrom(grid, grid.grabExpr, grid.text, gpar)
+importFrom(patchwork, plot_annotation)
+
+
 
 export(load_data_peaks)
 export(load_data_genes)
@@ -59,9 +66,12 @@ export(browse_igv_regions)
 export(analyse_go_enrichment)
 export(analyze_go_enrichment)
 export(sample_labels_by_isolation)
+export(extract_unique_sample_ids)
 export(analysisTable)
 export(conditionNames)
 export(enrichedCond1)
 export(enrichedCond2)
 export(inputData)
 export(expressed)
+export(plot_limma_diagnostics)
+export(plot_input_diagnostics)

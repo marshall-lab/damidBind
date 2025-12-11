@@ -46,9 +46,13 @@ Imports:
     igvShiny,
     shiny,
     DT,
-    RcppHNSW
+    dbscan,
+    circlize,
+    ComplexHeatmap,
+    patchwork
 Suggests:
     testthat,
+    curl,
     knitr,
     htmltools,
     rmarkdown,
