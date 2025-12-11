@@ -63,7 +63,7 @@ differential_accessibility <- function(
         data_list = data_list,
         cond = cond,
         regex = regex,
-        filter_negative_occupancy = NULL # no negatives in count data
+        filter_occupancy = NULL # no negatives in count data
     )
 
     mat <- prep_results$mat
@@ -123,8 +123,14 @@ differential_accessibility <- function(
     }
 
     # Identify significant DE loci using degenes
-    sig_up_res <- degenes(noiseq_res, q = q, M = "up")
-    sig_down_res <- degenes(noiseq_res, q = q, M = "down")
+    # Using capture.output to suppress redundant messaging
+    capture.output(
+        {
+            sig_up_res <- degenes(noiseq_res, q = q, M = "up")
+            sig_down_res <- degenes(noiseq_res, q = q, M = "down")
+        },
+        file = NULL
+    )
 
     upCond1 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_up_res), , drop = FALSE]
     upCond2 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_down_res), , drop = FALSE]
