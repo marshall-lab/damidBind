@@ -28,9 +28,8 @@
 #' metadata fields are retained in the genes output.
 #'
 #' @examples
-#' \donttest{
+#' if (isTRUE(curl::has_internet())) {
 #' # This example requires an internet connection and will download data.
-#' # It is wrapped in \donttest{} so it is not run by automated checks.
 #' dm_genes <- get_ensdb_genes(
 #'     organism_keyword = "drosophila melanogaster",
 #'     ensembl_version = 110
