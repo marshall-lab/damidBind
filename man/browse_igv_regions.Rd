@@ -7,6 +7,7 @@
 browse_igv_regions(
   diff_results,
   samples = NULL,
+  use_unique_ids = TRUE,
   colour_cond1 = "#ff6600",
   colour_cond2 = "#2288dd",
   use_genome = NULL,
@@ -24,9 +25,12 @@ browse_igv_regions(
 
 \item{samples}{Optional character vector of sample names to display (default: all in dataset).}
 
-\item{colour_cond1, colour_cond2}{Colours for differentially enriched region tracks.}
+\item{use_unique_ids}{Logical.  When `TRUE` (default), simplified unique sample names will be
+displayed.  Set as `FALSE` to use the full sample file names from loading.}
 
-\item{use_genome}{IGV genome name (inferred from peak annotations if not given).}
+\item{colour_cond1, colour_cond2}{Colours for differentially-enriched region tracks.}
+
+\item{use_genome}{IGV genome name (inferred from peak annotations if not provided).}
 
 \item{padding_width}{Width to pad browser viewbox on either side of the peak (Default: 20000)}
 
@@ -50,9 +54,8 @@ Clicking on a region in the table will pan IGV to that locus. Sample coverage an
 A dedicated "Save as SVG" button is provided to export the current IGV view.
 }
 \examples{
-\donttest{
-# This example launches an interactive Shiny app and is not run by
-# automated checks. It requires an internet connection for IGV.
+if (isTRUE(curl::has_internet()) && interactive()) {
+# This example launches an interactive Shiny app in a web browser
 
 .generate_example_results <- function() {
     mock_genes_gr <- GenomicRanges::GRanges(
@@ -80,8 +83,8 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.
 }
 diff_results <- .generate_example_results()
 
-# Launch the interactive browser (requires network access; uncomment to run)
-# browse_igv_regions(diff_results)
+# Launch the interactive browser
+browse_igv_regions(diff_results)
 }
 
 }

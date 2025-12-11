@@ -29,14 +29,14 @@ result in more points being kept. Note: The interpretation of `r` depends
 on whether `scale` is `TRUE`.}
 
 \item{k_priority}{An integer for calculating the isolation priority score.
-Must be less than or equal to `k_search`. Default: 50.}
+Must be less than or equal to `k_search`. Default: 30.}
 
 \item{scale}{A logical value. If `TRUE`, the coordinate data is centred and scaled
 (using `scale(center=TRUE, scale=TRUE)`) before distance calculations.
 Defaults: `TRUE`.}
 
 \item{k_search}{The maximum number of neighbours to find in the initial KNN search.
-This value must be greater than or equal to both `k` and `k_for_r`.}
+This value must be greater than or equal to both `k_priority` and `k_for_r`. Default: 30.}
 
 \item{k_for_r}{An integer specifying which neighbour to use for the 'auto' `r`
 calculation. Default: 5.}
@@ -55,16 +55,17 @@ The result is a less cluttered plot where labels are present even in crowded are
 providing a better representation of the underlying data.
 }
 \details{
-Algorithm in detail:
+The algorithm in detail:
 1.  If `scale = TRUE`, the coordinate data is centred and scaled.
-2.  An approximate k-nearest neighbour (KNN) search for all points is conducted
-    using the HNSW algorithm.
+2.  An exact k-nearest neighbour (KNN) search for all points is conducted
+    using the `dbscan::kNN` function.
 3.  A priority score is calculated for each point, defined as the median distance
-    to its `k` nearest neighbours, where higher scores signify greater isolation.
+    to its `k_priority` nearest neighbours, and the list of points sorted by this score.
 4.  The function iterates through the sorted list of points in descending order:
-    a. If a point has not yet been processed, it is marked to be 'kept'.
-    b. All neighbours of this point within the specified exclusion radius `r`
-       are then marked as 'processed' and will be ignored in subsequent iterations.
+    a. If a point has not yet been processed, it is marked as 'processed' and 'kept'.
+    b. A radius search is performed around this point using `dbscan::frNN`.
+       All neighbours within the specified exclusion radius `r` are then marked
+       as 'processed' and will be ignored in subsequent iterations.
 5.  A logical vector is returned, where `TRUE` corresponds to a point
     that should be kept for labelling.
 }
@@ -88,9 +89,9 @@ kept_labels <- sample_labels_by_isolation(
   y_col = "y",
   scale = FALSE,
   r = "auto",
-  k = 5,
-  k_search = 100,
-  k_for_r = 10
+  k_priority = 30,
+  k_search = 30,
+  k_for_r = 5
 )
 
 # Create the label dataframe for ggplot

@@ -7,12 +7,14 @@
 load_data_genes(
   binding_profiles_path = NULL,
   binding_profiles = NULL,
+  drop_samples = NULL,
   quantile_norm = FALSE,
   organism = "drosophila melanogaster",
   calculate_fdr = FALSE,
   fdr_iterations = 50000,
   ensdb_genes = NULL,
-  BPPARAM = BiocParallel::bpparam()
+  BPPARAM = BiocParallel::bpparam(),
+  plot_diagnostics = interactive()
 )
 }
 \arguments{
@@ -21,7 +23,13 @@ containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') support
 
 \item{binding_profiles}{Named list of GRanges objects representing binding profiles.}
 
-\item{quantile_norm}{Logical (default: FALSE) quantile-normalise across all signal columns if TRUE.}
+\item{drop_samples}{A character vector of sample names or patterns to remove.
+Matching samples are removed from the analysis before normalisation and
+occupancy calculation. This can be useful for excluding samples that fail
+initial quality checks. Default: `NULL` (no samples are dropped).}
+
+\item{quantile_norm}{Logical (default: FALSE) quantile-normalise across all
+signal columns if TRUE.}
 
 \item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 Defautls to "drosophila melanogaster".}
@@ -30,9 +38,14 @@ Defautls to "drosophila melanogaster".}
 
 \item{fdr_iterations}{Number of iterations to use to determine null model for FDR (default: 50000)}
 
-\item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained from `organism` if NULL.}
+\item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained
+from `organism` if NULL.}
 
 \item{BPPARAM}{BiocParallel function (defaults to BiocParallel::bpparam())}
+
+\item{plot_diagnostics}{Logical. If `TRUE` (the default in interactive sessions),
+diagnostic plots (PCA and correlation heatmap) will be generated and
+displayed for both the raw binding data and the summarised occupancy data.}
 }
 \value{
 List with elements:

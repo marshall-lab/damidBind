@@ -9,11 +9,13 @@ load_data_peaks(
   peaks_path = NULL,
   binding_profiles = NULL,
   peaks = NULL,
+  drop_samples = NULL,
   maxgap_loci = 1000,
   quantile_norm = FALSE,
   organism = "drosophila melanogaster",
   ensdb_genes = NULL,
-  BPPARAM = BiocParallel::bpparam()
+  BPPARAM = BiocParallel::bpparam(),
+  plot_diagnostics = interactive()
 )
 }
 \arguments{
@@ -23,19 +25,34 @@ globs containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') s
 \item{peaks_path}{Character vector. Path(s) to directories or file globs containing
 the peak calls in GFF or BED format.}
 
-\item{binding_profiles}{List of GRanges objects with binding profiles, one per sample.}
+\item{binding_profiles}{List of GRanges objects with binding profiles, one
+per sample.}
 
 \item{peaks}{List of GRanges objects representing peak regions.}
 
-\item{maxgap_loci}{Integer, the maximum bp distance between a peak boundary and a gene to associate that peak with the gene. Default: 1000.}
+\item{drop_samples}{A character vector of sample names or patterns to remove.
+Matching samples are removed from the analysis before normalisation and
+occupancy calculation. This can be useful for excluding samples that fail
+initial quality checks. Default: `NULL` (no samples are dropped).}
 
-\item{quantile_norm}{Logical (default: FALSE). If TRUE, quantile-normalise the signal columns across all datasets.}
+\item{maxgap_loci}{Integer, the maximum bp distance between a peak boundary
+and a gene to associate that peak with the gene. Default: 1000.}
 
-\item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)  Default: "drosophila melanogaster".}
+\item{quantile_norm}{Logical (default: FALSE). If TRUE, quantile-normalise
+the signal columns across all datasets.}
 
-\item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained from `organism` if NULL.}
+\item{organism}{Organism string (lower case) to obtain genome annotation from
+(if not providing a custom `ensdb_genes` object)
+Default: "drosophila melanogaster".}
+
+\item{ensdb_genes}{GRanges object: gene annotation. Automatically obtained
+from `organism` if NULL.}
 
 \item{BPPARAM}{BiocParallel function (defaults to BiocParallel::bpparam())}
+
+\item{plot_diagnostics}{Logical. If `TRUE` (the default in interactive sessions),
+diagnostic plots (PCA and correlation heatmap) will be generated and
+displayed for both the raw binding data and the summarised occupancy data.}
 }
 \value{
 A list with components:

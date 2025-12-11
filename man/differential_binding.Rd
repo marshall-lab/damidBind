@@ -9,7 +9,11 @@ differential_binding(
   cond,
   regex = FALSE,
   fdr = 0.05,
-  filter_negative_occupancy = 2,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE,
+  plot_diagnostics = interactive(),
+  filter_occupancy = TRUE,
+  filter_threshold = 0,
   filter_positive_enrichment = TRUE
 )
 }
@@ -28,17 +32,29 @@ fixed string matching is used.}
 
 \item{fdr}{Numeric. FDR threshold for significance (default 0.05).}
 
-\item{filter_negative_occupancy}{NULL or integer.  If a positive integer, only
-loci with positive occupancy in fewer than this number of samples per condition
-will be filtered out prior to differential analysis. (default: 2).}
+\item{eBayes_trend}{Logical. If `TRUE`, the analysis will account for data
+heteroscedasticity, which is common in DamID-seq data. (default: TRUE)}
+
+\item{eBayes_robust}{Logical. If `TRUE`, the fitted trend should be robust
+to outliers.  Only useful when `eBayes_trend = TRUE`.  Recommended for DamID-seq
+data. (default: TRUE)}
+
+\item{plot_diagnostics}{Logical.  If `TRUE` (default for interactive sessions),
+plots limma diagnostics to assess eBayes moderation, using `plot_limma_diagnostics`.}
+
+\item{filter_occupancy}{NULL or integer. Filters out any locus with
+occupancy > `filter_threshold` in fewer than this number of samples of any single condition
+when set.  If set to TRUE, defaults to the minimum length of the two conditions.
+ If FALSE or NULL, no filtering is applied. (default: TRUE)}
+
+\item{filter_threshold}{Numeric.  `filter_occupancy` uses this value for thresholding
+the input data.  (default: 0)}
 
 \item{filter_positive_enrichment}{Logical. If `TRUE` (default), regions
 are only considered significantly enriched if the mean score in the
 enriched condition is greater than zero. For example, for a region to be
 in `upCond1`, its logFC must be positive and its mean score in condition 1
-must be > 0. This is a common biological filter to focus on regions with
-genuine binding enrichment, rather than changes between two states of
-depletion. Set to `FALSE` to include all statistically significant changes.}
+must be > 0. Set to `FALSE` to include all statistically significant changes.}
 }
 \value{
 A `DamIDResults` object containing the results. Access slots using

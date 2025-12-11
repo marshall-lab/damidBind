@@ -8,6 +8,7 @@ calculate_and_add_fdr(
   binding_data,
   occupancy_df,
   fdr_iterations = 50000,
+  use_legacy_pvals = FALSE,
   BPPARAM = BiocParallel::bpparam(),
   seed = NULL
 )
@@ -24,6 +25,11 @@ sample columns and a `nfrags` column.}
 \item{fdr_iterations}{Integer. The number of sampling iterations to build the
 FDR null model. Higher values are more accurate but slower. Default is 50000.
 For quick tests, a much lower value (e.g., 100) can be used.}
+
+\item{use_legacy_pvals}{Logical. The original Southall et al (2013) paper reported
+the unadjusted p-values as 'FDR' scores. This implementation applies BH correction
+to return the more useful and expected corrected FDR scores for all genes.
+(Default: FALSE)}
 
 \item{BPPARAM}{A `BiocParallelParam` instance specifying the parallel backend
 to use for computation. See `BiocParallel::bpparam()`. For full
@@ -43,25 +49,33 @@ column (e.g., `SampleA_FDR`) is added.
 This function calculates a False Discovery Rate (FDR) for gene occupancy scores,
 which is often used as a proxy for determining whether a gene is actively
 expressed in RNA Polymerase TaDa experiments. It applies a permutation-based
-null model to each sample's binding profile and adds the resulting FDR values
+null model to each sample's binding profile to determine empirical p-values,
+applies the Benjamini-Hochberg (BH) adjustment, and adds the resulting FDR values
 as new columns to the occupancy data frame.
 }
 \details{
-The FDR calculation algorithm is adapted from the method described in
-Southall et al. (2013), Dev Cell, 26(1), 101-12, and implemented in the
+The FDR calculation algorithm is refined and adapted from the method described in
+Southall et al. (2013), Dev Cell, 26(1), 101-12, and re-implemented in the
 `polii.gene.call` tool. It operates in several stages:
 \enumerate{
   \item For each sample, a null distribution of mean occupancy scores is
     simulated by repeatedly sampling random fragments from the genome-wide
     binding profile. This is done for various numbers of fragments.
   \item A two-tiered regression model is fitted to the simulation results. This
-    creates a statistical model that can predict the FDR for any given
+    creates a statistical model that can predict the empirical p-value for any given
     occupancy score and fragment count.
   \item This predictive model is then applied to the actual observed mean
     occupancy and fragment count for each gene in the `occupancy_df`.
-  \item The calculated FDR value for each gene in each sample is appended to the
+  \item The final set of p-values is adjusted using BH correction to generate
+    FDR scores for each gene.
+  \item The FDR value for each gene in each sample is appended to the
     `occupancy_df` in a new column.
 }
+
+Key differences from the original Southall et al. algorithm include fitting
+linear models and sampling with replacement to generate the underlying null
+distribution.
+
 This function is typically not called directly by the user, but is instead
 invoked via `load_data_genes(calculate_fdr = TRUE)`. Exporting it allows for
 advanced use cases where FDR needs to be calculated on a pre-existing

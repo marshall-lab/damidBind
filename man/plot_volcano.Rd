@@ -82,7 +82,7 @@ defaults are used.
   \item \code{text_col}: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)
   \item \code{text_luminosity}: Numeric (0-100).  When using `text_col`, setting
     a non-zero value will darken the luminosity of the highlight colour on text
-    labels for increased contrast.  0 = no change; 100 = black.  (default: 0)
+    labels for increased contrast. 0 = no change; 100 = black. (default: 0)
 }}
 
 \item{label_display}{List. Additional label display options for sampling dense
