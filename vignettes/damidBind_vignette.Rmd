@@ -49,15 +49,16 @@ Although extensive customisation options are available if required, much of the 
 To install from Bioconductor (stable) or github (latest), use:
 
 ``` r
-# Install Bioconductor
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-# Then install the damidBind package from Bioconductor
+# To install from Bioconductor (requires Bioconductor release 3.23):
+BiocManager::install(version='devel')
 BiocManager::install("damidBind")
 
-# ... or uncomment to install the latest build from Github
-# BiocManager::install("marshall-lab/damidBind")
+# ... or to install the latest build from Github 
+# (requires R>4.4, should work on most recent Bioconductor releases):
+BiocManager::install("marshall-lab/damidBind")
 ```
 
 # Quick start guide
@@ -67,7 +68,8 @@ Using `r Biocpkg('damidBind')`, in eight easy steps:
 ```{r quickstart, eval=FALSE, echo=TRUE}
 ## Example code only, not run:
 
-# Load up the data (use load_data_genes() for RNA Polymerase occupancy data)
+# Load up the data 
+# (use load_data_genes() for RNA Polymerase occupancy data)
 input <- load_data_peaks(
     binding_profiles_path = "path/to/binding_profile_bedgraphs",
     peaks_path = "path/to/peak_gffs_or_beds"
@@ -100,7 +102,8 @@ analyse_go_enrichment(
     direction = "Condition 1 identifier set with differential_binding() above"
 )
 
-# View the differentially bound regions in an IGV browser window, with an interactive table of bound regions
+# View the differentially bound loci in an Shiny/IGV browser web app, 
+# with an interactive, searchable, sortable table of bound regions
 browse_igv_regions(input.diff)
 
 # Apply additional functions on the differential binding results
