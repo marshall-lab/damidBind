@@ -1,3 +1,12 @@
+# damidBind 0.99.10
+*   NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)
+*   NEW: plot diagnostics for limma functions (eBayes moderation / SA plots)
+*   NEW: limma functions now use `trend` and `robust` by default to better fit heteroscedastic DamID data
+*   NEW: new function `extract_unique_sample_ids` generates simplifed, unique sample names from complex filenames for display (in diagnostic plots, IGV/Shiny browser)
+*   CHANGED: dense point labelling function now uses exact `dbscan` kNN functions, not approximate HNSW functions
+*   CHANGED: differential threshold filtering can now be set to non-zero values
+*   CHANGED: default replicate filtering for differential analyses is set to the minimum number of the two condition replicates
+
 # damidBind 0.99.9
 *   FIXED: igvShiny code now correctly handles the new internal GRanges binding profile data objects
 
