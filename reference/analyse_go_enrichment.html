@@ -15,7 +15,7 @@ and the background universe from the input `DamIDResults` object."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -255,10 +255,13 @@ or cannot be processed, the function will return NULL.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
+<span class="r-plt img"><img src="analyse_go_enrichment-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="analyse_go_enrichment-2.png" alt="" width="700" height="433"></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Condition display names were sanitized for internal data:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   'L4 Neurons' -&gt; 'L4.Neurons'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   'L5 Neurons' -&gt; 'L5.Neurons'</span>
@@ -274,16 +277,19 @@ or cannot be processed, the function will return NULL.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4.Neurons-L5.Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying eBayes moderation with `trend = TRUE, robust = TRUE`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 284 loci enriched in L4 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 316 loci enriched in L4 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> br, br, br, br, br, br, br, br, br, br</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 173 loci enriched in L5 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 166 loci enriched in L5 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> br, br, br, br, br, br, br, br, br, br</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Displaying diagnostic plots...</span>
+<span class="r-plt img"><img src="analyse_go_enrichment-3.png" alt="" width="700" height="433"></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Universe of Gene IDs is too small. Returning NULL.</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

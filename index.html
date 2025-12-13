@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,8 @@
 <div class="page-header"><h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h1></div>
 <p>DamID is a highly-sensitive means to profile the genome-wide association of proteins with chromatin in living eukaryotic cells, without fixation or the use of antibodies. Cell-type specific techniques such as Targeted DamID to profile protein binding, and CATaDA to profile chromatin accessibility, have made the technique an extremely powerful tool to understand the binding of transcription factors, chromatin proteins, RNA polymerase and chromatin changes during development and disease.</p>
-<p>The <code>damidBind</code> package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either <code>limma</code> (for conventional log2 ratio DamID binding data) or <code>NOIseq</code> (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions. The package provides a number of visualisation tools (volcano plots, GSEA plots via <code>clusterProfiler</code> and proportional Venn diagrams via <code>BioVenn</code> for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by <code>Shiny</code> and <code>igvShiny</code>) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.</p>
+<p>The <code>damidBind</code> package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either <code>limma</code> (for conventional log2 ratio DamID binding data) or <code>NOIseq</code> (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions.</p>
+<p>The package provides a number of visualisation tools (volcano plots, gene ontology enrichment plots via <code>clusterProfiler</code> and proportional Venn diagrams via <code>BioVenn</code> for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by <code>Shiny</code> and <code>igvShiny</code>) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.</p>
 <p>Although extensive customisation options are available if required, much of the data handling by <code>damidBind</code> is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.</p>
 </div>
 <div class="section level1">
@@ -66,14 +67,15 @@
 </h1>
 <p>You can install damidBind either from Bioconductor (stable) or Github (latest)</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install Bioconductor</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Then install the damidBind package from Bioconductor</span></span>
+<span><span class="co"># To install from Bioconductor (requires Bioconductor release 3.23):</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span>version<span class="op">=</span><span class="st">'devel'</span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"damidBind"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ... or to install the latest build from Github</span></span>
+<span><span class="co"># ... or to install the latest build from Github </span></span>
+<span><span class="co"># (requires R&gt;4.4, should work on most recent Bioconductor releases):</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"marshall-lab/damidBind"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level1">
@@ -86,26 +88,29 @@
 </h1>
 <p>Using <code>damidBind</code>, in eight easy steps:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Load up the data (use load_data_genes() for RNA Polymerase occupancy data)</span></span>
+<code class="sourceCode R"><span><span class="co"># Load up the data </span></span>
+<span><span class="co"># (use load_data_genes() for RNA Polymerase occupancy data)</span></span>
 <span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
-<span>  binding_profiles_path <span class="op">=</span> <span class="st">"path/to/binding_profile_bedgraphs"</span>,</span>
-<span>  peaks_path <span class="op">=</span> <span class="st">"path/to/peak_gffs_or_beds"</span></span>
-<span><span class="op">)</span> <span class="co"># add quantile_norm = T if appropriate</span></span>
+<span>    binding_profiles_path <span class="op">=</span> <span class="st">"path/to/binding_profile_bedgraphs"</span>,</span>
+<span>    peaks_path <span class="op">=</span> <span class="st">"path/to/peak_gffs_or_beds"</span></span>
+<span>    <span class="co"># add quantile_norm = TRUE if appropriate</span></span>
+<span><span class="op">)</span> </span>
 <span></span>
-<span><span class="co"># Deterimine differential binding  (use differential_accesibility() for CATaDa chromatin accessibility data)</span></span>
+<span><span class="co"># Determine differential binding </span></span>
+<span><span class="co"># (use differential_accessibility() for CATaDa chromatin accessibility data)</span></span>
 <span><span class="va">input.diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
-<span>  <span class="va">input</span>,</span>
-<span>  cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Condition 1 identifying string in filenames"</span>,</span>
-<span>    <span class="st">"Condition 2 identifying string in filenames"</span></span>
-<span>  <span class="op">)</span></span>
+<span>    <span class="va">input</span>,</span>
+<span>    cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>        <span class="st">"Display name 1"</span> <span class="op">=</span> <span class="st">"Condition 1 identifying string in filenames"</span>,</span>
+<span>        <span class="st">"Display name 2"</span> <span class="op">=</span> <span class="st">"Condition 2 identifying string in filenames"</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The result 'input.diff' is a formal S4 object.</span></span>
-<span><span class="co"># You can see a summary by simply typing its name:</span></span>
+<span><span class="co"># You can see a summary by typing its name:</span></span>
 <span><span class="va">input.diff</span></span>
 <span></span>
-<span><span class="co"># View the proporition of differentially bound loci</span></span>
+<span><span class="co"># View the proportion of differentially bound loci</span></span>
 <span><span class="fu"><a href="reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the differential binding, labelling associated genes with outliers</span></span>
@@ -113,22 +118,22 @@
 <span></span>
 <span><span class="co"># Analyse GO enrichment in peaks associated with one condition</span></span>
 <span><span class="fu"><a href="reference/analyse_go_enrichment.html">analyse_go_enrichment</a></span><span class="op">(</span></span>
-<span>  <span class="va">input.diff</span>, </span>
-<span>  direction <span class="op">=</span> <span class="st">"Condition 1 identifier set with differential_binding() above"</span></span>
+<span>    <span class="va">input.diff</span>,</span>
+<span>    direction <span class="op">=</span> <span class="st">"Condition 1 identifier set with differential_binding() above"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># View the differentially bound regions in an IGV browser window, </span></span>
-<span><span class="co"># with an interactive table of bound regions</span></span>
+<span><span class="co"># View the differentially bound loci in an Shiny/IGV browser web app, </span></span>
+<span><span class="co"># with an interactive, searchable, sortable table of bound regions</span></span>
 <span><span class="fu"><a href="reference/browse_igv_regions.html">browse_igv_regions</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Apply additional functions on the differential binding results</span></span>
-<span><span class="co"># Use the analysisTable() accessor to obtain the full analysis</span></span>
 <span><span class="fu">my_custom_function</span><span class="op">(</span><span class="fu"><a href="reference/analysisTable.html">analysisTable</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://www.bioconductor.org/packages/damidBind" class="external-link">View on Bioconductor</a></li>
 <li><a href="https://github.com/marshall-lab/damidBind/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/marshall-lab/damidBind/issues" class="external-link">Report a bug</a></li>
 </ul>

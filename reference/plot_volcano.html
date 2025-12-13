@@ -13,7 +13,7 @@ labelling, and highlighting specific groups of loci."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -103,7 +103,7 @@ no labels are added (see details).</p><ul><li><p><code>genes</code>: character v
 <li><p><code>clean_names</code>: logical; if `TRUE`, applies regex filtering to labels.</p></li>
 <li><p><code>names_clean</code>, <code>names_clean_extra</code>: regex to exclude from labels
     when <code>clean_names</code> is `TRUE`.</p></li>
-<li><p><code>max_overlaps</code>: integer; maximum ggrepel overlaps.</p></li>
+<li><p><code>max_overlaps</code>: integer; maximum ggrepel overlaps. (default: 10)</p></li>
 </ul></dd>
 
 
@@ -139,7 +139,7 @@ defaults are used.</p><ul><li><p><code>alpha</code>: Numeric; transparency for h
 <li><p><code>text_col</code>: logical; if `TRUE`, text is coloured as per points, else black (default: FALSE)</p></li>
 <li><p><code>text_luminosity</code>: Numeric (0-100).  When using `text_col`, setting
     a non-zero value will darken the luminosity of the highlight colour on text
-    labels for increased contrast.  0 = no change; 100 = black.  (Default: 0)</p></li>
+    labels for increased contrast. 0 = no change; 100 = black. (default: 0)</p></li>
 </ul></dd>
 
 
@@ -212,10 +212,13 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
+<span class="r-plt img"><img src="plot_volcano-1.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="plot_volcano-2.png" alt="" width="700" height="433"></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Condition display names were sanitized for internal data:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   'L4 Neurons' -&gt; 'L4.Neurons'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   'L5 Neurons' -&gt; 'L5.Neurons'</span>
@@ -231,21 +234,25 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4.Neurons-L5.Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying eBayes moderation with `trend = TRUE, robust = TRUE`</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 284 loci enriched in L4 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 316 loci enriched in L4 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 173 loci enriched in L5 Neurons</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 166 loci enriched in L5 Neurons</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Displaying diagnostic plots...</span>
+<span class="r-plt img"><img src="plot_volcano-3.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Generate a default volcano plot</span></span></span>
 <span class="r-in"><span><span class="fu">plot_volcano</span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Label sampling: coordinates have been centred and scaled.</span>
-<span class="r-plt img"><img src="plot_volcano-1.png" alt="" width="700" height="433"></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ggrepel: 1 unlabeled data points (too many overlaps). Consider increasing max.overlaps</span>
+<span class="r-plt img"><img src="plot_volcano-4.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

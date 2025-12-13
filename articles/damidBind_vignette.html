@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -143,14 +143,15 @@ is a simple three command procedure.</p>
 </h2>
 <p>To install from Bioconductor (stable) or github (latest), use:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install Bioconductor</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Then install the damidBind package from Bioconductor</span></span>
+<span><span class="co"># To install from Bioconductor (requires Bioconductor release 3.23):</span></span>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span>version<span class="op">=</span><span class="st">'devel'</span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"damidBind"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># ... or to install the latest build from Github</span></span>
+<span><span class="co"># ... or to install the latest build from Github </span></span>
+<span><span class="co"># (requires R&gt;4.4, should work on most recent Bioconductor releases):</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"marshall-lab/damidBind"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -161,26 +162,29 @@ in eight easy steps:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Example code only, not run:</span></span>
 <span></span>
-<span><span class="co"># Load up the data (use load_data_genes() for RNA Polymerase occupancy data)</span></span>
+<span><span class="co"># Load up the data </span></span>
+<span><span class="co"># (use load_data_genes() for RNA Polymerase occupancy data)</span></span>
 <span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles_path <span class="op">=</span> <span class="st">"path/to/binding_profile_bedgraphs"</span>,</span>
 <span>    peaks_path <span class="op">=</span> <span class="st">"path/to/peak_gffs_or_beds"</span></span>
-<span><span class="op">)</span> <span class="co"># add quantile_norm = TRUE if appropriate</span></span>
+<span>    <span class="co"># add quantile_norm = TRUE if appropriate</span></span>
+<span><span class="op">)</span> </span>
 <span></span>
-<span><span class="co"># Deterimine differential binding  (use differential_accesibility() for CATaDa chromatin accessibility data)</span></span>
+<span><span class="co"># Determine differential binding </span></span>
+<span><span class="co"># (use differential_accessibility() for CATaDa chromatin accessibility data)</span></span>
 <span><span class="va">input.diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
 <span>    <span class="va">input</span>,</span>
 <span>    cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>        <span class="st">"Condition 1 identifying string in filenames"</span>,</span>
-<span>        <span class="st">"Condition 2 identifying string in filenames"</span></span>
+<span>        <span class="st">"Display name 1"</span> <span class="op">=</span> <span class="st">"Condition 1 identifying string in filenames"</span>,</span>
+<span>        <span class="st">"Display name 2"</span> <span class="op">=</span> <span class="st">"Condition 2 identifying string in filenames"</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># The result 'input.diff' is a formal S4 object.</span></span>
-<span><span class="co"># You can see a summary by simply typing its name:</span></span>
+<span><span class="co"># You can see a summary by typing its name:</span></span>
 <span><span class="va">input.diff</span></span>
 <span></span>
-<span><span class="co"># View the proporition of differentially bound loci</span></span>
+<span><span class="co"># View the proportion of differentially bound loci</span></span>
 <span><span class="fu"><a href="../reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the differential binding, labelling associated genes with outliers</span></span>
@@ -192,7 +196,8 @@ in eight easy steps:</p>
 <span>    direction <span class="op">=</span> <span class="st">"Condition 1 identifier set with differential_binding() above"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># View the differentially bound regions in an IGV browser window, with an interactive table of bound regions</span></span>
+<span><span class="co"># View the differentially bound loci in an Shiny/IGV browser web app, </span></span>
+<span><span class="co"># with an interactive, searchable, sortable table of bound regions</span></span>
 <span><span class="fu"><a href="../reference/browse_igv_regions.html">browse_igv_regions</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Apply additional functions on the differential binding results</span></span>
@@ -242,7 +247,7 @@ for all datasets.</p>
 <p><em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 takes as input:</p>
 <ul>
-<li>Genome-wide binding profile tracks in BEDGRAPH format (external
+<li>Genome-wide binding profile tracks in bedGraph format (external
 files) or <em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format (internal)
 <ul>
@@ -271,22 +276,22 @@ and can be gzip compressed or uncompressed as required.</p>
 can work with either raw data files or preprocessed data in <em><a href="https://bioconductor.org/packages/3.20/GenomicRanges" class="external-link">GenomicRanges</a></em>
 format.</p>
 <div class="section level4">
-<h4 id="bedgraph-binding-accessibility-profiles">BEDGRAPH binding / accessibility profiles<a class="anchor" aria-label="anchor" href="#bedgraph-binding-accessibility-profiles"></a>
+<h4 id="bedgraph-binding-accessibility-profiles">bedGraph binding / accessibility profiles<a class="anchor" aria-label="anchor" href="#bedgraph-binding-accessibility-profiles"></a>
 </h4>
 <p>We recommend that <a href="https://owenjm.github.io/damidseq_pipeline" class="external-link">damidseq_pipeline</a>
 is used to generate input files:</p>
 <ul>
 <li>Using default options to generate log2 ratio protein binding
-BEDGRAPHs</li>
+bedGraphs</li>
 <li>Using the <code>--catada</code> flag on Dam-only samples to generate
-count-based CATaDa accesibility BEDGRAPHs</li>
+count-based CATaDa accesibility bedGraphs</li>
 </ul>
 </div>
 <div class="section level4">
 <h4 id="peak-gff-files">Peak GFF files<a class="anchor" aria-label="anchor" href="#peak-gff-files"></a>
 </h4>
 <p>We recommend that <a href="https://github.com/owenjm/find_peaks" class="external-link">find_peaks</a> is used to
-generate peak files on each DamID / CATaDa BEDGRAPH file replicate:</p>
+generate peak files on each DamID / CATaDa bedGraph file replicate:</p>
 <ul>
 <li>In all cases, the default options of
 <code>--min_quant=0.8 --unified_peaks=min</code> are recommended</li>
@@ -354,7 +359,9 @@ quantile normalisation on the datasets.</p>
 <code class="sourceCode R"><span><span class="va">input.bsh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
 <span>    peaks_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
-<span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    plot_diagnostics <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># No need to call this in an in interactive Rstudio session:</span></span>
+<span>                            <span class="co"># diagnostics are shown in interactive sessions by default</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
 <pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
@@ -366,10 +373,18 @@ quantile normalisation on the datasets.</p>
 <pre><code><span><span class="co">##  - Loaded: Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span></span></code></pre>
 <pre><code><span><span class="co">##  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span></span></code></pre>
 <pre><code><span><span class="co">##  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span></span></code></pre>
-<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Locating peak files</span></span></code></pre>
+<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
+<pre><code><span><span class="co">## Generating diagnostic plots...</span></span></code></pre>
+<p><img src="damidBind_vignette_files/figure-html/load_data-1.png" width="700"><img src="damidBind_vignette_files/figure-html/load_data-2.png" width="700"></p>
+<p>Both <code>load_data_...</code>functions return a diagnostics plot,
+illustrating a PCA plot of the samples and a clustered correlation
+heatmap (both for the raw genomic data and the averaged peaks). These
+diagnostics are displayed by default when the function in called in an
+interactive session, but here we use the <code>plot_diagnostics</code>
+parameter to force their display.</p>
 <div class="section level4">
 <h4 id="loading-data-from-granges-objects">Loading data from GRanges objects<a class="anchor" aria-label="anchor" href="#loading-data-from-granges-objects"></a>
 </h4>
@@ -390,7 +405,7 @@ column (e.g., <code>score</code>) representing the signal.</p>
 generate <code>GRanges</code> objects, and then loads these into
 <code>damidBind</code> to generate an input object ready for downstream
 analysis.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Locate bedGraph and peaks example files</span></span>
 <span><span class="va">bedgraph_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">data_dir</span>, pattern <span class="op">=</span> <span class="st">"\\.bedgraph\\.gz$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">peak_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">data_dir</span>, pattern <span class="op">=</span> <span class="st">"\\.bed\\.gz$"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -416,11 +431,11 @@ analysis.</p>
 <pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
 <pre><code><span><span class="co">## loading from cache</span></span></code></pre>
 <pre><code><span><span class="co">## Building binding profile dataframe from supplied GRanges objects ...</span></span></code></pre>
-<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Using supplied peaks GRanges list.</span></span></code></pre>
+<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The resulting object can now be used for differential analysis,</span></span>
 <span><span class="co"># just as in the examples below.</span></span></code></pre></div>
 </div>
@@ -465,11 +480,13 @@ used as the analysis backend.</p>
 <p>Here, we’re not dealing with CATaDa data, so we’ll use
 <code><a href="../reference/differential_binding.html">differential_binding()</a></code> to find the significant,
 differentially-bound loci between the two conditions:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diff.bsh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
 <span>    <span class="va">input.bsh</span>,</span>
 <span>    cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 neurons"</span> <span class="op">=</span> <span class="st">"L4"</span>,</span>
-<span>             <span class="st">"L5 neurons"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span></span>
+<span>             <span class="st">"L5 neurons"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span>,</span>
+<span>    plot_diagnostics <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># No need to call this in an in interactive Rstudio session:</span></span>
+<span>                            <span class="co"># diagnostics are shown in interactive sessions by default</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Condition display names were sanitized for internal data:</span></span></code></pre>
 <pre><code><span><span class="co">##   'L4 neurons' -&gt; 'L4.neurons'</span></span></code></pre>
@@ -486,26 +503,29 @@ differentially-bound loci between the two conditions:</p>
 <span><span class="co">##     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span></span>
 <span><span class="co">##     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span></span></code></pre>
 <pre><code><span><span class="co">## limma contrasts: L4.neurons-L5.neurons</span></span></code></pre>
+<pre><code><span><span class="co">## Applying eBayes moderation with `trend = TRUE, robust = TRUE`</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
-<span><span class="co">## 284 loci enriched in L4 neurons</span></span></code></pre>
+<span><span class="co">## 316 loci enriched in L4 neurons</span></span></code></pre>
 <pre><code><span><span class="co">## Highest-ranked genes:</span></span>
-<span><span class="co">## Bka,RpS2,snoRNA:Me18S-A1576,snoRNA:Me18S-G1620,snoRNA:U14:30Ea,snoRNA:U14:30Eb,Uhg2, MICU1, oaf,Slh, CG15880,Pex12,Saf6, CG17544,Pax, CG17490,lncRNA:CR46268,RpL5,snoRNA:Psi28S-2996, haf,Rab3GAP1, CG11927,mxt, CG15425,lncRNA:CR45294,lncRNA:CR45295,lncRNA:CR45296, AIF,TBCD</span></span></code></pre>
+<span><span class="co">## oaf,Slh, MICU1, CG12194,tank, GramD1B, CG11927,mxt, tutl, CG17490,lncRNA:CR46268,RpL5,snoRNA:Psi28S-2996, CG4972,Usp14, La,RtGEF,snoRNA:Me28S-A3365, gcm2,Trx-2</span></span></code></pre>
 <pre><code><span><span class="co">## </span></span>
-<span><span class="co">## 173 loci enriched in L5 neurons</span></span></code></pre>
+<span><span class="co">## 166 loci enriched in L5 neurons</span></span></code></pre>
 <pre><code><span><span class="co">## Highest-ranked genes:</span></span>
-<span><span class="co">## beat-Ic, Ance-3, CG11634, CG13946, Ugt36F1, Ccdc85, dmGlut,lncRNA:CR44587, CG10237, lncRNA:CR43314, eya</span></span></code></pre>
-<p>Please note the required <code>cond</code> parameter to this
-function, which specifies the filename text that distinguished the two
-separate conditions to test. <code>cond[1]</code> must be a text string
-present in all, and only all, of the filenames of the
-<strong>first</strong> condition to test; <code>cond[2]</code> must be a
-text string present in all, and only all, of the filenames of the
-<strong>second</strong> condition to test.</p>
-<p>The use of <code>cond_names</code> here is optional, and provides
-display names for the conditions for downstream visualisation.</p>
-<p>Note that when run, <code>differential_binding</code> (or
+<span><span class="co">## beat-Ic, CG13946, CG11634, Ance-3, Ccdc85, Ugt36F1, dmGlut,lncRNA:CR44587, osp, CG42750, CG10237</span></span></code></pre>
+<pre><code><span><span class="co">##   Displaying diagnostic plots...</span></span></code></pre>
+<p><img src="damidBind_vignette_files/figure-html/differential_binding-1.png" width="700"></p>
+<p>Note the required <code>cond</code> parameter to this function, which
+specifies the filename text that distinguished the two separate
+conditions to test. <code>cond[1]</code> must be a text string present
+in all, and only all, of the filenames of the <strong>first</strong>
+condition to test; <code>cond[2]</code> must be a text string present in
+all, and only all, of the filenames of the <strong>second</strong>
+condition to test. The vector is typically a named vector, where the
+names are the display names to use in plots, but providing a named
+vector is optional.</p>
+<p>When run, <code>differential_binding</code> (or
 <code>differential_accessibility</code>) will list the replicates found
 under each condition. The package attempts to ensure that condition
 search overlaps are avoided, but please check that all replicates have
@@ -515,19 +535,25 @@ associated with the most significant, differentially bound loci. This is
 provided for a quick verification that the analysis has worked
 correctly, and does not imply any special value to the listed genes
 beyond that.</p>
+<p>When calling the <code>limma</code>-based
+<code><a href="../reference/differential_binding.html">differential_binding()</a></code> function, a diagnostic plot is also
+displayed illustrating the ability of <code>limma</code>’s empirical
+Bayes moderation to fit the data.
+<code><a href="../reference/differential_accessibility.html">differential_accessibility()</a></code>, which uses the non-parametric
+<code>NOISeq</code> analysis, does not display diagnostics.</p>
 <p>Both <code><a href="../reference/differential_binding.html">differential_binding()</a></code> and
 <code><a href="../reference/differential_accessibility.html">differential_accessibility()</a></code> return a
 <code>DamIDResults</code> S4 object, that forms the basis of downstream
 analysis. Printing the object will provide a simple summary of the
 analysis results.</p>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># See a summary of the results object</span></span>
 <span><span class="va">diff.bsh</span></span></code></pre></div>
 <pre><code><span><span class="co">## An object of class 'DamIDResults'</span></span>
 <span><span class="co">## Differentially bound regions</span></span>
 <span><span class="co">## Comparison: 'L4 neurons' vs 'L5 neurons'</span></span>
-<span><span class="co">## - 284 regions enriched in L4 neurons</span></span>
-<span><span class="co">## - 173 regions enriched in L5 neurons</span></span>
+<span><span class="co">## - 316 regions enriched in L4 neurons</span></span>
+<span><span class="co">## - 166 regions enriched in L5 neurons</span></span>
 <span><span class="co">## - 1196 total regions tested</span></span></code></pre>
 <p>To fully explore the differentially bound loci, use one of the
 visualisation functions below.</p>
@@ -572,11 +598,12 @@ analysed conditions.</li>
 loci that are differentially bound between the two tested conditions. To
 provide this, <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
 uses <em><a href="https://CRAN.R-project.org/package=BioVenn" class="external-link">BioVenn</a></em> to
-generate proportional Venn diagrams of the two conditions. The set union
-represents significant binding peaks that fail to show significant
-differences in occupancy; the exclusive regions of each set represent
-regions with enriched differential binding in that condition.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+generate proportional Venn diagrams of the two conditions (Figure
+@ref(fig:venn)). The set union represents significant binding peaks that
+fail to show significant differences in occupancy; the exclusive regions
+of each set represent regions with enriched differential binding in that
+condition.</p>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">diff.bsh</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/venn-1.png" alt="A venn diagram of significantly bound loci by Bsh in L4 and L5 neurons.  The exclusive parts of each set represent regions that are differentially bound between the two conditions." width="700"><p class="caption">
@@ -596,8 +623,9 @@ some idea as to the capabilities.</p>
 <h5 id="the-default-volcano-plot">The default volcano plot<a class="anchor" aria-label="anchor" href="#the-default-volcano-plot"></a>
 </h5>
 <p>The simple volcano plot already gives a clear picture of
-differentially bound loci and their associated genes.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+differentially bound loci and their associated genes (Figure
+@ref(fig:volcanoPlotSimple)).</p>
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -617,8 +645,9 @@ limitations of label overlaps means that only outliers are labelled.
 <p>However, a lot of plot label space can be taken up by generally
 uninformative snoRNA / tRNA genes. We can optionally remove these from
 the plot using the <code>clean_names=TRUE</code> parameter, to show more
-potentially informative labels.</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+potentially informative labels (Figure
+@ref(fig:volcanoPlotCleanNames)).</p>
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span>,</span>
 <span>    label_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>clean_names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -647,8 +676,9 @@ allow any plot labels to be optimised.</p>
 <p>But, what if we now wanted to highlight genes bound by Bsh, that are
 only expressed in L4 neurons? (data from scRNA-seq data, provided in
 Supplementary Files 2 &amp; 3 of <span class="citation">(Xu <em>et
-al</em>, 2024)</span>). This is straightforward to do:</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+al</em>, 2024)</span>). This is straightforward to do (Figure
+@ref(fig:volcanoPlotHighlightedGenes)).</p>
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L4_only_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Mp"</span>, <span class="st">"tnc"</span>, <span class="st">"grn"</span>, <span class="st">"rut"</span>, <span class="st">"mtd"</span>, <span class="st">"rdgB"</span>, <span class="st">"Octbeta2R"</span>, <span class="st">"msi"</span>, <span class="st">"Octbeta3R"</span>, <span class="st">"beat-IIIb"</span>, <span class="st">"ap"</span>, <span class="st">"Fili"</span>, <span class="st">"LRP1"</span>, <span class="st">"CG7378"</span>, <span class="st">"CG13698"</span>, <span class="st">"twit"</span>, <span class="st">"CG9336"</span>, <span class="st">"tok"</span>, <span class="st">"CG12991"</span>, <span class="st">"dpr1"</span>, <span class="st">"CG42339"</span>, <span class="st">"beat-IIb"</span>, <span class="st">"mav"</span>, <span class="st">"CG34377"</span>, <span class="st">"alpha-Man-IIb"</span>, <span class="st">"Pli"</span>, <span class="st">"CG32428"</span>, <span class="st">"osp"</span>, <span class="st">"Pka-R2"</span>, <span class="st">"CG15202"</span>, <span class="st">"CG8916"</span>, <span class="st">"CG15894"</span>, <span class="st">"side"</span>, <span class="st">"CG42258"</span>, <span class="st">"CHES-1-like"</span>, <span class="st">"SP2353"</span>, <span class="st">"CG44838"</span>, <span class="st">"Atg1"</span>, <span class="st">"Traf4"</span>, <span class="st">"DIP-beta"</span>, <span class="st">"KCNQ"</span>, <span class="st">"metro"</span>, <span class="st">"nAChRalpha1"</span>, <span class="st">"path"</span>, <span class="st">"CG10527"</span>, <span class="st">"Pde8"</span>, <span class="st">"CG30116"</span>, <span class="st">"CG7985"</span>, <span class="st">"CG1688"</span>, <span class="st">"dpr12"</span>, <span class="st">"pigs"</span>, <span class="st">"Eip63F-1"</span>, <span class="st">"CG14795"</span>, <span class="st">"2mit"</span>, <span class="st">"CG42340"</span>, <span class="st">"BicD"</span>, <span class="st">"CG18265"</span>, <span class="st">"hppy"</span>, <span class="st">"5-HT1A"</span>, <span class="st">"Chd64"</span>, <span class="st">"CG33090"</span>, <span class="st">"Dyb"</span>, <span class="st">"Btk29A"</span>, <span class="st">"Apc"</span>, <span class="st">"Rox8"</span>, <span class="st">"nAChRalpha5"</span>, <span class="st">"CG42748"</span>, <span class="st">"CG3257"</span>, <span class="st">"CG2269"</span>, <span class="st">"beat-IV"</span>, <span class="st">"CG8086"</span>, <span class="st">"glec"</span>, <span class="st">"CG31688"</span>, <span class="st">"oaf"</span>, <span class="st">"Drl-2"</span>, <span class="st">"CG8188"</span>, <span class="st">"aos"</span>, <span class="st">"CG31676"</span>, <span class="st">"REPTOR"</span>, <span class="st">"RabX4"</span>, <span class="st">"alt"</span>, <span class="st">"Pura"</span>, <span class="st">"DIP1"</span>, <span class="st">"ewg"</span>, <span class="st">"side-VIII"</span>, <span class="st">"nAChRalpha7"</span>, <span class="st">"Alh"</span>, <span class="st">"kug"</span>, <span class="st">"Ca-Ma2d"</span>, <span class="st">"bru2"</span>, <span class="st">"CG43737"</span>, <span class="st">"lncRNA:CR44024"</span>, <span class="st">"lncRNA:CR46006"</span>, <span class="st">"Had1"</span>, <span class="st">"CG3961"</span>, <span class="st">"comm"</span>, <span class="st">"Toll-6"</span>, <span class="st">"CG13685"</span>, <span class="st">"tow"</span>, <span class="st">"CG10019"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
@@ -661,6 +691,7 @@ al</em>, 2024)</span>). This is straightforward to do:</p>
 <span>        size <span class="op">=</span> <span class="fl">2</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Label sampling: too few points to effectively sample; all will be labelled.</span></span></code></pre>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/volcanoPlotHighlightedGenes-1.png" alt="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in L4 neurons are highlighted.  (Dataset from chromosome 2L only)" width="700"><p class="caption">
 Differential binding of Bsh in L4 and L5 neuronal subtypes. Genes that
@@ -671,10 +702,12 @@ chromosome 2L only)
 <p>Note that the legend guide masks some labels, when positioned inside
 the plot on the right-hand side (the default). <code>damidBind</code>
 comes with a simple shortcut to display the legend on the left side of
-the plot instead, as shown below. It is also possible to place the
-legend outside the plot, or to customise the position of the legend
-within the plot precisely.</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+the plot instead
+(<code>highlight_config = list(legend_inside_pos = 'l')</code>), as
+shown below (Figure @ref(fig:volcanoPlotHighlightedGenesLHS)). It is
+also possible to place the legend outside the plot, or to customise the
+position of the legend within the plot precisely.</p>
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span>,</span>
 <span>    label_config <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -686,6 +719,7 @@ within the plot precisely.</p>
 <span>        legend_inside_pos <span class="op">=</span> <span class="st">'l'</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Label sampling: too few points to effectively sample; all will be labelled.</span></span></code></pre>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/volcanoPlotHighlightedGenesLHS-1.png" alt="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in L4 neurons are highlighted.  (Dataset from chromosome 2L only).  Legend is now displayed on the LHS within the plot." width="700"><p class="caption">
 Differential binding of Bsh in L4 and L5 neuronal subtypes. Genes that
@@ -701,8 +735,9 @@ associated with it.)</p>
 <p>We could also compare this against genes bound by Bsh and only
 expressed in L5 neurons. For clarity, we’ll colour the text labels to
 match the conditions, and we’ll reduce the text luminosity to make the
-labels easier to read.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+labels easier to read (Figure
+@ref(fig:volcannoPlotMultipleHighlights)).</p>
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L5_only_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Ptth"</span>, <span class="st">"Nep2"</span>, <span class="st">"kek1"</span>, <span class="st">"CG4168"</span>, <span class="st">"kek3"</span>, <span class="st">"CG6959"</span>, <span class="st">"Dtg"</span>, <span class="st">"ND-23"</span>, <span class="st">"Scp2"</span>, <span class="st">"Octalpha2R"</span>, <span class="st">"Hs6st"</span>, <span class="st">"CG16791"</span>, <span class="st">"SKIP"</span>, <span class="st">"LpR1"</span>, <span class="st">"RpL34a"</span>, <span class="st">"Ald1"</span>, <span class="st">"CG10011"</span>, <span class="st">"heph"</span>, <span class="st">"nolo"</span>, <span class="st">"Act42A"</span>, <span class="st">"Fkbp12"</span>, <span class="st">"Pkc53E"</span>, <span class="st">"AstC-R1"</span>, <span class="st">"Muc14A"</span>, <span class="st">"CG33543"</span>, <span class="st">"ChAT"</span>, <span class="st">"Act5C"</span>, <span class="st">"Ptpmeg2"</span>, <span class="st">"fabp"</span>, <span class="st">"CG31221"</span>, <span class="st">"Octbeta1R"</span>, <span class="st">"CG14669"</span>, <span class="st">"sdk"</span>, <span class="st">"Shawl"</span>, <span class="st">"side-V"</span>, <span class="st">"NaCP60E"</span>, <span class="st">"sif"</span>, <span class="st">"OtopLc"</span>, <span class="st">"side-II"</span>, <span class="st">"kuz"</span>, <span class="st">"CG42540"</span>, <span class="st">"Dscam3"</span>, <span class="st">"haf"</span>, <span class="st">"CG42673"</span>, <span class="st">"pdm3"</span>, <span class="st">"tinc"</span>, <span class="st">"CG42750"</span>, <span class="st">"sdt"</span>, <span class="st">"Nuak1"</span>, <span class="st">"Hk"</span>, <span class="st">"scrib"</span>, <span class="st">"tsr"</span>, <span class="st">"dpr20"</span>, <span class="st">"GluRIB"</span>, <span class="st">"CG43902"</span>, <span class="st">"CG44242"</span>, <span class="st">"Dscam2"</span>, <span class="st">"CG44422"</span>, <span class="st">"lncRNA:CR45312"</span>, <span class="st">"Scsalpha1"</span>, <span class="st">"Rop"</span>, <span class="st">"Con"</span>, <span class="st">"Hsc70-3"</span>, <span class="st">"dpr8"</span>, <span class="st">"eag"</span>, <span class="st">"ND-18"</span>, <span class="st">"Nrt"</span>, <span class="st">"CG17839"</span>, <span class="st">"fz"</span>, <span class="st">"CG32137"</span>, <span class="st">"Rh7"</span>, <span class="st">"Sod1"</span>, <span class="st">"CG32052"</span>, <span class="st">"dpr6"</span>, <span class="st">"Hsp67Ba"</span>, <span class="st">"axed"</span>, <span class="st">"GluRIA"</span>, <span class="st">"robo2"</span><span class="op">)</span></span>
 <span></span>
 <span></span>
@@ -720,6 +755,7 @@ labels easier to read.</p>
 <span>        text_luminosity <span class="op">=</span> <span class="fl">40</span></span>
 <span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   Label sampling: too few points to effectively sample; all will be labelled.</span></span></code></pre>
 <div class="figure">
 <img src="damidBind_vignette_files/figure-html/volcannoPlotMultipleHighlights-1.png" alt="Differential binding of Bsh in L4 and L5 neuronal subtypes.  Genes that are specifically expressed in each subtype are highlighted.   (Dataset from chromosome 2L only)" width="700"><p class="caption">
 Differential binding of Bsh in L4 and L5 neuronal subtypes. Genes that
@@ -732,8 +768,7 @@ or downregulated genes between the lineages.</p>
 </div>
 </div>
 <div class="section level4">
-<h4 id="browsing-differentially-bound-regions-with-an-igvshiny-browser-window">Browsing differentially-bound regions with an igvShiny browser
-window<a class="anchor" aria-label="anchor" href="#browsing-differentially-bound-regions-with-an-igvshiny-browser-window"></a>
+<h4 id="browsing-differentially-bound-regions">Browsing differentially-bound regions<a class="anchor" aria-label="anchor" href="#browsing-differentially-bound-regions"></a>
 </h4>
 <p>A volcano plot, while useful, still does not put the binding data
 into a genomic context. For this <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>
@@ -741,13 +776,18 @@ provides an interactive Shiny browser window (via <em><a href="https://CRAN.R-pr
 <em><a href="https://bioconductor.org/packages/3.20/igvShiny" class="external-link">igvShiny</a></em>),
 where an interactive table of enriched loci allows quick exploration of
 these in the genome browser.</p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Interactive, blocking session, uncomment to run</span></span>
 <span><span class="co"># browse_igv_regions(diff.bsh)</span></span></code></pre></div>
-<p>An example of the interface is shown below:</p>
-<div class="float">
-<img src="figures/damidBind_L5.png" alt="The interactive IGV browser window of damidBind"><div class="figcaption">The interactive IGV browser window of
-damidBind</div>
+<p>An example of the interface is shown below (Figure
+@ref(fig:igv-shiny-example)).</p>
+<div class="figure">
+<img src="figures/damidBind_igv_example_2025-11-29_18-20.gif" alt="The interactive IGV browser window.  The interface allows for rapid exploration of differentially bound regions in their genomic context. The table of significant loci is interactive and controls the genome browser view." width="100%"><p class="caption">
+The interactive IGV browser window. The interface allows for rapid
+exploration of differentially bound regions in their genomic context.
+The table of significant loci is interactive and controls the genome
+browser view.
+</p>
 </div>
 <p>The table on the left side of the window can be sorted by clicking on
 the column headers, and clicking on any entry will move the IGV browser
@@ -767,8 +807,8 @@ differential expression. In all cases, the underlying gene IDs, rather
 than gene names, are used for enrichment analysis.</p>
 <p>The example dataset here is minimal, so there is not much to
 highlight when we look at just the genes enriched in close proximity to
-L5-specific binding peaks.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+L5-specific binding peaks (Figure @ref(fig:goterms)).</p>
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">go.bsh_l4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/analyse_go_enrichment.html">analyse_go_enrichment</a></span><span class="op">(</span></span>
 <span>    <span class="va">diff.bsh</span>,</span>
 <span>    direction <span class="op">=</span> <span class="st">"L5"</span>,</span>
@@ -776,7 +816,7 @@ L5-specific binding peaks.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span></code></pre>
 <div class="figure">
-<img src="damidBind_vignette_files/figure-html/gsea-1.png" alt="Enriched GO terms for genes associated with differential Bsh binding in L5 neuron.  Dataset from chromosome 2L only." width="700"><p class="caption">
+<img src="damidBind_vignette_files/figure-html/goterms-1.png" alt="Enriched GO terms for genes associated with differential Bsh binding in L5 neuron.  Dataset from chromosome 2L only." width="700"><p class="caption">
 Enriched GO terms for genes associated with differential Bsh binding in
 L5 neuron. Dataset from chromosome 2L only.
 </p>
@@ -902,91 +942,96 @@ RP90136
 <span><span class="co">##  [1] ensembldb_2.30.0        AnnotationFilter_1.30.0 GenomicFeatures_1.58.0 </span></span>
 <span><span class="co">##  [4] AnnotationDbi_1.68.0    Biobase_2.66.0          GenomicRanges_1.58.0   </span></span>
 <span><span class="co">##  [7] GenomeInfoDb_1.42.3     IRanges_2.40.1          S4Vectors_0.44.0       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.8        DT_0.34.0              </span></span>
-<span><span class="co">## [13] BiocStyle_2.34.0       </span></span>
+<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.10       BiocStyle_2.34.0       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##   [1] later_1.4.4                 splines_4.4.0              </span></span>
+<span><span class="co">##   [1] splines_4.4.0               later_1.4.4                </span></span>
 <span><span class="co">##   [3] BiocIO_1.16.0               bitops_1.0-9               </span></span>
 <span><span class="co">##   [5] ggplotify_0.1.3             filelock_1.0.3             </span></span>
 <span><span class="co">##   [7] tibble_3.3.0                R.oo_1.27.1                </span></span>
 <span><span class="co">##   [9] XML_3.99-0.19               lifecycle_1.0.4            </span></span>
 <span><span class="co">##  [11] httr2_1.2.1                 org.Dm.eg.db_3.20.0        </span></span>
-<span><span class="co">##  [13] lattice_0.22-7              backports_1.5.0            </span></span>
-<span><span class="co">##  [15] NOISeq_2.50.0               magrittr_2.0.4             </span></span>
-<span><span class="co">##  [17] limma_3.62.2                sass_0.4.10                </span></span>
-<span><span class="co">##  [19] rmarkdown_2.30              jquerylib_0.1.4            </span></span>
-<span><span class="co">##  [21] yaml_2.3.10                 plotrix_3.8-4              </span></span>
-<span><span class="co">##  [23] otel_0.2.0                  httpuv_1.6.16              </span></span>
-<span><span class="co">##  [25] ggtangle_0.0.7              cowplot_1.2.0              </span></span>
-<span><span class="co">##  [27] DBI_1.2.3                   RColorBrewer_1.1-3         </span></span>
-<span><span class="co">##  [29] abind_1.4-8                 zlibbioc_1.52.0            </span></span>
-<span><span class="co">##  [31] Rtsne_0.17                  purrr_1.1.0                </span></span>
-<span><span class="co">##  [33] R.utils_2.13.0              RCurl_1.98-1.17            </span></span>
-<span><span class="co">##  [35] yulab.utils_0.2.1           rappdirs_0.3.3             </span></span>
-<span><span class="co">##  [37] GenomeInfoDbData_1.2.13     enrichplot_1.26.6          </span></span>
-<span><span class="co">##  [39] ggrepel_0.9.6               tidytree_0.4.6             </span></span>
-<span><span class="co">##  [41] pkgdown_2.1.3               svglite_2.2.2              </span></span>
-<span><span class="co">##  [43] codetools_0.2-20            DelayedArray_0.32.0        </span></span>
-<span><span class="co">##  [45] DOSE_4.0.1                  xml2_1.4.1                 </span></span>
-<span><span class="co">##  [47] tidyselect_1.2.1            futile.logger_1.4.3        </span></span>
-<span><span class="co">##  [49] aplot_0.2.9                 UCSC.utils_1.2.0           </span></span>
-<span><span class="co">##  [51] farver_2.1.2                matrixStats_1.5.0          </span></span>
-<span><span class="co">##  [53] BiocFileCache_2.14.0        GenomicAlignments_1.42.0   </span></span>
-<span><span class="co">##  [55] jsonlite_2.0.0              randomcoloR_1.1.0.1        </span></span>
-<span><span class="co">##  [57] systemfonts_1.3.1           tools_4.4.0                </span></span>
-<span><span class="co">##  [59] ggnewscale_0.5.2            progress_1.2.3             </span></span>
-<span><span class="co">##  [61] treeio_1.30.0               Rcpp_1.1.0                 </span></span>
-<span><span class="co">##  [63] glue_1.8.0                  SparseArray_1.6.2          </span></span>
-<span><span class="co">##  [65] xfun_0.54                   qvalue_2.38.0              </span></span>
-<span><span class="co">##  [67] MatrixGenerics_1.18.1       dplyr_1.1.4                </span></span>
-<span><span class="co">##  [69] withr_3.0.2                 formatR_1.14               </span></span>
-<span><span class="co">##  [71] BiocManager_1.30.26         fastmap_1.2.0              </span></span>
-<span><span class="co">##  [73] digest_0.6.37               BioVenn_1.1.3              </span></span>
-<span><span class="co">##  [75] mime_0.13                   R6_2.6.1                   </span></span>
-<span><span class="co">##  [77] gridGraphics_0.5-1          textshaping_1.0.4          </span></span>
-<span><span class="co">##  [79] colorspace_2.1-2            GO.db_3.20.0               </span></span>
-<span><span class="co">##  [81] biomaRt_2.62.1              RSQLite_2.4.3              </span></span>
-<span><span class="co">##  [83] R.methodsS3_1.8.2           tidyr_1.3.1                </span></span>
-<span><span class="co">##  [85] generics_0.1.4              data.table_1.17.8          </span></span>
-<span><span class="co">##  [87] rtracklayer_1.66.0          prettyunits_1.2.0          </span></span>
-<span><span class="co">##  [89] httr_1.4.7                  htmlwidgets_1.6.4          </span></span>
-<span><span class="co">##  [91] S4Arrays_1.6.0              pkgconfig_2.0.3            </span></span>
-<span><span class="co">##  [93] gtable_0.3.6                blob_1.2.4                 </span></span>
-<span><span class="co">##  [95] S7_0.2.0                    XVector_0.46.0             </span></span>
-<span><span class="co">##  [97] clusterProfiler_4.14.6      htmltools_0.5.8.1          </span></span>
-<span><span class="co">##  [99] bookdown_0.45               fgsea_1.32.4               </span></span>
-<span><span class="co">## [101] ProtGenerics_1.38.0         scales_1.4.0               </span></span>
-<span><span class="co">## [103] png_0.1-8                   ggfun_0.2.0                </span></span>
-<span><span class="co">## [105] lambda.r_1.2.4              knitr_1.50                 </span></span>
-<span><span class="co">## [107] rstudioapi_0.17.1           reshape2_1.4.4             </span></span>
-<span><span class="co">## [109] rjson_0.2.23                checkmate_2.3.3            </span></span>
-<span><span class="co">## [111] nlme_3.1-168                curl_7.0.0                 </span></span>
-<span><span class="co">## [113] cachem_1.1.0                stringr_1.5.2              </span></span>
-<span><span class="co">## [115] BiocVersion_3.20.0          parallel_4.4.0             </span></span>
-<span><span class="co">## [117] restfulr_0.0.16             desc_1.4.3                 </span></span>
-<span><span class="co">## [119] pillar_1.11.1               grid_4.4.0                 </span></span>
-<span><span class="co">## [121] vctrs_0.6.5                 promises_1.5.0             </span></span>
-<span><span class="co">## [123] dbplyr_2.5.1                cluster_2.1.8.1            </span></span>
-<span><span class="co">## [125] xtable_1.8-4                evaluate_1.0.5             </span></span>
-<span><span class="co">## [127] futile.options_1.0.1        cli_3.6.5                  </span></span>
-<span><span class="co">## [129] compiler_4.4.0              Rsamtools_2.22.0           </span></span>
-<span><span class="co">## [131] rlang_1.1.6                 crayon_1.5.3               </span></span>
-<span><span class="co">## [133] igvShiny_1.2.0              labeling_0.4.3             </span></span>
-<span><span class="co">## [135] plyr_1.8.9                  forcats_1.0.1              </span></span>
-<span><span class="co">## [137] fs_1.6.6                    stringi_1.8.7              </span></span>
-<span><span class="co">## [139] BiocParallel_1.40.2         Biostrings_2.74.1          </span></span>
-<span><span class="co">## [141] lazyeval_0.2.2              V8_8.0.1                   </span></span>
-<span><span class="co">## [143] GOSemSim_2.32.0             Matrix_1.7-4               </span></span>
-<span><span class="co">## [145] RcppHNSW_0.6.0              hms_1.1.4                  </span></span>
-<span><span class="co">## [147] patchwork_1.3.2             bit64_4.6.0-1              </span></span>
-<span><span class="co">## [149] ggplot2_4.0.0               KEGGREST_1.46.0            </span></span>
-<span><span class="co">## [151] statmod_1.5.1               shiny_1.11.1               </span></span>
-<span><span class="co">## [153] SummarizedExperiment_1.36.0 AnnotationHub_3.14.0       </span></span>
-<span><span class="co">## [155] igraph_2.2.1                memoise_2.0.1              </span></span>
-<span><span class="co">## [157] bslib_0.9.0                 ggtree_3.12.0              </span></span>
-<span><span class="co">## [159] fastmatch_1.1-6             bit_4.6.0                  </span></span>
-<span><span class="co">## [161] ape_5.8-1                   gson_0.1.0</span></span></code></pre>
+<span><span class="co">##  [13] doParallel_1.0.17           lattice_0.22-7             </span></span>
+<span><span class="co">##  [15] backports_1.5.0             NOISeq_2.50.0              </span></span>
+<span><span class="co">##  [17] magrittr_2.0.4              limma_3.62.2               </span></span>
+<span><span class="co">##  [19] sass_0.4.10                 rmarkdown_2.30             </span></span>
+<span><span class="co">##  [21] jquerylib_0.1.4             yaml_2.3.10                </span></span>
+<span><span class="co">##  [23] plotrix_3.8-4               otel_0.2.0                 </span></span>
+<span><span class="co">##  [25] httpuv_1.6.16               ggtangle_0.0.7             </span></span>
+<span><span class="co">##  [27] cowplot_1.2.0               DBI_1.2.3                  </span></span>
+<span><span class="co">##  [29] RColorBrewer_1.1-3          abind_1.4-8                </span></span>
+<span><span class="co">##  [31] zlibbioc_1.52.0             Rtsne_0.17                 </span></span>
+<span><span class="co">##  [33] purrr_1.1.0                 R.utils_2.13.0             </span></span>
+<span><span class="co">##  [35] RCurl_1.98-1.17             yulab.utils_0.2.1          </span></span>
+<span><span class="co">##  [37] rappdirs_0.3.3              circlize_0.4.16            </span></span>
+<span><span class="co">##  [39] GenomeInfoDbData_1.2.13     enrichplot_1.26.6          </span></span>
+<span><span class="co">##  [41] ggrepel_0.9.6               tidytree_0.4.6             </span></span>
+<span><span class="co">##  [43] pkgdown_2.1.3               svglite_2.2.2              </span></span>
+<span><span class="co">##  [45] codetools_0.2-20            DelayedArray_0.32.0        </span></span>
+<span><span class="co">##  [47] DOSE_4.0.1                  DT_0.34.0                  </span></span>
+<span><span class="co">##  [49] xml2_1.4.1                  shape_1.4.6.1              </span></span>
+<span><span class="co">##  [51] tidyselect_1.2.1            futile.logger_1.4.3        </span></span>
+<span><span class="co">##  [53] aplot_0.2.9                 UCSC.utils_1.2.0           </span></span>
+<span><span class="co">##  [55] farver_2.1.2                matrixStats_1.5.0          </span></span>
+<span><span class="co">##  [57] BiocFileCache_2.14.0        GenomicAlignments_1.42.0   </span></span>
+<span><span class="co">##  [59] jsonlite_2.0.0              GetoptLong_1.0.5           </span></span>
+<span><span class="co">##  [61] iterators_1.0.14            randomcoloR_1.1.0.1        </span></span>
+<span><span class="co">##  [63] systemfonts_1.3.1           foreach_1.5.2              </span></span>
+<span><span class="co">##  [65] dbscan_1.2.3                tools_4.4.0                </span></span>
+<span><span class="co">##  [67] ggnewscale_0.5.2            progress_1.2.3             </span></span>
+<span><span class="co">##  [69] treeio_1.30.0               Rcpp_1.1.0                 </span></span>
+<span><span class="co">##  [71] glue_1.8.0                  SparseArray_1.6.2          </span></span>
+<span><span class="co">##  [73] xfun_0.54                   qvalue_2.38.0              </span></span>
+<span><span class="co">##  [75] MatrixGenerics_1.18.1       dplyr_1.1.4                </span></span>
+<span><span class="co">##  [77] withr_3.0.2                 formatR_1.14               </span></span>
+<span><span class="co">##  [79] BiocManager_1.30.26         fastmap_1.2.0              </span></span>
+<span><span class="co">##  [81] digest_0.6.37               BioVenn_1.1.3              </span></span>
+<span><span class="co">##  [83] mime_0.13                   R6_2.6.1                   </span></span>
+<span><span class="co">##  [85] gridGraphics_0.5-1          textshaping_1.0.4          </span></span>
+<span><span class="co">##  [87] colorspace_2.1-2            GO.db_3.20.0               </span></span>
+<span><span class="co">##  [89] biomaRt_2.62.1              RSQLite_2.4.3              </span></span>
+<span><span class="co">##  [91] R.methodsS3_1.8.2           tidyr_1.3.1                </span></span>
+<span><span class="co">##  [93] generics_0.1.4              data.table_1.17.8          </span></span>
+<span><span class="co">##  [95] rtracklayer_1.66.0          prettyunits_1.2.0          </span></span>
+<span><span class="co">##  [97] httr_1.4.7                  htmlwidgets_1.6.4          </span></span>
+<span><span class="co">##  [99] S4Arrays_1.6.0              pkgconfig_2.0.3            </span></span>
+<span><span class="co">## [101] gtable_0.3.6                blob_1.2.4                 </span></span>
+<span><span class="co">## [103] ComplexHeatmap_2.22.0       S7_0.2.0                   </span></span>
+<span><span class="co">## [105] XVector_0.46.0              clusterProfiler_4.14.6     </span></span>
+<span><span class="co">## [107] htmltools_0.5.8.1           bookdown_0.45              </span></span>
+<span><span class="co">## [109] fgsea_1.32.4                clue_0.3-66                </span></span>
+<span><span class="co">## [111] ProtGenerics_1.38.0         scales_1.4.0               </span></span>
+<span><span class="co">## [113] png_0.1-8                   ggfun_0.2.0                </span></span>
+<span><span class="co">## [115] lambda.r_1.2.4              knitr_1.50                 </span></span>
+<span><span class="co">## [117] rstudioapi_0.17.1           reshape2_1.4.4             </span></span>
+<span><span class="co">## [119] rjson_0.2.23                checkmate_2.3.3            </span></span>
+<span><span class="co">## [121] nlme_3.1-168                curl_7.0.0                 </span></span>
+<span><span class="co">## [123] GlobalOptions_0.1.2         cachem_1.1.0               </span></span>
+<span><span class="co">## [125] stringr_1.5.2               BiocVersion_3.20.0         </span></span>
+<span><span class="co">## [127] parallel_4.4.0              restfulr_0.0.16            </span></span>
+<span><span class="co">## [129] desc_1.4.3                  pillar_1.11.1              </span></span>
+<span><span class="co">## [131] grid_4.4.0                  vctrs_0.6.5                </span></span>
+<span><span class="co">## [133] promises_1.5.0              dbplyr_2.5.1               </span></span>
+<span><span class="co">## [135] cluster_2.1.8.1             xtable_1.8-4               </span></span>
+<span><span class="co">## [137] evaluate_1.0.5              magick_2.9.0               </span></span>
+<span><span class="co">## [139] futile.options_1.0.1        cli_3.6.5                  </span></span>
+<span><span class="co">## [141] compiler_4.4.0              Rsamtools_2.22.0           </span></span>
+<span><span class="co">## [143] rlang_1.1.6                 crayon_1.5.3               </span></span>
+<span><span class="co">## [145] igvShiny_1.2.0              labeling_0.4.3             </span></span>
+<span><span class="co">## [147] plyr_1.8.9                  forcats_1.0.1              </span></span>
+<span><span class="co">## [149] fs_1.6.6                    stringi_1.8.7              </span></span>
+<span><span class="co">## [151] BiocParallel_1.40.2         Biostrings_2.74.1          </span></span>
+<span><span class="co">## [153] lazyeval_0.2.2              V8_8.0.1                   </span></span>
+<span><span class="co">## [155] GOSemSim_2.32.0             Matrix_1.7-4               </span></span>
+<span><span class="co">## [157] hms_1.1.4                   patchwork_1.3.2            </span></span>
+<span><span class="co">## [159] bit64_4.6.0-1               ggplot2_4.0.0              </span></span>
+<span><span class="co">## [161] KEGGREST_1.46.0             statmod_1.5.1              </span></span>
+<span><span class="co">## [163] shiny_1.11.1                SummarizedExperiment_1.36.0</span></span>
+<span><span class="co">## [165] AnnotationHub_3.14.0        igraph_2.2.1               </span></span>
+<span><span class="co">## [167] memoise_2.0.1               bslib_0.9.0                </span></span>
+<span><span class="co">## [169] ggtree_3.12.0               fastmatch_1.1-6            </span></span>
+<span><span class="co">## [171] bit_4.6.0                   ape_5.8-1                  </span></span>
+<span><span class="co">## [173] gson_0.1.0</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

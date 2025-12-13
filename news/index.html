@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,16 @@
       <small>Source: <a href="https://github.com/marshall-lab/damidBind/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.10" id="damidbind-09910">damidBind 0.99.10<a class="anchor" aria-label="anchor" href="#damidbind-09910"></a></h2>
+<ul><li>NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)</li>
+<li>NEW: plot diagnostics for limma functions (eBayes moderation / SA plots)</li>
+<li>NEW: limma functions now use <code>trend</code> and <code>robust</code> by default to better fit heteroscedastic DamID data</li>
+<li>NEW: new function <code>extract_unique_sample_ids</code> generates simplifed, unique sample names from complex filenames for display (in diagnostic plots, IGV/Shiny browser)</li>
+<li>CHANGED: dense point labelling function now uses exact <code>dbscan</code> kNN functions, not approximate HNSW functions</li>
+<li>CHANGED: differential threshold filtering can now be set to non-zero values</li>
+<li>CHANGED: default replicate filtering for differential analyses is set to the minimum number of the two condition replicates</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.9" id="damidbind-0999">damidBind 0.99.9<a class="anchor" aria-label="anchor" href="#damidbind-0999"></a></h2>
 <ul><li>FIXED: igvShiny code now correctly handles the new internal GRanges binding profile data objects</li>

@@ -11,7 +11,7 @@ summarised over genes."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,12 +52,14 @@ summarised over genes.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">load_data_genes</span><span class="op">(</span></span>
 <span>  binding_profiles_path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  binding_profiles <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  drop_samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  quantile_norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  organism <span class="op">=</span> <span class="st">"drosophila melanogaster"</span>,</span>
 <span>  calculate_fdr <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  fdr_iterations <span class="op">=</span> <span class="fl">50000</span>,</span>
 <span>  ensdb_genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">bpparam</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">bpparam</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  plot_diagnostics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -74,8 +76,16 @@ containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') support
 <dd><p>Named list of GRanges objects representing binding profiles.</p></dd>
 
 
+<dt id="arg-drop-samples">drop_samples<a class="anchor" aria-label="anchor" href="#arg-drop-samples"></a></dt>
+<dd><p>A character vector of sample names or patterns to remove.
+Matching samples are removed from the analysis before normalisation and
+occupancy calculation. This can be useful for excluding samples that fail
+initial quality checks. Default: `NULL` (no samples are dropped).</p></dd>
+
+
 <dt id="arg-quantile-norm">quantile_norm<a class="anchor" aria-label="anchor" href="#arg-quantile-norm"></a></dt>
-<dd><p>Logical (default: FALSE) quantile-normalise across all signal columns if TRUE.</p></dd>
+<dd><p>Logical (default: FALSE) quantile-normalise across all
+signal columns if TRUE.</p></dd>
 
 
 <dt id="arg-organism">organism<a class="anchor" aria-label="anchor" href="#arg-organism"></a></dt>
@@ -92,11 +102,18 @@ Defautls to "drosophila melanogaster".</p></dd>
 
 
 <dt id="arg-ensdb-genes">ensdb_genes<a class="anchor" aria-label="anchor" href="#arg-ensdb-genes"></a></dt>
-<dd><p>GRanges object: gene annotation. Automatically obtained from `organism` if NULL.</p></dd>
+<dd><p>GRanges object: gene annotation. Automatically obtained
+from `organism` if NULL.</p></dd>
 
 
 <dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>
 <dd><p>BiocParallel function (defaults to BiocParallel::bpparam())</p></dd>
+
+
+<dt id="arg-plot-diagnostics">plot_diagnostics<a class="anchor" aria-label="anchor" href="#arg-plot-diagnostics"></a></dt>
+<dd><p>Logical. If `TRUE` (the default in interactive sessions),
+diagnostic plots (PCA and correlation heatmap) will be generated and
+displayed for both the raw binding data and the summarised occupancy data.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -162,6 +179,11 @@ to assign a specific FDR to each gene based on its observed occupancy and fragme
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 7 regions...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   3 rows with zero variance were filtered.</span>
+<span class="r-plt img"><img src="load_data_genes-1.png" alt="" width="700" height="433"></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   3989 rows with zero variance were filtered.</span>
+<span class="r-plt img"><img src="load_data_genes-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View the head of the occupancy table</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">loaded_data_genes</span><span class="op">$</span><span class="va">occupancy</span><span class="op">)</span></span></span>

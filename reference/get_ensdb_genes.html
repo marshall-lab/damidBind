@@ -9,7 +9,7 @@ Ensembl database hosted via Bioconductor's AnnotationHub and ensembldb."></head>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -113,20 +113,20 @@ metadata fields are retained in the genes output.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu">curl</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/curl/reference/nslookup.html" class="external-link">has_internet</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span><span class="co"># This example requires an internet connection and will download data.</span></span></span>
-<span class="r-in"><span><span class="co"># It is wrapped in \donttest{} so it is not run by automated checks.</span></span></span>
 <span class="r-in"><span><span class="va">dm_genes</span> <span class="op">&lt;-</span> <span class="fu">get_ensdb_genes</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    organism_keyword <span class="op">=</span> <span class="st">"drosophila melanogaster"</span>,</span></span>
 <span class="r-in"><span>    ensembl_version <span class="op">=</span> <span class="fl">110</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># View the fetched genes GRanges object</span></span></span>
+<span class="r-in"><span><span class="va">dm_genes</span><span class="op">$</span><span class="va">genes</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Finding genome versions ...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> snapshotDate(): 2024-10-28</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading Ensembl genome version 'Ensembl 110 EnsDb for Drosophila melanogaster'</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> loading from cache</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># View the fetched genes GRanges object</span></span></span>
-<span class="r-in"><span><span class="va">dm_genes</span><span class="op">$</span><span class="va">genes</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GRanges object with 18040 ranges and 2 metadata columns:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             seqnames      ranges strand |            gene_id</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                &lt;Rle&gt;   &lt;IRanges&gt;  &lt;Rle&gt; |        &lt;character&gt;</span>
@@ -156,7 +156,6 @@ metadata fields are retained in the genes output.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          FBgn0267504  28SrRNA:CR45844</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   -------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   seqinfo: 29 sequences (1 circular) from BDGP6.46 genome</span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

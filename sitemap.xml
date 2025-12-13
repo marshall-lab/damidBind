@@ -19,12 +19,15 @@
 <url><loc>https://marshall-lab/damidBind/reference/enrichedCond1.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/enrichedCond2.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/expressed.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/extract_unique_sample_ids.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/filter_genes_by_fdr.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/get_ensdb_genes.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/index.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/inputData.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/load_data_genes.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/load_data_peaks.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/plot_input_diagnostics.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/plot_limma_diagnostics.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/plot_venn.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/plot_volcano.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/quantile_normalisation.html</loc></url>

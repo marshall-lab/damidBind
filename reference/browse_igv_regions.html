@@ -13,7 +13,7 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.'></
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,6 +55,7 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">browse_igv_regions</span><span class="op">(</span></span>
 <span>  <span class="va">diff_results</span>,</span>
 <span>  samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  use_unique_ids <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  colour_cond1 <span class="op">=</span> <span class="st">"#ff6600"</span>,</span>
 <span>  colour_cond2 <span class="op">=</span> <span class="st">"#2288dd"</span>,</span>
 <span>  use_genome <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -80,12 +81,17 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <dd><p>Optional character vector of sample names to display (default: all in dataset).</p></dd>
 
 
+<dt id="arg-use-unique-ids">use_unique_ids<a class="anchor" aria-label="anchor" href="#arg-use-unique-ids"></a></dt>
+<dd><p>Logical.  When `TRUE` (default), simplified unique sample names will be
+displayed.  Set as `FALSE` to use the full sample file names from loading.</p></dd>
+
+
 <dt id="arg-colour-cond-colour-cond-">colour_cond1, colour_cond2<a class="anchor" aria-label="anchor" href="#arg-colour-cond-colour-cond-"></a></dt>
-<dd><p>Colours for differentially enriched region tracks.</p></dd>
+<dd><p>Colours for differentially-enriched region tracks.</p></dd>
 
 
 <dt id="arg-use-genome">use_genome<a class="anchor" aria-label="anchor" href="#arg-use-genome"></a></dt>
-<dd><p>IGV genome name (inferred from peak annotations if not given).</p></dd>
+<dd><p>IGV genome name (inferred from peak annotations if not provided).</p></dd>
 
 
 <dt id="arg-padding-width">padding_width<a class="anchor" aria-label="anchor" href="#arg-padding-width"></a></dt>
@@ -119,9 +125,9 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="co"># This example launches an interactive Shiny app and is not run by</span></span></span>
-<span class="r-in"><span><span class="co"># automated checks. It requires an internet connection for IGV.</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Logic.html" class="external-link">isTRUE</a></span><span class="op">(</span><span class="fu">curl</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/curl/reference/nslookup.html" class="external-link">has_internet</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># This example launches an interactive Shiny app in a web browser</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">.generate_example_results</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">mock_genes_gr</span> <span class="op">&lt;-</span> <span class="fu">GenomicRanges</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/GenomicRanges/man/GRanges-class.html" class="external-link">GRanges</a></span><span class="op">(</span></span></span>
@@ -148,45 +154,11 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <span class="r-in"><span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="va">diff_results</span> <span class="op">&lt;-</span> <span class="fu">.generate_example_results</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Locating binding profile files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Building binding profile dataframe from input files ...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition display names were sanitized for internal data:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L4 Neurons' -&gt; 'L4.Neurons'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   'L5 Neurons' -&gt; 'L5.Neurons'</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying filter: Loci must have occupancy &gt; 0 in at least 2 samples of at least one condition.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Filtered out 12 loci. 1196 loci remain for analysis.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Differential analysis setup:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 1 Display Name: 'L4 Neurons' (Internal: 'L4.Neurons', Match Pattern: 'L4')</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L4_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Condition 2 Display Name: 'L5 Neurons' (Internal: 'L5.Neurons', Match Pattern: 'L5')</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Found 2 replicates:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>     Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm_qnorm</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> limma contrasts: L4.Neurons-L5.Neurons</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Filtering for positive enrichment (mean score &gt; 0 in the enriched condition).</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 284 loci enriched in L4 Neurons</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 173 loci enriched in L5 Neurons</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Highest-ranked genes:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene, LargeTestGene</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Launch the interactive browser (requires network access; uncomment to run)</span></span></span>
-<span class="r-in"><span><span class="co"># browse_igv_regions(diff_results)</span></span></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># Launch the interactive browser</span></span></span>
+<span class="r-in"><span><span class="fu">browse_igv_regions</span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
