@@ -132,7 +132,7 @@ Processed files (incl. binding profiles and peaks files) are provided for all da
 
 `r Biocpkg('damidBind')` takes as input:
 
--   Genome-wide binding profile tracks in BEDGRAPH format (external files) or `r Biocpkg("GenomicRanges")` format (internal)
+-   Genome-wide binding profile tracks in bedGraph format (external files) or `r Biocpkg("GenomicRanges")` format (internal)
     -   For standard DamID binding datasets, the score column is expected to be a log2 ratio
     -   For CATaDa chromatin accessibility datasets, the score column should be in CPM (counts per million reads) or similar
 -   Significant peaks files in GFF or BED format (external files) or `r Biocpkg("GenomicRanges")` format (internal)
@@ -144,16 +144,16 @@ All external data files are read using `r Biocpkg("rtracklayer")` and can be gzi
 
 `r Biocpkg('damidBind')` can work with either raw data files or preprocessed data in `r Biocpkg("GenomicRanges")` format.
 
-### BEDGRAPH binding / accessibility profiles
+### bedGraph binding / accessibility profiles
 
 We recommend that [damidseq_pipeline](https://owenjm.github.io/damidseq_pipeline) is used to generate input files:
 
--   Using default options to generate log2 ratio protein binding BEDGRAPHs
--   Using the `--catada` flag on Dam-only samples to generate count-based CATaDa accesibility BEDGRAPHs
+-   Using default options to generate log2 ratio protein binding bedGraphs
+-   Using the `--catada` flag on Dam-only samples to generate count-based CATaDa accesibility bedGraphs
 
 ### Peak GFF files
 
-We recommend that [find_peaks](https://github.com/owenjm/find_peaks) is used to generate peak files on each DamID / CATaDa BEDGRAPH file replicate:
+We recommend that [find_peaks](https://github.com/owenjm/find_peaks) is used to generate peak files on each DamID / CATaDa bedGraph file replicate:
 
 -   In all cases, the default options of `--min_quant=0.8 --unified_peaks=min` are recommended
 
