@@ -57,6 +57,7 @@ Suggests:
     htmltools,
     rmarkdown,
     BiocStyle,
+    bookdown,
     org.Dm.eg.db
 RoxygenNote: 7.3.3
 VignetteBuilder: knitr
