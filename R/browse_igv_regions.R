@@ -319,6 +319,7 @@
 #' @return Invisibly returns the Shiny app object created by `shinyApp()`.
 #'
 #' @examples
+#' \dontrun{
 #' if (isTRUE(curl::has_internet()) && interactive()) {
 #' # This example launches an interactive Shiny app in a web browser
 #'
@@ -350,6 +351,7 @@
 #'
 #' # Launch the interactive browser
 #' browse_igv_regions(diff_results)
+#' }
 #' }
 #'
 #' @export

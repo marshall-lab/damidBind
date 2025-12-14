@@ -54,6 +54,7 @@ Clicking on a region in the table will pan IGV to that locus. Sample coverage an
 A dedicated "Save as SVG" button is provided to export the current IGV view.
 }
 \examples{
+\dontrun{
 if (isTRUE(curl::has_internet()) && interactive()) {
 # This example launches an interactive Shiny app in a web browser
 
@@ -85,6 +86,7 @@ diff_results <- .generate_example_results()
 
 # Launch the interactive browser
 browse_igv_regions(diff_results)
+}
 }
 
 }
