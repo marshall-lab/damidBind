@@ -46,6 +46,7 @@ importFrom(circlize, colorRamp2)
 importFrom(ComplexHeatmap, Heatmap, draw)
 importFrom(grid, grid.grabExpr, grid.text, gpar)
 importFrom(patchwork, plot_annotation)
+importFrom(splines, ns)
 
 
 
@@ -54,7 +55,7 @@ export(load_data_genes)
 export(get_ensdb_genes)
 export(reduce_regions)
 export(calculate_occupancy)
-export(calculate_and_add_fdr)
+export(calculate_and_add_occupancy_pvals)
 export(filter_genes_by_fdr)
 export(differential_binding)
 export(differential_accessibility)
