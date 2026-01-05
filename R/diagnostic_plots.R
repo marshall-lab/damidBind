@@ -360,12 +360,12 @@ plot_input_diagnostics <- function(loaded_data, drop_samples = NULL) {
 
     message("Generating diagnostic plots...")
 
-    # Process pccupancy data
+    # Process occupancy data
     occupancy_df <- loaded_data$occupancy
     if (!is.null(occupancy_df)) {
         base_cols <- c("chr", "start", "end", "name", "gene_name", "gene_id", "nfrags")
         sample_cols <- setdiff(colnames(occupancy_df), base_cols)
-        sample_cols <- sample_cols[!grepl("_FDR$", sample_cols)]
+        sample_cols <- sample_cols[!grepl("(_FDR|_pval)$", sample_cols)]
 
         if (length(sample_cols) > 1) {
             occ_matrix <- as.matrix(occupancy_df[, sample_cols, drop = FALSE])
@@ -397,37 +397,43 @@ plot_input_diagnostics <- function(loaded_data, drop_samples = NULL) {
         raw_matrix <- as.matrix(mcols(binding_profiles_gr))
         raw_matrix <- stats::na.omit(raw_matrix)
 
-        colnames(raw_matrix) <- extract_unique_sample_ids(colnames(raw_matrix))
+        # Check for at least two samples before attempting diagnostics
+        if (ncol(raw_matrix) > 1) {
+            colnames(raw_matrix) <- extract_unique_sample_ids(colnames(raw_matrix))
 
-        max_rows <- 100000
-        was_sampled <- FALSE
-        if (nrow(raw_matrix) > max_rows) {
-            message(sprintf(" - Raw binding data has > %d rows, sampling %d rows for diagnostics.", max_rows, max_rows))
-            raw_matrix <- raw_matrix[sample(nrow(raw_matrix), max_rows), ]
-            was_sampled <- TRUE
-        }
-
-        if (ncol(raw_matrix) > 1 && nrow(raw_matrix) > ncol(raw_matrix)) {
-            pca_raw <- .make_pca_plot(raw_matrix, title = "PCA of Samples")
-            heatmap_raw <- .make_corr_heatmap(raw_matrix, title = "Sample Correlation")
-            heatmap_grob_raw <- grid::grid.grabExpr(ComplexHeatmap::draw(heatmap_raw))
-
-            plot_title <- "Diagnostic plots for raw genomic binding data"
-            if (was_sampled) {
-                plot_title <- paste(plot_title, "(Sampled)")
+            max_rows <- 100000
+            was_sampled <- FALSE
+            if (nrow(raw_matrix) > max_rows) {
+                message(sprintf(" - Raw binding data has > %d rows, sampling %d rows for diagnostics.", max_rows, max_rows))
+                raw_matrix <- raw_matrix[sample(nrow(raw_matrix), max_rows), , drop = FALSE]
+                was_sampled <- TRUE
             }
 
-            combined_plot_raw <- pca_raw + heatmap_grob_raw +
-                patchwork::plot_annotation(title = plot_title)
+            if (nrow(raw_matrix) > ncol(raw_matrix)) {
+                pca_raw <- .make_pca_plot(raw_matrix, title = "PCA of Samples")
+                heatmap_raw <- .make_corr_heatmap(raw_matrix, title = "Sample Correlation")
+                heatmap_grob_raw <- grid::grid.grabExpr(ComplexHeatmap::draw(heatmap_raw))
 
-            print(combined_plot_raw)
+                plot_title <- "Diagnostic plots for raw genomic binding data"
+                if (was_sampled) {
+                    plot_title <- paste(plot_title, "(Sampled)")
+                }
+
+                combined_plot_raw <- pca_raw + heatmap_grob_raw +
+                    patchwork::plot_annotation(title = plot_title)
+
+                print(combined_plot_raw)
+            } else {
+                message(" - Skipped diagnostics for raw binding data: not enough features/rows.")
+            }
         } else {
-            message(" - Skipped diagnostics for raw binding data: not enough features/rows or samples.")
+            message(" - Skipped diagnostics for raw binding data: not enough sample columns.")
         }
     }
 
     return(invisible(loaded_data))
 }
+
 
 #' PCA plot for data diagnostics
 #' @param data_matrix A numeric matrix with features in rows and samples in columns
@@ -644,3 +650,258 @@ extract_unique_sample_ids <- function(sample_names,
 
     return(adjusted_names)
 }
+
+
+#' @title Plot occupancy model diagnostics
+#'
+#' @description
+#' Generates diagnostic plots for the non-linear regression models used in occupancy
+#' estimation to assess model fit and the appropriateness of the WLS approach.
+#'
+#' @param model_params_df Dataframe. The parameters extracted from first-level
+#'   simulations.
+#' @param fdr_models List. The WLS models for slope, intercept, and MSE.
+#' @param sample_name Character. The name of the sample being visualised.
+#'
+#' @return Invisibly returns NULL.
+#'
+#' @noRd
+plot_occupancy_diagnostics <- function(model_params_df, fdr_models, fdr_matrix=NULL, threshold_samples=NULL, sample_name) {
+
+    # Create a sequence of fragment counts for smooth trend lines
+    # Using length.out = 200 provides a smoother curve for the spline fit
+    frag_seq <- seq(
+        min(model_params_df$fragment_count),
+        max(model_params_df$fragment_count),
+        length.out = 200
+    )
+
+    # Prepare the prediction data frame
+    trend_df <- data.frame(fragment_count = frag_seq)
+    trend_df$log_f <- log(trend_df$fragment_count)
+
+    # Predict values across the sequence using the models
+    trend_df$slope_pred <- stats::predict(fdr_models$slope_model, newdata = trend_df)
+    trend_df$int_pred <- stats::predict(fdr_models$intercept_model, newdata = trend_df)
+    trend_df$mse_pred <- stats::predict(fdr_models$mse_model, newdata = trend_df)
+
+    # Slope fit plot
+    # Size aesthetic is 1/SE to show WLS weighting influence
+    p_slope <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$slope)) +
+        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_slope), alpha = 0.5, colour = "#333399") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$slope_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(
+            title = "Slope Regression",
+            #subtitle = "Natural spline fit (log-scale)",
+            x = "Fragment Count",
+            y = "Log-Linear Slope"
+        ) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = "none")
+
+    # Intercept fit plot
+    p_int <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$intercept)) +
+        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_int), alpha = 0.5, colour = "#226622") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$int_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(
+            title = "Intercept Regression",
+            #subtitle = "Natural spline fit (log-scale)",
+            x = "Fragment Count",
+            y = "Log-Linear Intercept"
+        ) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = "none")
+
+    # MSE fit plot
+    # Visualises the variance component used for the Jensen's correction factor
+    p_mse <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$mse)) +
+        ggplot2::geom_point(alpha = 0.5, colour = "#996633") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$mse_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(
+            title = "MSE Regression",
+            #subtitle = "Natural spline fit (log-scale)",
+            x = "Fragment Count",
+            y = "Residual Variance"
+        ) +
+        ggplot2::theme_bw()
+
+    # Heteroscedasticity plot
+    p_wls <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$se_slope)) +
+        ggplot2::geom_point(colour = "#663399", alpha = 0.6) +
+        ggplot2::geom_smooth(
+            method = "lm",
+            formula = y ~ splines::ns(x, df = 3),
+            colour = "#663399",
+            linetype = "dashed",
+            linewidth = 0.5,
+            alpha = 0.4,
+            se = FALSE
+        ) +
+        ggplot2::labs(
+            title = "Heteroscedasticity",
+            #subtitle = "Estimate precision by fragment count",
+            x = "Fragment Count",
+            y = "SE (Slope)"
+        ) +
+        ggplot2::theme_bw()
+
+    # Layout using a 2x2 grid for better legibility
+    final_plot <- (p_slope + p_int + p_mse) + # + p_wls) +
+        patchwork::plot_annotation(
+            title = "Occupancy model diagnostics",
+            subtitle = sample_name,
+            theme = ggplot2::theme(plot.title = ggplot2::element_text(face = "bold"))
+        )
+
+    print(final_plot)
+    invisible(NULL)
+}
+
+
+
+#' @title Plot Occupancy model diagnostics (detailed)
+#'
+#' @description
+#' Generates diagnostic plots for the non-linear regression models used in occupancy
+#' estimation to assess model fit and the appropriateness of the WLS approach.
+#' This verison includes Tier 1 fits showing the log-linear regression of empirical
+#' probabilities against occupancy thresholds for each fragment count.
+#'
+#' @param model_params_df Dataframe. The parameters extracted from first-level simulations.
+#' @param fdr_models List. The WLS models for slope, intercept, and MSE.
+#' @param fdr_matrix Matrix. The empirical probabilities from the first level.
+#' @param threshold_samples Numeric vector. The occupancy thresholds used in simulations.
+#' @param sample_name Character. The name of the sample being visualised.
+#'
+#' @return Invisibly returns NULL.
+#'
+#' @noRd
+plot_occupancy_diagnostics_detailed <- function(model_params_df, fdr_models, fdr_matrix, threshold_samples, sample_name) {
+
+    # Create a sequence of fragment counts for smooth trend lines for Tier 2
+    frag_seq <- seq(
+        min(model_params_df$fragment_count),
+        max(model_params_df$fragment_count),
+        length.out = 200
+    )
+
+    # Prepare Tier 2 prediction data frame
+    trend_df <- data.frame(fragment_count = frag_seq)
+    trend_df$log_f <- log(trend_df$fragment_count)
+
+    trend_df$slope_pred <- stats::predict(fdr_models$slope_model, newdata = trend_df)
+    trend_df$int_pred <- stats::predict(fdr_models$intercept_model, newdata = trend_df)
+    trend_df$mse_pred <- stats::predict(fdr_models$mse_model, newdata = trend_df)
+
+    # Tier 2: Slope fit plot
+    p_slope <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$slope)) +
+        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_slope), alpha = 0.5, colour = "#333399") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$slope_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(title = "Slope (Tier 2)", x = "Fragment Count", y = "Slope") +
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = "none")
+
+    # Tier 2: Intercept fit plot
+    p_int <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$intercept)) +
+        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_int), alpha = 0.5, colour = "#226622") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$int_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(title = "Intercept (Tier 2)", x = "Fragment Count", y = "Intercept") +
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = "none")
+
+    # Tier 2: MSE fit plot
+    p_mse <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$mse)) +
+        ggplot2::geom_point(alpha = 0.5, colour = "#996633") +
+        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$mse_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
+        ggplot2::labs(title = "MSE (Tier 2)", x = "Fragment Count", y = "Residual Var.") +
+        ggplot2::theme_bw()
+
+    # Tier 2: Heteroscedasticity plot
+    p_wls <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$se_slope)) +
+        ggplot2::geom_point(colour = "#663399", alpha = 0.6) +
+        ggplot2::geom_smooth(
+            method = "lm",
+            formula = y ~ splines::ns(x, df = 3),
+            colour = "#663399",
+            linetype = "dashed",
+            linewidth = 0.5,
+            alpha = 0.4,
+            se = FALSE
+        ) +
+        ggplot2::labs(title = "Heteroscedasticity", x = "Fragment Count", y = "SE (Slope)") +
+        ggplot2::theme_bw()
+
+    # Tier 1 fits: prepare data for faceted plot
+    frag_counts <- unique(model_params_df$fragment_count)
+
+    tier1_list <- lapply(frag_counts, function(f) {
+        # Identify probabilities for this fragment count
+        probs <- fdr_matrix[, as.character(f)]
+        # Filter to only finite log values
+        valid_idx <- probs > 0
+
+        if (sum(valid_idx) < 3) return(NULL)
+
+        params <- model_params_df[model_params_df$fragment_count == f, ]
+
+        data.frame(
+            fragment_count = f,
+            threshold = threshold_samples[valid_idx],
+            log_p_obs = log(probs[valid_idx]),
+            log_p_fit = params$intercept + (params$slope * threshold_samples[valid_idx])
+        )
+    })
+
+    tier1_df <- do.call(rbind, tier1_list)
+
+    if (!is.null(tier1_df) && nrow(tier1_df) > 0) {
+        tier1_df$fragment_count <- factor(tier1_df$fragment_count, levels = sort(unique(tier1_df$fragment_count)))
+
+        p_tier1 <- ggplot2::ggplot(tier1_df, ggplot2::aes(x = .data$threshold, y = .data$log_p_obs)) +
+            ggplot2::geom_point(size = 0.6, alpha = 0.4, colour = "grey30") +
+            ggplot2::geom_line(ggplot2::aes(y = .data$log_p_fit), colour = "firebrick", linewidth = 0.5) +
+            ggplot2::facet_wrap(~fragment_count, scales = "free_y") +
+            ggplot2::labs(
+                title = "Empirical Regression (Tier 1)",
+                subtitle = "log(p) ~ occupancy",
+                x = "Occupancy Threshold",
+                y = "log(Probability)"
+            ) +
+            ggplot2::theme_bw(base_size = 9) +
+            ggplot2::theme(strip.background = ggplot2::element_blank())
+
+        # Define an explicit 3-section layout:
+        # 1. Slope (A) & Intercept (B)
+        # 2. MSE (C) & WLS (D)
+        # 3. Tier 1 Facets (E) occupying the bottom
+        design <- "
+            AB
+            CD
+            EE
+            EE
+        "
+
+        # We wrap E in wrap_elements to prevent its facets from interfering with the parent grid
+        final_plot <- patchwork::wrap_plots(
+            A = p_slope, B = p_int,
+            C = p_mse, D = p_wls,
+            E = patchwork::wrap_elements(p_tier1),
+            design = design
+        )
+    } else {
+        # Fallback if no Tier 1 data is viable
+        final_plot <- (p_slope + p_int) / (p_mse + p_wls)
+    }
+
+    final_plot <- final_plot +
+        patchwork::plot_annotation(
+            title = "Occupancy model diagnostics",
+            subtitle = sample_name,
+            theme = ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", size = 16))
+        )
+
+    print(final_plot)
+    invisible(NULL)
+}
+
+
