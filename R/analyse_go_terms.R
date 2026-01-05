@@ -55,18 +55,26 @@
 #' @noRd
 ._prepare_go_geneList <- function(diff_results, direction) {
     analysis_df <- analysisTable(diff_results)
-    cond <- conditionNames(diff_results)
-    cond_display_names <- names(cond)
-    cond1_display_name <- cond_display_names[1]
-    cond2_display_name <- cond_display_names[2]
+    cond_map <- conditionNames(diff_results)
+    match_patt <- inputData(diff_results)$match_patterns
 
-    # Determine which gene list to use for the query
-    if (direction %in% c("cond1", cond[1], cond1_display_name)) {
+    # Determine indices for Condition 1 and 2
+    is_cond1 <- direction == "cond1" ||
+        direction == names(cond_map)[1] ||
+        direction == cond_map[1] ||
+        (!is.null(match_patt) && direction == match_patt[1])
+
+    is_cond2 <- direction == "cond2" ||
+        direction == names(cond_map)[2] ||
+        direction == cond_map[2] ||
+        (!is.null(match_patt) && direction == match_patt[2])
+    if (is_cond1) {
         selected_rownames <- rownames(enrichedCond1(diff_results))
-        selected_display_name <- cond1_display_name
-    } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
+        selected_display_name <- names(cond_map)[1]
+    } else if (is_cond2) {
         selected_rownames <- rownames(enrichedCond2(diff_results))
-        selected_display_name <- cond2_display_name
+        selected_display_name <- names(cond_map)[2]
+        # Invert t-statistic for GSEA ranking if looking at condition 2
         analysis_df$t <- analysis_df$t * -1
     } else {
         stop("Invalid 'direction'. Must be 'cond1' (or its name), 'cond2' (or its name).")
@@ -103,20 +111,27 @@
 #' @noRd
 ._prepare_go_gene_ids <- function(diff_results, direction) {
     analysis_df <- analysisTable(diff_results)
-    cond <- conditionNames(diff_results)
-    cond_display_names <- names(cond)
-    cond1_display_name <- cond_display_names[1]
-    cond2_display_name <- cond_display_names[2]
+    cond_map <- conditionNames(diff_results)
+    match_patt <- inputData(diff_results)$match_patterns
 
     universe_rownames <- rownames(analysis_df)
+    is_cond1 <- direction == "cond1" ||
+        direction == names(cond_map)[1] ||
+        direction == cond_map[1] ||
+        (!is.null(match_patt) && direction == match_patt[1])
+
+    is_cond2 <- direction == "cond2" ||
+        direction == names(cond_map)[2] ||
+        direction == cond_map[2] ||
+        (!is.null(match_patt) && direction == match_patt[2])
 
     # Determine which gene list to use for the query
-    if (direction %in% c("cond1", cond[1], cond1_display_name)) {
+    if (is_cond1) {
         selected_rownames <- rownames(enrichedCond1(diff_results))
-        selected_display_name <- cond1_display_name
-    } else if (direction %in% c("cond2", cond[2], cond2_display_name)) {
+        selected_display_name <- names(cond_map)[1]
+    } else if (is_cond2) {
         selected_rownames <- rownames(enrichedCond2(diff_results))
-        selected_display_name <- cond2_display_name
+        selected_display_name <- names(cond_map)[2]
     } else if (direction == "all") {
         selected_rownames <- c(rownames(enrichedCond1(diff_results)), rownames(enrichedCond2(diff_results)))
         selected_display_name <- "All Significant"
