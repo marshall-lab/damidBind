@@ -145,7 +145,7 @@ setMethod("inputData", "DamIDResults", function(object) object@data)
 #'   The method is a wrapper around the \code{\link{filter_genes_by_fdr}} function.
 #'
 #' @param object A \code{DamIDResults} object. This object must have been generated
-#'   from data loaded with \code{load_data_genes(calculate_fdr = TRUE)} for the
+#'   from data loaded with \code{load_data_genes(calculate_occupancy_pvals = TRUE)} for the
 #'   underlying FDR columns to be present.
 #' @param condition A character string identifying the experimental condition to filter.
 #'   This can be the internal identifier or the user-friendly display name.
@@ -162,32 +162,38 @@ setMethod("inputData", "DamIDResults", function(object) object@data)
 #' @aliases expressed,DamIDResults-method
 #'
 #' @examples
-#' # Helper function to create a sample DamIDResults object with FDR data
 #' .generate_fdr_example_results <- function() {
 #'     occupancy_df <- data.frame(
 #'         gene_name = c("geneA", "geneB", "geneC"),
 #'         gene_id = c("FBgn01", "FBgn02", "FBgn03"),
+#'         L4_rep1 = c(1.5, 0.2, 0.8),
+#'         L4_rep2 = c(1.7, 0.9, 0.1),
+#'         L5_rep1 = c(0.1, 0.1, 2.0),
 #'         L4_rep1_FDR = c(0.01, 0.10, 0.04),
 #'         L4_rep2_FDR = c(0.03, 0.02, 0.50),
 #'         L5_rep1_FDR = c(0.80, 0.90, 0.01),
 #'         row.names = c("geneA", "geneB", "geneC")
 #'     )
-#'     diff_results_base <- list(occupancy = occupancy_df, test_category = "expressed")
+#'     diff_results_base <- list(
+#'         occupancy = occupancy_df,
+#'         test_category = "expressed",
+#'         matched_samples = list("L4" = c("L4_rep1", "L4_rep2"), "L5" = "L5_rep1")
+#'     )
 #'     new("DamIDResults",
 #'         analysis = data.frame(row.names = rownames(occupancy_df)),
-#'         upCond1 = data.frame(), upCond2 = data.frame(),
-#'         cond = c("L4 Neurons" = "L4", "L5 Neurons" = "L5"),
+#'         upCond1 = data.frame(),
+#'         upCond2 = data.frame(),
+#'         cond = c("L4 mock" = "L4", "L5 mock" = "L5"),
 #'         data = diff_results_base
 #'     )
 #' }
 #' mock_fdr_results <- .generate_fdr_example_results()
 #'
-#' # Get genes expressed in L4 neurons (FDR <= 0.05 in any replicate)
-#' expressed(mock_fdr_results, condition = "L4 Neurons")
+#' # Get expressed in a condition (FDR <= 0.05)
+#' expressed(mock_fdr_results, condition = "L4 mock")
 #'
-#' # Get genes expressed in L5 neurons with a stricter fdr
-#' expressed(mock_fdr_results, condition = "L5", fdr = 0.02)
-#'
+#' # Get genes expressed with a more stringent FDR (<= 0.01)
+#' expressed(mock_fdr_results, condition = "L4", fdr = 0.01)
 #' @export
 setGeneric("expressed", function(object, condition, fdr = 0.05, which = "any")
     standardGeneric("expressed"))
