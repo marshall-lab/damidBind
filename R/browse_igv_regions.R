@@ -319,7 +319,7 @@
 #' @return Invisibly returns the Shiny app object created by `shinyApp()`.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' if (isTRUE(curl::has_internet()) && interactive()) {
 #' # This example launches an interactive Shiny app in a web browser
 #'
