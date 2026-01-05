@@ -61,7 +61,8 @@ test_that("differential_binding processes data and returns correct structure", {
     expect_equal(analysisTable(res)["loc4", internal_mean_names[2]], mean(c(40, 41)))
 
     # Check cond mapping
-    expect_equal(conditionNames(res), setNames(c("CondA", "CondB"), c("CondA_display", "CondB_display")))
+    expected_internal <- make.names(names(cond_vec))
+    expect_equal(conditionNames(res), setNames(expected_internal, names(cond_vec)))
 })
 
 

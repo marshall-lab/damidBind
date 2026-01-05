@@ -2,7 +2,6 @@
 
 # Dummy EnsDb object for mocking get_ensdb_genes
 # This significantly speeds up tests that use gene annotation
-
 make_dummy_ensdb_genes <- function(...) {
     # Mimic essential GRanges structure.
     genes_gr <- GRanges(
@@ -78,3 +77,5 @@ setMethod("$", "MockHubResult", function(x, name) {
 setMethod("[[", "MockHubResult", function(x, i, j, ...) {
     create_mock_ensdb_object()
 })
+
+

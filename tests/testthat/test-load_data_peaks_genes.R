@@ -21,7 +21,7 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
     dl <- load_data_peaks(
         binding_profiles_path = binding_profiles_path,
         peaks_path = peaks_path,
-        quantile_norm = FALSE, # Test without quantile normalisation first
+        quantile_norm = FALSE,
         BPPARAM = BiocParallel::SerialParam()
     )
 
@@ -132,6 +132,7 @@ test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files co
         binding_profiles_path = binding_profiles_path,
         ensdb_genes = dummy_ensdb,
         quantile_norm = FALSE,
+        calculate_occupancy_pvals = FALSE,
         BPPARAM = BiocParallel::SerialParam()
     )
 
@@ -179,6 +180,7 @@ test_that("load_data_genes works with quantile_norm = TRUE", {
         binding_profiles_path = binding_profiles_path,
         ensdb_genes = make_dummy_ensdb_genes()$genes,
         quantile_norm = TRUE,
+        calculate_occupancy_pvals = FALSE,
         BPPARAM = BiocParallel::SerialParam()
     )
 

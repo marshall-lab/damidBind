@@ -40,46 +40,46 @@ test_that("FDR calculation is reproducible with a seed and not without", {
     test_data <- prepare_fdr_test_data()
 
     # Run 1: with seed 42
-    res1 <- calculate_and_add_fdr(
+    res1 <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 500, # Low iterations for test speed
+        null_model_iterations = 500, # Low iterations for test speed
         seed = 42,
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Run 2: with the same seed 42
-    res2 <- calculate_and_add_fdr(
+    res2 <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 500,
+        null_model_iterations = 500,
         seed = 42,
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Run 3: with a different seed
-    res3 <- calculate_and_add_fdr(
+    res3 <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 500,
+        null_model_iterations = 500,
         seed = 101,
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Run 4: with no seed (should not be identical to Run 5)
-    res4 <- calculate_and_add_fdr(
+    res4 <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 500,
+        null_model_iterations = 500,
         seed = NULL,
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Run 5: with no seed again
-    res5 <- calculate_and_add_fdr(
+    res5 <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 500,
+        null_model_iterations = 500,
         seed = NULL,
         BPPARAM = BiocParallel::SerialParam()
     )
@@ -95,15 +95,15 @@ test_that("FDR calculation is reproducible with a seed and not without", {
 })
 
 
-test_that("FDR calculation produces correct output structure and values", {
+test_that("Occupancy p-value calculation produces correct output structure and values", {
     # This test requires BiocParallel
     skip_if_not_installed("BiocParallel")
     test_data <- prepare_fdr_test_data()
 
-    res <- calculate_and_add_fdr(
+    res <- calculate_and_add_occupancy_pvals(
         binding_data = test_data$binding_gr,
         occupancy_df = test_data$occupancy_table,
-        fdr_iterations = 50,
+        null_model_iterations = 50,
         seed = 123, # Use a fixed seed for predictable output
         BPPARAM = BiocParallel::SerialParam()
     )
@@ -111,10 +111,10 @@ test_that("FDR calculation produces correct output structure and values", {
     # Check output structure
     expect_s3_class(res, "data.frame")
     expect_equal(nrow(res), nrow(test_data$occupancy_table))
-    expect_true("L4_r1_FDR" %in% colnames(res))
+    expect_true("L4_r1_pval" %in% colnames(res))
 
     # Check value constraints
-    fdr_values <- res$L4_r1_FDR
+    fdr_values <- res$L4_r1_pval
     expect_type(fdr_values, "double")
-    expect_true(all(fdr_values >= 0 & fdr_values <= 1), info = "FDR values should be between 0 and 1.")
+    expect_true(all(fdr_values >= 0 & fdr_values <= 1), info = "Occupancy p-values should be between 0 and 1.")
 })

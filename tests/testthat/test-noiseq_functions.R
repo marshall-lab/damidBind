@@ -63,7 +63,8 @@ test_that("differential_accessibility returns expected structure and values", {
     expect_equal(analysisTable(res)["peak1", "minuslogp"], Inf)
 
     # Check 'cond' mapping
-    expect_equal(conditionNames(res), setNames(c("CondA", "CondB"), c("Condition_Alpha", "Condition_Beta")))
+    expected_internal <- make.names(names(cond_vec))
+    expect_equal(conditionNames(res), setNames(expected_internal, names(cond_vec)))
 
     expect_equal(inputData(res)$test_category, "accessible")
 })
