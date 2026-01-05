@@ -274,17 +274,24 @@ load_data_peaks <- function(
 #'   signal columns if TRUE.
 #' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 #'   Defautls to "drosophila melanogaster".
-#' @param calculate_fdr Calculate FDR based on RNA Pol occupancy (see details) (default: FALSE)
-#' @param fdr_iterations Number of iterations to use to determine null model for FDR (default: 50000)
+#' @param calculate_occupancy_pvals Calculate occupancy p-values as a proxy for gene expression status (see details).  Not used for differential expression analysis, but used when present for downstream analysis and plotting. (default: TRUE)
+#' @param return_per_replicate_fdr Legacy option of returning BH-adjusted RNA Polymerase occupancy FDR values
+#'   per replicate.  As of v0.99.12, unadjusted p-values are returned by defualt; these are
+#'   then aggregated at the condition level during `differential_binding()` and the
+#'   aggregate p-values adjusted to gain statistical power.  This option exists for legacy or unsual
+#'   end-user applications.  Use with caution.  (default: FALSE)
+#' @param null_model_iterations Number of iterations to use to determine null model for FDR (default: 100000)
 #' @param ensdb_genes GRanges object: gene annotation. Automatically obtained
 #'   from `organism` if NULL.
 #' @param BPPARAM BiocParallel function (defaults to BiocParallel::bpparam())
 #' @param plot_diagnostics Logical. If `TRUE` (the default in interactive sessions),
 #'   diagnostic plots (PCA and correlation heatmap) will be generated and
 #'   displayed for both the raw binding data and the summarised occupancy data.
+#' @param occupancy_plot_diagnostics Logical. If `TRUE` (default in interactive sessions),
+#'   diagnostic plots for the gene expression null model will be displayed.
 #'
 #' @return List with elements:
-#'   \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns.}
+#'   \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns, and _pval columns if `calculate_occupancy_pvals=TRUE`}
 #'   \item{occupancy}{data.frame of occupancy values summarised over genes.}
 #'   \item{test_category}{Character scalar; will be "expressed".}
 #'
@@ -334,8 +341,10 @@ load_data_genes <- function(
         drop_samples = NULL,
         quantile_norm = FALSE,
         organism = "drosophila melanogaster",
-        calculate_fdr = FALSE,
-        fdr_iterations = 50000,
+        calculate_occupancy_pvals = TRUE,
+        return_per_replicate_fdr = FALSE,
+        occupancy_plot_diagnostics = interactive(),
+        null_model_iterations = 100000,
         ensdb_genes = NULL,
         BPPARAM = BiocParallel::bpparam(),
         plot_diagnostics = interactive()) {
@@ -362,11 +371,13 @@ load_data_genes <- function(
     occupancy <- calculate_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
 
     # Optionally, calculate and add FDR columns
-    if (isTRUE(calculate_fdr)) {
-        occupancy <- calculate_and_add_fdr(
+    if (isTRUE(calculate_occupancy_pvals)) {
+        occupancy <- calculate_and_add_occupancy_pvals(
             binding_data = binding_profiles_data,
             occupancy_df = occupancy,
-            fdr_iterations = fdr_iterations,
+            null_model_iterations = null_model_iterations,
+            return_per_replicate_fdr = return_per_replicate_fdr,
+            plot_diagnostics = occupancy_plot_diagnostics,
             BPPARAM = BPPARAM
         )
     }
