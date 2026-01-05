@@ -135,8 +135,8 @@ differential_accessibility <- function(
     upCond1 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_up_res), , drop = FALSE]
     upCond2 <- noiseq_df[rownames(noiseq_df) %in% rownames(sig_down_res), , drop = FALSE]
 
-    # Prepare mapping for output: Display Name -> Match Pattern
-    mapping_cond <- setNames(cond_matches, cond_display)
+    # Prepare mapping for output: Display Name -> Internal Result ID
+    mapping_cond <- setNames(cond_internal, cond_display)
 
     # User-friendly output summary and top genes
     ._report_results(cond_display[1], upCond1)
