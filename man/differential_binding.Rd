@@ -14,7 +14,8 @@ differential_binding(
   plot_diagnostics = interactive(),
   filter_occupancy = TRUE,
   filter_threshold = 0,
-  filter_positive_enrichment = TRUE
+  filter_positive_enrichment = TRUE,
+  p_combine_method = c("stouffer", "fisher")
 )
 }
 \arguments{
@@ -55,6 +56,8 @@ are only considered significantly enriched if the mean score in the
 enriched condition is greater than zero. For example, for a region to be
 in `upCond1`, its logFC must be positive and its mean score in condition 1
 must be > 0. Set to `FALSE` to include all statistically significant changes.}
+
+\item{p_combine_method}{Method to combine p-values from replicates (default: "fisher")}
 }
 \value{
 A `DamIDResults` object containing the results. Access slots using

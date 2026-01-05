@@ -37,7 +37,7 @@ The following accessor functions are available for a \code{DamIDResults} object.
   \item \code{\link{enrichedCond2}(object)}: Returns a \code{data.frame} of regions significantly enriched in the second condition.
   \item \code{\link{conditionNames}(object)}: Returns a named \code{character} vector mapping display names to internal identifiers.
   \item \code{\link{inputData}(object)}: Returns a \code{list} containing the original input data used for the analysis.
-  \item \code{\link{expressed}(object, condition, fdr = 0.05, which = "any")}: Returns a \code{data.frame} of genes considered expressed in `condition`, based on an FDR threshold of significantly enriched occupancy.  Only available for analyses with FDR calculations, generated via \code{load_data_genes(calculate_fdr = TRUE)}.
+  \item \code{\link{expressed}(object, condition, fdr = 0.05, which = "any")}: Returns a \code{data.frame} of genes considered expressed in `condition`, based on an FDR threshold of significantly enriched occupancy.  Only available for analyses with FDR calculations, generated via \code{load_data_genes(calculate_occupancy_pvals = TRUE)}.
 }
 }
 

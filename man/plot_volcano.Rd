@@ -23,7 +23,7 @@ plot_volcano(
 the volcano plot will only include loci that have an FDR value less than or
 equal to this threshold in at least one replicate of the two conditions
 being plotted. This requires that the data was loaded using
-`load_data_genes` with `calculate_fdr = TRUE`, which generates the
+`load_data_genes` with `calculate_occupancy_pvals = TRUE`, which generates the
 necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
 performed.}
 
