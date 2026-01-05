@@ -73,7 +73,7 @@ plot_venn <- function(
     }
 
     if (is.null(title)) {
-        title <- sprintf("Differentially %s loci",inputData(diff_results)$test_category)
+        title <- sprintf("Differentially %s loci", inputData(diff_results)$test_category)
     }
 
     upCond1 <- rownames(enrichedCond1(diff_results))
@@ -85,10 +85,14 @@ plot_venn <- function(
         all_ids <- filter_on_fdr(diff_results, fdr_filter_threshold)
     }
 
-    # Defensive: remove NAs or empty
+    # Remove NAs or empty
     upCond1 <- upCond1[!is.na(upCond1) & nchar(upCond1) > 0]
     upCond2 <- upCond2[!is.na(upCond2) & nchar(upCond2) > 0]
     all_ids <- all_ids[!is.na(all_ids) & nchar(all_ids) > 0]
+
+    # Ensure significant lists are restricted to the defined universe.
+    upCond1 <- intersect(upCond1, all_ids)
+    upCond2 <- intersect(upCond2, all_ids)
 
     # Check minimum viable dataset
     if (length(all_ids) < 2) {
