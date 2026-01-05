@@ -44,7 +44,7 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
     all_sample_cols <- setdiff(colnames(occupancy_df), base_cols)
 
     # Explicitly remove any FDR columns from the list of potential sample columns
-    all_sample_cols <- all_sample_cols[!grepl("_FDR$", all_sample_cols)]
+    all_sample_cols <- all_sample_cols[!grepl("(_FDR|_pval)$", all_sample_cols)]
 
     if (length(all_sample_cols) < 2) {
         stop("At least two sample columns are required for differential analysis.")
@@ -120,9 +120,22 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
     rownames(mat) <- if ("name" %in% names(occupancy_df)) make.unique(occupancy_df$name) else rownames(occupancy_df)
 
     # Store matched samples in data_list for FDR filtering later
-    data_list$matched_samples <- list(
-        stats::setNames(list(samples_cond1), cond_display_names[1]),
-        stats::setNames(list(samples_cond2), cond_display_names[2])
+    # data_list$matched_samples <- list(
+    #     stats::setNames(list(samples_cond1), cond_display_names[1]),
+    #     stats::setNames(list(samples_cond2), cond_display_names[2])
+    # )
+
+    # Store matched samples in data_list for FDR filtering later
+    # Updated: use cond_internal_safe as the primary keys for easy lookup
+    data_list$matched_samples <- stats::setNames(
+        list(samples_cond1, samples_cond2),
+        cond_internal_safe
+    )
+
+    # Store match patterns separately if needed for debugging
+    data_list$match_patterns <- stats::setNames(
+        cond_match_strings,
+        cond_internal_safe
     )
 
     # Filter loci with negative occupancy if requested
@@ -273,7 +286,7 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
     occupancy_sample_names <- if (has_occupancy) {
         base_cols <- c("chr", "start", "end", "name", "gene_name", "gene_id", "nfrags")
         occ_cols <- colnames(data_list$occupancy)
-        occ_cols <- occ_cols[!grepl("_FDR$", occ_cols)] # Exclude FDR columns
+        occ_cols <- occ_cols[!grepl("(_FDR|_pval)$", occ_cols)] # Exclude FDR columns
         setdiff(occ_cols, base_cols)
     } else {
         character(0)
@@ -334,7 +347,8 @@ prep_data_for_differential_analysis <- function(data_list, cond, regex = FALSE, 
         # Drop from occupancy dataframe
         if (has_occupancy && length(unique_occupancy_to_drop) > 0) {
             fdr_cols_to_drop <- paste0(unique_occupancy_to_drop, "_FDR")
-            all_cols_to_drop <- c(unique_occupancy_to_drop, fdr_cols_to_drop)
+            pval_cols_to_drop <- paste0(unique_occupancy_to_drop, "_pval")
+            all_cols_to_drop <- c(unique_occupancy_to_drop, fdr_cols_to_drop, pval_cols_to_drop)
 
             cols_to_keep <- setdiff(colnames(data_list$occupancy), all_cols_to_drop)
             data_list$occupancy <- data_list$occupancy[, cols_to_keep, drop = FALSE]
