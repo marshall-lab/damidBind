@@ -27,6 +27,7 @@
 #'    If FALSE or NULL, no filtering is applied. (default: TRUE)
 #' @param filter_threshold Numeric.  `filter_occupancy` uses this value for thresholding
 #'   the input data.  (default: 0)
+#' @param p_combine_method Method to combine p-values from replicates (default: "fisher")
 #' @param filter_positive_enrichment Logical. If `TRUE` (default), regions
 #'   are only considered significantly enriched if the mean score in the
 #'   enriched condition is greater than zero. For example, for a region to be
@@ -85,7 +86,10 @@ differential_binding <- function(
         plot_diagnostics = interactive(),
         filter_occupancy = TRUE,
         filter_threshold = 0,
-        filter_positive_enrichment = TRUE) {
+        filter_positive_enrichment = TRUE,
+        p_combine_method = c("stouffer", "fisher")) {
+
+    p_combine_method <- match.arg(p_combine_method)
 
     # Prep data for analysis
     prep_results <- prep_data_for_differential_analysis(
@@ -96,15 +100,13 @@ differential_binding <- function(
         filter_threshold = filter_threshold
     )
 
-
-
     mat <- prep_results$mat
     factors <- prep_results$factors
     cond_internal <- prep_results$cond_internal
     cond_display <- prep_results$cond_display
     cond_matches <- prep_results$cond_matches
     occupancy_df <- prep_results$occupancy_df
-    data_list <- prep_results$data_list # Get the updated data_list
+    data_list <- prep_results$data_list
 
     # Ensure 'mat' is a numeric matrix for limma
     mat <- as.matrix(mat)
@@ -128,8 +130,63 @@ differential_binding <- function(
 
     message(sprintf("Applying eBayes moderation with `trend = %s, robust = %s`",as.character(eBayes_trend), as.character(eBayes_robust)))
     fit2 <- eBayes(fit2, trend = eBayes_trend, robust = eBayes_robust)
-
     result_table <- topTable(fit2, number = Inf, sort.by = "B", adjust.method = "BH")
+
+    # If topTable is empty, return early with valid metadata
+    if (nrow(result_table) == 0) {
+        message("limma::topTable returned no results. Returning empty DamIDResults object.")
+        mapping_cond <- setNames(cond_matches, cond_display)
+        return(new("DamIDResults",
+                   upCond1 = result_table[0, ],
+                   upCond2 = result_table[0, ],
+                   analysis = result_table,
+                   cond = mapping_cond,
+                   data = data_list
+        ))
+    }
+
+    # P-value combination logic for RNA Pol data
+    # Identifies _pval columns
+    all_cols <- colnames(occupancy_df)
+    pval_cols <- all_cols[grepl("(_pval)$", all_cols)]
+
+    if (length(pval_cols) > 0 && data_list$test_category == "expressed") {
+        message("Combining replicate p-values for condition-wide FDR...")
+
+        for (i in seq_along(cond_internal)) {
+            # Map condition identity to sample columns via matched_samples list
+            cond_id <- cond_internal[i]
+            display_name <- cond_display[i]
+
+            # Find which replicates belong to this condition
+            # matched_samples is a list of vectors, names are display names
+            samples <- unlist(data_list$matched_samples[[i]])
+            relevant_pval_cols <- paste0(samples, "_pval")
+
+            # Ensure these columns actually exist in occupancy_df
+            relevant_pval_cols <- intersect(relevant_pval_cols, pval_cols)
+
+            if (length(relevant_pval_cols) > 0) {
+                p_mat <- as.matrix(occupancy_df[rownames(result_table), relevant_pval_cols, drop = FALSE])
+
+                # Apply helper functions
+                combined_p <- if (p_combine_method == "fisher") {
+                    ._combine_p_fisher(p_mat)
+                } else {
+                    ._combine_p_stouffer(p_mat)
+                }
+
+                # Apply BH adjustment on the combined values
+                combined_fdr <- stats::p.adjust(combined_p, method = "BH")
+
+                # Store in result table with condition name
+                col_name <- paste0(cond_id, "_FDR")
+                result_table[[col_name]] <- combined_fdr
+                data_list$p_value_combination_method <- p_combine_method
+                message(sprintf(" - Calculated combined FDR for '%s' using %d replicates", display_name, length(relevant_pval_cols)))
+            }
+        }
+    }
 
     # Handle case where topTable could return no rows (e.g., empty input).
     if (nrow(result_table) == 0) {
@@ -194,8 +251,11 @@ differential_binding <- function(
         upCond2 <- upCond2_all
     }
 
-    # Prepare mapping for output: Display Name -> Match Pattern
-    mapping_cond <- setNames(cond_matches, cond_display)
+    # Prepare mapping for output: Display Name -> Internal Result ID
+    mapping_cond <- setNames(cond_internal, cond_display)
+
+    # # Prepare mapping for output: Display Name -> Match Pattern
+    # mapping_cond <- setNames(cond_matches, cond_display)
 
     # User-friendly output summary and top genes
     ._report_results(cond_display[1], upCond1)
@@ -203,11 +263,11 @@ differential_binding <- function(
 
     # Return a formal S4 object
     results_object <- new("DamIDResults",
-        upCond1 = upCond1,
-        upCond2 = upCond2,
-        analysis = result_table,
-        cond = mapping_cond,
-        data = data_list
+                          upCond1 = upCond1,
+                          upCond2 = upCond2,
+                          analysis = result_table,
+                          cond = mapping_cond,
+                          data = data_list
     )
 
     if (isTRUE(plot_diagnostics)) {
