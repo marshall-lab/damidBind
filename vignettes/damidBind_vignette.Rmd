@@ -14,6 +14,11 @@ output:
     toc_float: true 
     number_sections: true
     self_contained: true
+  bookdown::html_document2:
+    fig_caption: yes
+    toc: true
+pkgdown:
+  as_is: true
 bibliography: damidbind.bib
 csl: embo.csl
 abstract: |
@@ -32,6 +37,8 @@ knitr::opts_chunk$set(
     warning = FALSE,
     dev = "png"
 )
+
+library(BiocStyle)
 ```
 
 # Introduction
@@ -293,7 +300,7 @@ To fully explore the differentially bound loci, use one of the visualisation fun
 The sample dataset provided is a transcription factor binding dataset, with pre-called peaks.  If analysing gene expression datasets via RNA Polymerase DamID and `load_data_genes()`, the analysis pipeline is similar, with some exceptions:
 
 1. No peaks are required. `r Biocpkg('damidBind')` calculates signal occupancy over genes directly, and all downstream analyses are conducted on gene loci.
-2. Optional FDR calling via `load_data_genes(calculate_fdr = TRUE)`.  `r Biocpkg('damidBind')` can determine the FDR for enriched occupancy of RNA Polymerase over gene bodies, which we have previously shown to be a proxy for gene expression [@Southall2013; @Marshall2016].
+2. Optional FDR calling via `load_data_genes(calculate_occupancy_pvals = TRUE)`.  `r Biocpkg('damidBind')` can determine the FDR for enriched occupancy of RNA Polymerase over gene bodies, which we have previously shown to be a proxy for gene expression [@Southall2013; @Marshall2016].
 3. FDR values are not used for DEG analysis, but when present these can and should be used to filter the Venn and volcano plot outputs via the `fdr_filter_threshold` parameter, so that only genes deemed to be expressed are shown.
 4. The accessor method `expressed()` provides a quick means to obtain the list of genes passing an FDR threshold for one of the analysed conditions.
 
@@ -449,7 +456,7 @@ The following accessor functions are available for a `DamIDResults` object.
 * `enrichedCond2(object)`: Returns a `data.frame` of regions significantly enriched in the second condition.
 * `conditionNames(object)`: Returns a named character vector mapping display names to internal identifiers.
 * `inputData(object)`: Returns a list containing the original input data used for the analysis.
-* `expressed(object, condition, fdr = 0.05, which = "any")`: Returns a `data.frame` of genes considered expressed in 'condition', based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via `load_data_genes(calculate_fdr = TRUE)`.
+* `expressed(object, condition, fdr = 0.05, which = "any")`: Returns a `data.frame` of genes considered expressed in 'condition', based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via `load_data_genes(calculate_occupancy_pvals = TRUE)`.
 
 # References
 
