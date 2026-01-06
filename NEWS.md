@@ -1,3 +1,12 @@
+# damidBind 0.99.12
+*   CHANGED: major rewrite of the occupancy FDR logic for gene expression status.  Briefly:
+    - Model regression fits have been improved with weighted natural spline fits for Tier 2 regressions (relationship is not log-linear)
+    - Threshold scores for null model fitting are now determined from input data
+    - Diagnostic plots for Tier 2 regressions have been added
+    - Empirical p-values now aggregated on a condition level by default.  
+    - Occupancy p-values are now calculated by default during data loading, and merged during `differential_binding()`, before BH adjustment is applied to the aggregated p-values per condition.  See the relevant man pages for more details.
+*   CHANGED
+
 # damidBind 0.99.10
 *   NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)
 *   NEW: plot diagnostics for limma functions (eBayes moderation / SA plots)
