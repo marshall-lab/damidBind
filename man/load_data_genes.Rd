@@ -109,7 +109,8 @@ data_dir <- system.file("extdata", package = "damidBind")
 loaded_data_genes <- load_data_genes(
     binding_profiles_path = data_dir,
     ensdb_genes = mock_genes_gr,
-    quantile_norm = FALSE
+    quantile_norm = FALSE,
+    calculate_occupancy_pvals = FALSE
 )
 
 # View the head of the occupancy table

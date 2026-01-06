@@ -1,56 +1,57 @@
 # damidBind 0.99.12
-*   CHANGED: major rewrite of the occupancy FDR logic for gene expression status.  Briefly:
+* CHANGED: major rewrite of the occupancy FDR logic for gene expression status.  Briefly:
     - Model regression fits have been improved with weighted natural spline fits for Tier 2 regressions (relationship is not log-linear)
     - Threshold scores for null model fitting are now determined from input data
     - Diagnostic plots for Tier 2 regressions have been added
-    - Empirical p-values now aggregated on a condition level by default.  
+    - Empirical p-values now aggregated on a condition level by default, using either Stouffer's (default) or Fisher's method
     - Occupancy p-values are now calculated by default during data loading, and merged during `differential_binding()`, before BH adjustment is applied to the aggregated p-values per condition.  See the relevant man pages for more details.
-*   CHANGED
+* CHANGED: internal logic for handling condition names and matches
+* FIXED: Venn diagram universe logic now correctly determines the expressed gene universe when handling RNA Polymerase datasets
 
 # damidBind 0.99.10
-*   NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)
-*   NEW: plot diagnostics for limma functions (eBayes moderation / SA plots)
-*   NEW: limma functions now use `trend` and `robust` by default to better fit heteroscedastic DamID data
-*   NEW: new function `extract_unique_sample_ids` generates simplifed, unique sample names from complex filenames for display (in diagnostic plots, IGV/Shiny browser)
-*   CHANGED: dense point labelling function now uses exact `dbscan` kNN functions, not approximate HNSW functions
-*   CHANGED: differential threshold filtering can now be set to non-zero values
-*   CHANGED: default replicate filtering for differential analyses is set to the minimum number of the two condition replicates
+* NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)
+* NEW: plot diagnostics for limma functions (eBayes moderation / SA plots)
+* NEW: limma functions now use `trend` and `robust` by default to better fit heteroscedastic DamID data
+* NEW: new function `extract_unique_sample_ids` generates simplifed, unique sample names from complex filenames for display (in diagnostic plots, IGV/Shiny browser)
+* CHANGED: dense point labelling function now uses exact `dbscan` kNN functions, not approximate HNSW functions
+* CHANGED: differential threshold filtering can now be set to non-zero values
+* CHANGED: default replicate filtering for differential analyses is set to the minimum number of the two condition replicates
 
 # damidBind 0.99.9
-*   FIXED: igvShiny code now correctly handles the new internal GRanges binding profile data objects
+* FIXED: igvShiny code now correctly handles the new internal GRanges binding profile data objects
 
 # damidBind 0.99.8
-*   Unicode removed from documentation to allow latex generation :/
+* Unicode removed from documentation to allow latex generation :/
 
 # damidBind 0.99.6
-*   NEW: Differential analyses now optionally screen out loci with negative signal in a specified number of replicates per sample (default is 2).  These loci are removed before differential analysis.
-*   NEW: Geneset universe calculations now take into account the low-signal screening; universe is determined only on the loci passing filter.
-*   NEW: Loci labels are optionally sampled to allow labels even in highly-dense plot regions.  Sampling algorithm determines a KNN graph from points, then uses this to select only a subset of total labelled points.  A default parameter is provided, but all algorithm parameters are fully customisable.
-*   NEW: Test conditions specified via the `cond` parameter can now use regexes, when `regex = TRUE` is set.
-*   CHANGED: Test conditions specified via `cond` now use a simple named vector, merging `cond` and `cond_names`.
-*   CHANGED: Improved and fixed underlying logic and tests to handle the `cond` parameter change
-*   CHANGED: Substantially improved legend guide handling parameters and logic for volcano plots
-*   FIXED: a number of minor bugfixes, code refactoring and tidying.
+* NEW: Differential analyses now optionally screen out loci with negative signal in a specified number of replicates per sample (default is 2).  These loci are removed before differential analysis.
+* NEW: Geneset universe calculations now take into account the low-signal screening; universe is determined only on the loci passing filter.
+* NEW: Loci labels are optionally sampled to allow labels even in highly-dense plot regions.  Sampling algorithm determines a KNN graph from points, then uses this to select only a subset of total labelled points.  A default parameter is provided, but all algorithm parameters are fully customisable.
+* NEW: Test conditions specified via the `cond` parameter can now use regexes, when `regex = TRUE` is set.
+* CHANGED: Test conditions specified via `cond` now use a simple named vector, merging `cond` and `cond_names`.
+* CHANGED: Improved and fixed underlying logic and tests to handle the `cond` parameter change
+* CHANGED: Substantially improved legend guide handling parameters and logic for volcano plots
+* FIXED: a number of minor bugfixes, code refactoring and tidying.
 
 # damidBind 0.99.4
-*   NEW: Added in FDR modelling and calculation routines for RNA Polymerase occupancy
-*   NEW: plot_volcano and plot_venn functions can now filter for FDR when plotting
-*   NEW: expressed() accessor method for obtaining all genes passing an FDR threshold for a specific condition
-*   CHANGED: binding profile data is now stored as a GRanges object
-*   CHANGED: analyse_go_terms now returns the clusterProfiler results object for downstream use
-*   Begun incorporating gseGO functionality into analyse_go_terms
-*   Improved documentation of DamIDResults class and accessors
-*   Added more details to the package vignette
-*   Many small bug fixes
+* NEW: Added in FDR modelling and calculation routines for RNA Polymerase occupancy
+* NEW: plot_volcano and plot_venn functions can now filter for FDR when plotting
+* NEW: expressed() accessor method for obtaining all genes passing an FDR threshold for a specific condition
+* CHANGED: binding profile data is now stored as a GRanges object
+* CHANGED: analyse_go_terms now returns the clusterProfiler results object for downstream use
+* Begun incorporating gseGO functionality into analyse_go_terms
+* Improved documentation of DamIDResults class and accessors
+* Added more details to the package vignette
+* Many small bug fixes
 
 # damidBind 0.99.2
-*   NEW: Added button in IGV viewer to save SVG (useful when viewing window is horizontally compressed and button in the IGV interface is not displayed)
-*   NEW: New legend customisation options for volcano plots (including a legend internal to the plot frame, now default)
-*   NEW: More GO term plot customisation options
-*   FIXED: All volcano plot point labels are now rendered as a single geom layer, preventing ugly overlaps
-*   Substantial internal refactoring
-*   Many small bug fixes
-*   Updated unit tests
+* NEW: Added button in IGV viewer to save SVG (useful when viewing window is horizontally compressed and button in the IGV interface is not displayed)
+* NEW: New legend customisation options for volcano plots (including a legend internal to the plot frame, now default)
+* NEW: More GO term plot customisation options
+* FIXED: All volcano plot point labels are now rendered as a single geom layer, preventing ugly overlaps
+* Substantial internal refactoring
+* Many small bug fixes
+* Updated unit tests
 
 # damidBind 0.99.0
-*   Initial submission to Bioconductor.
+* Initial submission to Bioconductor.

@@ -113,7 +113,6 @@ mock_occupancy <- data.frame(
 
 # Calculate pvals.
 # We use a low null_model_iterations for speed, and a seed for reproducibility.
-# BiocParallel::SerialParam() is used to ensure deterministic, single-core execution.
 occupancy_with_pvals <- calculate_and_add_occupancy_pvals(
     binding_data = binding_gr,
     occupancy_df = mock_occupancy,
