@@ -328,7 +328,8 @@ load_data_peaks <- function(
 #' loaded_data_genes <- load_data_genes(
 #'     binding_profiles_path = data_dir,
 #'     ensdb_genes = mock_genes_gr,
-#'     quantile_norm = FALSE
+#'     quantile_norm = FALSE,
+#'     calculate_occupancy_pvals = FALSE
 #' )
 #'
 #' # View the head of the occupancy table
@@ -358,7 +359,6 @@ load_data_genes <- function(
     binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
 
     # Drop samples if requested by the user.
-    # This must happen before normalisation.
     if (!is.null(drop_samples)) {
         temp_data_list <- list(binding_profiles_data = binding_profiles_data)
         filtered_data <- ._drop_input_samples(temp_data_list, drop_samples)
