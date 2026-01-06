@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -416,7 +416,7 @@
 <p>The sample dataset provided is a transcription factor binding dataset, with pre-called peaks. If analysing gene expression datasets via RNA Polymerase DamID and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>, the analysis pipeline is similar, with some exceptions:</p>
 <ol style="list-style-type: decimal">
 <li>No peaks are required. <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em> calculates signal occupancy over genes directly, and all downstream analyses are conducted on gene loci.</li>
-<li>Optional FDR calling via <code>load_data_genes(calculate_fdr = TRUE)</code>. <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em> can determine the FDR for enriched occupancy of RNA Polymerase over gene bodies, which we have previously shown to be a proxy for gene expression <span class="citation">(Southall <em>et al</em>, 2013; Marshall <em>et al</em>, 2016)</span>.</li>
+<li>Optional FDR calling via <code>load_data_genes(calculate_occupancy_pvals = TRUE)</code>. <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em> can determine the FDR for enriched occupancy of RNA Polymerase over gene bodies, which we have previously shown to be a proxy for gene expression <span class="citation">(Southall <em>et al</em>, 2013; Marshall <em>et al</em>, 2016)</span>.</li>
 <li>FDR values are not used for DEG analysis, but when present these can and should be used to filter the Venn and volcano plot outputs via the <code>fdr_filter_threshold</code> parameter, so that only genes deemed to be expressed are shown.</li>
 <li>The accessor method <code><a href="../reference/expressed.html">expressed()</a></code> provides a quick means to obtain the list of genes passing an FDR threshold for one of the analysed conditions.</li>
 </ol>
@@ -614,7 +614,7 @@ Figure 6.8: Enriched GO terms for genes associated with differential Bsh binding
 <li>
 <code>inputData(object)</code>: Returns a list containing the original input data used for the analysis.</li>
 <li>
-<code>expressed(object, condition, fdr = 0.05, which = "any")</code>: Returns a <code>data.frame</code> of genes considered expressed in ‘condition’, based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via <code>load_data_genes(calculate_fdr = TRUE)</code>.</li>
+<code>expressed(object, condition, fdr = 0.05, which = "any")</code>: Returns a <code>data.frame</code> of genes considered expressed in ‘condition’, based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via <code>load_data_genes(calculate_occupancy_pvals = TRUE)</code>.</li>
 </ul>
 </div>
 </div>
@@ -680,7 +680,7 @@ Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554
 <span><span class="co">##  [1] ensembldb_2.30.0        AnnotationFilter_1.30.0 GenomicFeatures_1.58.0 </span></span>
 <span><span class="co">##  [4] AnnotationDbi_1.68.0    Biobase_2.66.0          GenomicRanges_1.58.0   </span></span>
 <span><span class="co">##  [7] GenomeInfoDb_1.42.3     IRanges_2.40.1          S4Vectors_0.44.0       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.10       BiocStyle_2.34.0       </span></span>
+<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.12       BiocStyle_2.34.0       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##   [1] splines_4.4.0               later_1.4.4                </span></span>

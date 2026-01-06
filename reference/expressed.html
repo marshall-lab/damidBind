@@ -11,7 +11,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@
 
 <dl><dt id="arg-object">object<a class="anchor" aria-label="anchor" href="#arg-object"></a></dt>
 <dd><p>A <code>DamIDResults</code> object. This object must have been generated
-from data loaded with <code>load_data_genes(calculate_fdr = TRUE)</code> for the
+from data loaded with <code>load_data_genes(calculate_occupancy_pvals = TRUE)</code> for the
 underlying FDR columns to be present.</p></dd>
 
 
@@ -90,42 +90,46 @@ Defaults to 'any'.</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Helper function to create a sample DamIDResults object with FDR data</span></span></span>
-<span class="r-in"><span><span class="va">.generate_fdr_example_results</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">.generate_fdr_example_results</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>    <span class="va">occupancy_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>        gene_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"geneA"</span>, <span class="st">"geneB"</span>, <span class="st">"geneC"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        gene_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FBgn01"</span>, <span class="st">"FBgn02"</span>, <span class="st">"FBgn03"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        L4_rep1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.5</span>, <span class="fl">0.2</span>, <span class="fl">0.8</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        L4_rep2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.7</span>, <span class="fl">0.9</span>, <span class="fl">0.1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        L5_rep1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">2.0</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        L4_rep1_FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.01</span>, <span class="fl">0.10</span>, <span class="fl">0.04</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        L4_rep2_FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.03</span>, <span class="fl">0.02</span>, <span class="fl">0.50</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        L5_rep1_FDR <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.80</span>, <span class="fl">0.90</span>, <span class="fl">0.01</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"geneA"</span>, <span class="st">"geneB"</span>, <span class="st">"geneC"</span><span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="va">diff_results_base</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>occupancy <span class="op">=</span> <span class="va">occupancy_df</span>, test_category <span class="op">=</span> <span class="st">"expressed"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="va">diff_results_base</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        occupancy <span class="op">=</span> <span class="va">occupancy_df</span>,</span></span>
+<span class="r-in"><span>        test_category <span class="op">=</span> <span class="st">"expressed"</span>,</span></span>
+<span class="r-in"><span>        matched_samples <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"L4"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4_rep1"</span>, <span class="st">"L4_rep2"</span><span class="op">)</span>, <span class="st">"L5"</span> <span class="op">=</span> <span class="st">"L5_rep1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="fu">new</span><span class="op">(</span><span class="st">"DamIDResults"</span>,</span></span>
 <span class="r-in"><span>        analysis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">occupancy_df</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        upCond1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>, upCond2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>        cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 Neurons"</span> <span class="op">=</span> <span class="st">"L4"</span>, <span class="st">"L5 Neurons"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        upCond1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        upCond2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"L4 mock"</span> <span class="op">=</span> <span class="st">"L4"</span>, <span class="st">"L5 mock"</span> <span class="op">=</span> <span class="st">"L5"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>        data <span class="op">=</span> <span class="va">diff_results_base</span></span></span>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="va">mock_fdr_results</span> <span class="op">&lt;-</span> <span class="fu">.generate_fdr_example_results</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get genes expressed in L4 neurons (FDR &lt;= 0.05 in any replicate)</span></span></span>
-<span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L4 Neurons"</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 2 FDR columns for condition 'L4 Neurons': L4_rep1_FDR, L4_rep2_FDR</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 3 genes/loci passed the FDR &lt;= 0.05 filter for condition 'L4 Neurons' with rule 'any'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ min_fdr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneA     geneA  FBgn01     NaN    0.01</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneB     geneB  FBgn02     NaN    0.02</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03     NaN    0.04</span>
+<span class="r-in"><span><span class="co"># Get expressed in a condition (FDR &lt;= 0.05)</span></span></span>
+<span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L4 mock"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 3 genes passed the FDR filter using rule 'any'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ fdr_val</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneA     geneA  FBgn01    1.60    0.01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneB     geneB  FBgn02    0.55    0.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03    0.45    0.04</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Get genes expressed in L5 neurons with a stricter fdr</span></span></span>
-<span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L5"</span>, fdr <span class="op">=</span> <span class="fl">0.02</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Found 1 FDR columns for condition 'L5': L5_rep1_FDR</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 1 genes/loci passed the FDR &lt;= 0.02 filter for condition 'L5' with rule 'any'.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ min_fdr</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> geneC     geneC  FBgn03     NaN    0.01</span>
-<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Get genes expressed with a more stringent FDR (&lt;= 0.01)</span></span></span>
+<span class="r-in"><span><span class="fu">expressed</span><span class="op">(</span><span class="va">mock_fdr_results</span>, condition <span class="op">=</span> <span class="st">"L4"</span>, fdr <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 1 genes passed the FDR filter using rule 'any'.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       gene_name gene_id avg_occ fdr_val</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> geneA     geneA  FBgn01     1.6    0.01</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

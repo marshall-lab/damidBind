@@ -13,7 +13,7 @@ and associated metadata."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,7 @@ including the occupancy `data.frame` and other metadata.</p></dd>
 <li><p><code><a href="enrichedCond2.html">enrichedCond2</a>(object)</code>: Returns a <code>data.frame</code> of regions significantly enriched in the second condition.</p></li>
 <li><p><code><a href="conditionNames.html">conditionNames</a>(object)</code>: Returns a named <code>character</code> vector mapping display names to internal identifiers.</p></li>
 <li><p><code><a href="inputData.html">inputData</a>(object)</code>: Returns a <code>list</code> containing the original input data used for the analysis.</p></li>
-<li><p><code><a href="expressed.html">expressed</a>(object, condition, fdr = 0.05, which = "any")</code>: Returns a <code>data.frame</code> of genes considered expressed in `condition`, based on an FDR threshold of significantly enriched occupancy.  Only available for analyses with FDR calculations, generated via <code>load_data_genes(calculate_fdr = TRUE)</code>.</p></li>
+<li><p><code><a href="expressed.html">expressed</a>(object, condition, fdr = 0.05, which = "any")</code>: Returns a <code>data.frame</code> of genes considered expressed in `condition`, based on an FDR threshold of significantly enriched occupancy.  Only available for analyses with FDR calculations, generated via <code>load_data_genes(calculate_occupancy_pvals = TRUE)</code>.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="generic-methods">Generic Methods<a class="anchor" aria-label="anchor" href="#generic-methods"></a></h2>

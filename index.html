@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@
 <div class="page-header"><h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h1></div>
 <p>DamID is a highly-sensitive means to profile the genome-wide association of proteins with chromatin in living eukaryotic cells, without fixation or the use of antibodies. Cell-type specific techniques such as Targeted DamID to profile protein binding, and CATaDA to profile chromatin accessibility, have made the technique an extremely powerful tool to understand the binding of transcription factors, chromatin proteins, RNA polymerase and chromatin changes during development and disease.</p>
-<p>The <code>damidBind</code> package provides a simple formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either <code>limma</code> (for conventional log2 ratio DamID binding data) or <code>NOIseq</code> (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions.</p>
+<p>The <code>damidBind</code> package provides a straight-forward, statistically-robust formal analysis pipeline to analyse and explore differential DamID binding, gene transcription or chromatin accessibility between two conditions. The package imports processed data from DamID-seq experiments, in the form of binding bedgraphs and GFF peak calls. After optionally normalising data, combining peaks across replicates and determining per-replicate peak occupancy, the package links bound loci to nearby genes. It then uses either <code>limma</code> (for conventional log2 ratio DamID binding data) or <code>NOIseq</code> (for counts-based CATaDa chromatin accessibility data) to identify differentially-enriched regions between two conditions.</p>
 <p>The package provides a number of visualisation tools (volcano plots, gene ontology enrichment plots via <code>clusterProfiler</code> and proportional Venn diagrams via <code>BioVenn</code> for downstream data exploration and analysis. An powerful, interactive IGV genome browser interface (powered by <code>Shiny</code> and <code>igvShiny</code>) allows users to rapidly and intuitively assess significant differentially-bound regions in their genomic context.</p>
 <p>Although extensive customisation options are available if required, much of the data handling by <code>damidBind</code> is taken care of automatically, with sensible defaults assumed. To move from loading raw data to visualising differentially-enriched regions on a volcano plot or browsing enriched regions in an interactive IGV window is a simple three command procedure.</p>
 </div>

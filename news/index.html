@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,18 @@
       <small>Source: <a href="https://github.com/marshall-lab/damidBind/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.12" id="damidbind-09912">damidBind 0.99.12<a class="anchor" aria-label="anchor" href="#damidbind-09912"></a></h2>
+<ul><li>CHANGED: major rewrite of the occupancy FDR logic for gene expression status. Briefly:
+<ul><li>Model regression fits have been improved with weighted natural spline fits for Tier 2 regressions (relationship is not log-linear)</li>
+<li>Threshold scores for null model fitting are now determined from input data</li>
+<li>Diagnostic plots for Tier 2 regressions have been added</li>
+<li>Empirical p-values now aggregated on a condition level by default, using either Stouffer’s (default) or Fisher’s method</li>
+<li>Occupancy p-values are now calculated by default during data loading, and merged during <code><a href="../reference/differential_binding.html">differential_binding()</a></code>, before BH adjustment is applied to the aggregated p-values per condition. See the relevant man pages for more details.</li>
+</ul></li>
+<li>CHANGED: internal logic for handling condition names and matches</li>
+<li>FIXED: Venn diagram universe logic now correctly determines the expressed gene universe when handling RNA Polymerase datasets</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.10" id="damidbind-09910">damidBind 0.99.10<a class="anchor" aria-label="anchor" href="#damidbind-09910"></a></h2>
 <ul><li>NEW: plot diagnostics for sample loading (PCA, clustered correlation heatmap)</li>
