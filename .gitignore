@@ -19,3 +19,4 @@ Thumbs.db
 Rplots.pdf
 _pkgdown.yml
 *.html
+vignettes/damidBind_vignette.R
