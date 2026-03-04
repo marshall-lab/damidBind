@@ -1,3 +1,7 @@
+# damidBind 0.99.14
+* NEW: Added `average_tracks` option to `browse_igv_regions()`.  When `TRUE`, this feature displays averaged binding tracks per condition rather than replicates.
+* NEW: Added `export_data_archive` option to `browse_igv_regions()`.  When set to a valid file path, this parameter will export the tracks that would be displayed in the Shiny IGV window as bedGraph or BED files in a zip archive, instead of launching the Shiny app.  These files can be used to render final publication figures via external utilities such as `pyGenomeTracks` if desired.  This option can of course be combined with `average_tracks` above.
+
 # damidBind 0.99.12
 * CHANGED: major rewrite of the occupancy FDR logic for gene expression status.  Briefly:
     - Model regression fits have been improved with weighted natural spline fits for Tier 2 regressions (relationship is not log-linear)

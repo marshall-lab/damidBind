@@ -14,9 +14,6 @@ output:
     toc_float: true 
     number_sections: true
     self_contained: true
-  bookdown::html_document2:
-    fig_caption: yes
-    toc: true
 pkgdown:
   as_is: true
 bibliography: damidbind.bib
@@ -428,6 +425,12 @@ knitr::include_graphics(img_path)
 ```
 
 The table on the left side of the window can be sorted by clicking on the column headers, and clicking on any entry will move the IGV browser window to that locus (+/- a sensible buffer region). All sample reps are shown, together with the unified binding peaks and a simple pair of tracks that show the loci that are enriched in both conditions.
+
+The default display will show the individual replicate tracks.  In order to show the averaged binding per condition instead, set `average_tracks = TRUE`.
+
+While this web app will save high quality SVGs, if you wish to generate your own genome browser figures with another utility, calling `browse_igv_regions()` with `export_data_archive = "a/valid/filepath.zip"` will export all of the final processed data tracks (including unified peaks and enrichment tracks) as a zip file.  These can be loaded into any third party software, such as `pyGenomeTracks`.
+
+The `export_data_archive` parameter can be combined with `average_tracks = TRUE` to export averaged genome-wide binding tracks.
 
 ### Gene Ontology (GO) enrichment plots
 

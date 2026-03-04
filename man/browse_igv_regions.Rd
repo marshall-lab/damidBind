@@ -8,6 +8,8 @@ browse_igv_regions(
   diff_results,
   samples = NULL,
   use_unique_ids = TRUE,
+  average_tracks = FALSE,
+  export_data_archive = NULL,
   colour_cond1 = "#ff6600",
   colour_cond2 = "#2288dd",
   use_genome = NULL,
@@ -28,6 +30,13 @@ browse_igv_regions(
 \item{use_unique_ids}{Logical.  When `TRUE` (default), simplified unique sample names will be
 displayed.  Set as `FALSE` to use the full sample file names from loading.}
 
+\item{average_tracks}{Logical. If `TRUE`, displays the average signal for each
+condition instead of individual replicate tracks. (Default: `FALSE`)}
+
+\item{export_data_archive}{Character or NULL. If a filename is provided (e.g. "my_data"),
+the function exports all IGV tracks as a zip archive ("my_data.zip") and exits
+without launching the browser. (Default: NULL)}
+
 \item{colour_cond1, colour_cond2}{Colours for differentially-enriched region tracks.}
 
 \item{use_genome}{IGV genome name (inferred from peak annotations if not provided).}
@@ -45,7 +54,8 @@ displayed.  Set as `FALSE` to use the full sample file names from loading.}
 \item{port}{Port for connection (if NULL (default) the port is assigned by Shiny).}
 }
 \value{
-Invisibly returns the Shiny app object created by `shinyApp()`.
+Invisibly returns the Shiny app object if launching the browser, or the path
+  to the zip archive if exporting data.
 }
 \description{
 Launches a Shiny app with an embedded IGV browser and an interactive table listing
@@ -53,8 +63,12 @@ differentially-bound regions (from `differential_binding()` or `differential_acc
 Clicking on a region in the table will pan IGV to that locus. Sample coverage and region tracks are loaded as quantitative/annotation tracks.
 A dedicated "Save as SVG" button is provided to export the current IGV view.
 }
+\details{
+Alternatively, if `export_data_archive` is provided, the function will bypass the browser and
+save all tracks (including averaged tracks) as a zip archive of bedGraph and BED files.
+}
 \examples{
-\donttest{
+\dontrun{
 if (isTRUE(curl::has_internet()) && interactive()) {
 # This example launches an interactive Shiny app in a web browser
 
@@ -86,6 +100,9 @@ diff_results <- .generate_example_results()
 
 # Launch the interactive browser
 browse_igv_regions(diff_results)
+
+# Export data instead of launching browser
+browse_igv_regions(diff_results, export_data_archive = "L4_vs_L5_tracks")
 }
 }
 

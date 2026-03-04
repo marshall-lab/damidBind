@@ -21,11 +21,16 @@
 #' the main region table, peak data, and sample information.
 #' @param diff_results A `DamIDResults` object.
 #' @param samples Character vector of specific samples to include.
+#' @param average_tracks Logical. If `TRUE`, displays the average signal for each
+#'   condition instead of individual replicate tracks. (Default: `FALSE`)
+#' @export
 #' @return A list containing prepared data frames and vectors.
 #' @noRd
-.prepare_igv_data <- function(diff_results, samples) {
+.prepare_igv_data <- function(diff_results, samples, average_tracks = FALSE) {
     # Get custom condition names
-    cond_display_names <- names(conditionNames(diff_results))
+    cond_map <- conditionNames(diff_results)
+    cond_display_names <- names(cond_map)
+    cond_internal_ids <- as.character(cond_map)
 
     # Process binding profiles and peaks data if it exists
     binding_profiles_data <- inputData(diff_results)$binding_profiles_data
@@ -45,39 +50,73 @@
             rename(chr = "seqnames")
     }
 
-    # Determine which sample columns to use
-    all_sample_cols <- setdiff(names(binding_profiles_data), c("chr", "start", "end"))
-    use_samples <- if (is.null(samples)) all_sample_cols else intersect(as.character(samples), all_sample_cols)
-    if (length(use_samples) == 0) stop("None of the requested samples are present in the data.")
+    # Identify all available sample columns
+    all_raw_cols <- setdiff(names(binding_profiles_data), c("chr", "start", "end"))
 
-    # Start with the full analysis table, preserving its correct row names
+    if (isTRUE(average_tracks)) {
+        message("Averaging replicates for IGV display tracks...")
+        matched <- inputData(diff_results)$matched_samples
+        avg_sample_names <- character(0)
+
+        for (i in seq_along(matched)) {
+            internal_id <- names(matched)[i]
+            # These are the potentially hyphenated names from metadata
+            replicates_metadata <- matched[[i]]
+
+            # Apply make.names to match the sanitized dot format R uses for data frames
+            replicates_sanitised <- make.names(replicates_metadata)
+
+            # Map back to display name for the track label
+            display_idx <- which(cond_internal_ids == internal_id)
+            display_name <- if (length(display_idx) > 0) cond_display_names[display_idx] else internal_id
+
+            avg_name <- sprintf("%s (Avg)", display_name)
+
+            # Find which sanitised names exist in our data frame columns
+            valid_reps <- intersect(replicates_sanitised, all_raw_cols)
+
+            if (length(valid_reps) > 0) {
+                # Calculate row means using the matched column names
+                binding_profiles_data[[avg_name]] <- rowMeans(
+                    binding_profiles_data[, valid_reps, drop = FALSE],
+                    na.rm = TRUE
+                )
+                avg_sample_names <- c(avg_sample_names, avg_name)
+            } else {
+                # Diagnostic warning if the match still fails
+                warning(sprintf("Could not find columns for condition: %s", internal_id))
+            }
+        }
+        use_samples <- avg_sample_names
+    } else {
+        # Default behaviour for individual replicates
+        use_samples <- if (is.null(samples)) all_raw_cols else intersect(as.character(samples), all_raw_cols)
+    }
+
+    if (length(use_samples) == 0) {
+        stop("None of the requested samples or averaged conditions are present in the data.")
+    }
+
+    # Prepare navigation table
     occ_tab <- analysisTable(diff_results)
-
-    # Use the original row names as the definitive region identifier
     occ_tab$region_name <- rownames(occ_tab)
 
-    # Parse coordinates from the region name.
+    # Parse coordinates for IGV
     base_region_name <- sub("\\.\\d+$", "", occ_tab$region_name)
     matches <- str_match(base_region_name, "^(.*?):(\\d+)-(\\d+)")
-
-    # Add coordinate columns, which will be NA if parsing fails for any reason
     occ_tab$chr <- matches[, 2]
     occ_tab$start <- as.integer(matches[, 3])
     occ_tab$end <- as.integer(matches[, 4])
 
-    # Get row names of significantly regulated regions
+    # Filter to significant rows
     up_rows <- rownames(enrichedCond1(diff_results))
     down_rows <- rownames(enrichedCond2(diff_results))
-
-    # Filter `occ_tab` to create the final table for the interactive display.
-    # Subsetting is done on the row names, which are guaranteed to match.
     region_tab <- occ_tab[rownames(occ_tab) %in% c(up_rows, down_rows), , drop = FALSE]
 
     if (nrow(region_tab) == 0) {
         stop("No differentially bound regions found to display.")
     }
 
-    # Assign the 'enriched' status based on which significant list the region belongs to
     region_tab$enriched <- ifelse(
         rownames(region_tab) %in% up_rows,
         cond_display_names[1],
@@ -92,6 +131,7 @@
         cond_display_names = cond_display_names
     )
 }
+
 
 
 #' Configure IGV and Shiny options helper function
@@ -176,10 +216,10 @@
 #' BED, bedGraph, and annotation tracks into the IGV browser.
 #' @param session The Shiny server session object.
 #' @param prepped_data,track_scales,colours,trackheight Data and configuration objects.
-#' @param use_unique_ids When `TRUE`, use simplified unique sample names for display
+#' @param peakCol,trackCol Colours for tracks.
 #' @return `NULL` invisibly
 #' @noRd
-.load_igv_tracks <- function(session, prepped_data, track_scales, colours, trackheight, peakCol, trackCol, use_unique_ids = TRUE) {
+.load_igv_tracks <- function(session, prepped_data, track_scales, colours, trackheight, peakCol, trackCol) {
     message("IGV browser initialized. Loading tracks...")
     preptbl <- function(tbl) { # A small helper to ensure 'chr' column exists
         if ("seqnames" %in% names(tbl)) tbl <- rename(tbl, chr = "seqnames")
@@ -196,14 +236,8 @@
         message(" - Added 'Binding peaks' track")
     }
 
-    # Generate display names
-    sample_names <- prepped_data$use_samples
-
-    sample_display_names <-  if (isTRUE(use_unique_ids))
-        extract_unique_sample_ids(sample_names) else
-            sample_names
-
-    names(sample_display_names) <- sample_names
+    # Use the display names prepared upstream in browse_igv_regions
+    sample_display_names <- prepped_data$sample_display_names
 
     # Add sample quantitative tracks
     for (sample in prepped_data$use_samples) {
@@ -216,11 +250,7 @@
                           min = track_scales$bp_min, max = track_scales$bp_max,
                           trackHeight = trackheight, trackName = display_name, color = trackCol
         )
-
-        unique_name_info <- if (isTRUE(use_unique_ids))
-            sprintf(" (displayed as %s)", display_name) else
-                ""
-        message(sprintf(" - Added sample track: %s%s", sample, unique_name_info))
+        message(sprintf(" - Added track: %s", display_name))
     }
 
     # Add differentially-enriched region tracks
@@ -252,10 +282,10 @@
 #' @description This internal function creates the server function for the Shiny
 #' app, defining reactive outputs and event observers.
 #' @param prepped_data,shiny_configs,colours,padding_width,trackheight Data and config objects.
-#' @param use_unique_ids When `TRUE`, use simplified unique sample names for display
+#' @param peakCol,trackCol Colours for tracks.
 #' @return A Shiny server function.
 #' @noRd
-.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width, trackheight, peakCol, trackCol, use_unique_ids = TRUE) {
+.define_igv_shiny_server <- function(prepped_data, shiny_configs, colours, padding_width, trackheight, peakCol, trackCol) {
     server_func <- function(input, output, session) {
         output$igv <- renderIgvShiny({
             igvShiny(shiny_configs$igv_options)
@@ -263,7 +293,15 @@
 
         observeEvent(input$igvReady,
                      {
-                         .load_igv_tracks(session, prepped_data, shiny_configs$track_scales, colours, trackheight, peakCol, trackCol, use_unique_ids = use_unique_ids)
+                         .load_igv_tracks(
+                             session,
+                             prepped_data,
+                             shiny_configs$track_scales,
+                             colours,
+                             trackheight,
+                             peakCol,
+                             trackCol
+                         )
                      },
                      once = TRUE
         )
@@ -302,11 +340,19 @@
 #' Clicking on a region in the table will pan IGV to that locus. Sample coverage and region tracks are loaded as quantitative/annotation tracks.
 #' A dedicated "Save as SVG" button is provided to export the current IGV view.
 #'
+#' Alternatively, if `export_data_archive` is provided, the function will bypass the browser and
+#' save all tracks (including averaged tracks) as a zip archive of bedGraph and BED files.
+#'
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
 #' @param samples Optional character vector of sample names to display (default: all in dataset).
 #' @param use_unique_ids Logical.  When `TRUE` (default), simplified unique sample names will be
 #'   displayed.  Set as `FALSE` to use the full sample file names from loading.
+#' @param average_tracks Logical. If `TRUE`, displays the average signal for each
+#'   condition instead of individual replicate tracks. (Default: `FALSE`)
+#' @param export_data_archive Character or NULL. If a filename is provided (e.g. "my_data"),
+#'   the function exports all IGV tracks as a zip archive ("my_data.zip") and exits
+#'   without launching the browser. (Default: NULL)
 #' @param colour_cond1,colour_cond2  Colours for differentially-enriched region tracks.
 #' @param use_genome IGV genome name (inferred from peak annotations if not provided).
 #' @param padding_width Width to pad browser viewbox on either side of the peak (Default: 20000)
@@ -316,10 +362,11 @@
 #' @param host Hostname for the server location (Default: "localhost").
 #' @param port Port for connection (if NULL (default) the port is assigned by Shiny).
 #'
-#' @return Invisibly returns the Shiny app object created by `shinyApp()`.
+#' @return Invisibly returns the Shiny app object if launching the browser, or the path
+#'   to the zip archive if exporting data.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' if (isTRUE(curl::has_internet()) && interactive()) {
 #' # This example launches an interactive Shiny app in a web browser
 #'
@@ -351,6 +398,9 @@
 #'
 #' # Launch the interactive browser
 #' browse_igv_regions(diff_results)
+#'
+#' # Export data instead of launching browser
+#' browse_igv_regions(diff_results, export_data_archive = "L4_vs_L5_tracks")
 #' }
 #' }
 #'
@@ -359,6 +409,8 @@ browse_igv_regions <- function(
         diff_results,
         samples = NULL,
         use_unique_ids = TRUE,
+        average_tracks = FALSE,
+        export_data_archive = NULL,
         colour_cond1 = "#ff6600",
         colour_cond2 = "#2288dd",
         use_genome = NULL,
@@ -371,10 +423,29 @@ browse_igv_regions <- function(
 
     # Validate inputs and dependencies
     stopifnot(is(diff_results, "DamIDResults"))
-    .check_igv_dependencies()
+
+    # Dependencies only needed for browser mode
+    if (is.null(export_data_archive)) {
+        .check_igv_dependencies()
+    }
 
     # Prepare data structures
-    prepped_data <- .prepare_igv_data(diff_results, samples)
+    prepped_data <- .prepare_igv_data(diff_results, samples, average_tracks = average_tracks)
+
+    # Determine unique sample display names for tracks
+    sample_names <- prepped_data$use_samples
+    sample_display_names <- if (isTRUE(use_unique_ids) && !isTRUE(average_tracks)) {
+        extract_unique_sample_ids(sample_names)
+    } else {
+        sample_names
+    }
+    prepped_data$sample_display_names <- stats::setNames(sample_display_names, sample_names)
+
+    # Handle data export if requested
+    if (!is.null(export_data_archive)) {
+        archive_path <- ._export_igv_data_to_zip(prepped_data, export_data_archive)
+        return(invisible(archive_path))
+    }
 
     # Determine IGV genome name from peak object, or use argument, or fallback to Drosophila dm6 by default
     final_genome <- use_genome
@@ -404,8 +475,7 @@ browse_igv_regions <- function(
         padding_width = padding_width,
         trackheight = trackHeight,
         peakCol = peakColour,
-        trackCol = trackColour,
-        use_unique_ids = use_unique_ids
+        trackCol = trackColour
     )
 
     # Create and run the Shiny app
@@ -416,4 +486,126 @@ browse_igv_regions <- function(
     )
 
     invisible(runApp(igvShinyApp, launch.browser = TRUE))
+}
+
+
+#' Export processed IGV tracks to a zip archive
+#' @description Internal helper that writes dataframes to disk as BED and bedGraph
+#'   files before zipping them.
+#' @param prepped_data List. The result of `.prepare_igv_data`.
+#' @param filename Character. The base name or path of the zip archive.
+#' @return Character. Path to the created zip file.
+#' @noRd
+._export_igv_data_to_zip <- function(prepped_data, filename) {
+    message("Exporting IGV tracks to zip archive...")
+
+    # Check if system zip is available
+    if (Sys.which("zip") == "" && .Platform$OS.type == "unix") {
+        stop("The 'zip' utility is not found on your system PATH. Please install zip or use a different environment.")
+    }
+
+    # Ensure filename has .zip extension
+    if (!grepl("\\.zip$", filename, ignore.case = TRUE)) {
+        filename <- paste0(filename, ".zip")
+    }
+
+    # Resolve the absolute destination path immediately
+    # This prevents path doubling when we later change working directories
+    wd_orig <- getwd()
+    zip_path <- if (fs::is_absolute_path(filename)) {
+        filename
+    } else {
+        file.path(wd_orig, filename)
+    }
+
+    # Verify that the destination directory exists
+    dest_dir <- dirname(zip_path)
+    if (!dir.exists(dest_dir)) {
+        stop(sprintf("Destination directory does not exist: %s", dest_dir))
+    }
+
+    # Create a staging directory in temp
+    temp_dir <- file.path(tempdir(), paste0("damidBind_export_", round(as.numeric(Sys.time()))))
+    if (!dir.create(temp_dir, recursive = TRUE, showWarnings = FALSE)) {
+        stop("Failed to create temporary staging directory for export.")
+    }
+
+    # Helper to write bedGraph with 0-based start
+    write_bg <- function(df, val_col, out_name) {
+        out_df <- df[, c("chr", "start", "end", val_col)]
+        # Convert 1-based start to 0-based for bedGraph format
+        out_df$start <- out_df$start - 1
+
+        write.table(
+            out_df,
+            file = out_name,
+            sep = "\t",
+            quote = FALSE,
+            row.names = FALSE,
+            col.names = FALSE
+        )
+    }
+
+    exported_files <- character(0)
+
+    # Export binding peaks
+    if (!is.null(prepped_data$peaks_bed)) {
+        peak_file <- file.path(temp_dir, "unified_binding_peaks.bed")
+        peak_out <- prepped_data$peaks_bed
+        peak_out$start <- peak_out$start - 1
+        write.table(peak_out, file = peak_file, sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
+        exported_files <- c(exported_files, "unified_binding_peaks.bed")
+    }
+
+    # Export profile tracks
+    for (sample in names(prepped_data$sample_display_names)) {
+        disp_name <- prepped_data$sample_display_names[[sample]]
+        # Sanitise label for filename
+        safe_name <- make.names(disp_name)
+        bg_filename <- paste0("track_signal_", safe_name, ".bedGraph")
+        bg_full_path <- file.path(temp_dir, bg_filename)
+
+        write_bg(prepped_data$binding_profiles_data, sample, bg_full_path)
+        exported_files <- c(exported_files, bg_filename)
+    }
+
+    # Export enrichment tracks
+    cond1_name <- prepped_data$cond_display_names[1]
+    cond2_name <- prepped_data$cond_display_names[2]
+    upCond1_df <- prepped_data$region_tab[prepped_data$region_tab$enriched == cond1_name, ]
+    upCond2_df <- prepped_data$region_tab[prepped_data$region_tab$enriched == cond2_name, ]
+
+    if (nrow(upCond1_df) > 0) {
+        enr1_filename <- paste0("enrichment_", make.names(cond1_name), ".bedGraph")
+        write_bg(upCond1_df, "logFC", file.path(temp_dir, enr1_filename))
+        exported_files <- c(exported_files, enr1_filename)
+    }
+
+    if (nrow(upCond2_df) > 0) {
+        enr2_filename <- paste0("enrichment_", make.names(cond2_name), ".bedGraph")
+        write_bg(upCond2_df, "logFC", file.path(temp_dir, enr2_filename))
+        exported_files <- c(exported_files, enr2_filename)
+    }
+
+    # Run zip command from within the temp directory
+    # This ensures paths inside the zip archive are flat
+    on.exit(setwd(wd_orig))
+    setwd(temp_dir)
+
+    # Capture success status
+    zip_status <- utils::zip(zip_path, files = exported_files)
+
+    # Revert to original directory before checking existence or reporting success
+    setwd(wd_orig)
+
+    if (zip_status != 0) {
+        stop(sprintf("Zip command failed with exit code %d. Check if the output path is writable.", zip_status))
+    }
+
+    if (!file.exists(zip_path)) {
+        stop("Zip archive was not found after export command. Check system permissions.")
+    }
+
+    message(sprintf("Successfully exported %d tracks to %s", length(exported_files), zip_path))
+    return(zip_path)
 }
