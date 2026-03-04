@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -573,6 +573,9 @@ Figure 6.7: The interactive IGV browser window. The interface allows for rapid e
 </p>
 </div>
 <p>The table on the left side of the window can be sorted by clicking on the column headers, and clicking on any entry will move the IGV browser window to that locus (+/- a sensible buffer region). All sample reps are shown, together with the unified binding peaks and a simple pair of tracks that show the loci that are enriched in both conditions.</p>
+<p>The default display will show the individual replicate tracks. In order to show the averaged binding per condition instead, set <code>average_tracks = TRUE</code>.</p>
+<p>While this web app will save high quality SVGs, if you wish to generate your own genome browser figures with another utility, calling <code><a href="../reference/browse_igv_regions.html">browse_igv_regions()</a></code> with <code>export_data_archive = "a/valid/filepath.zip"</code> will export all of the final processed data tracks (including unified peaks and enrichment tracks) as a zip file. These can be loaded into any third party software, such as <code>pyGenomeTracks</code>.</p>
+<p>The <code>export_data_archive</code> parameter can be combined with <code>average_tracks = TRUE</code> to export averaged genome-wide binding tracks.</p>
 </div>
 <div class="section level4" number="6.4.4">
 <h4 id="gene-ontology-go-enrichment-plots">
@@ -680,7 +683,7 @@ Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554
 <span><span class="co">##  [1] ensembldb_2.30.0        AnnotationFilter_1.30.0 GenomicFeatures_1.58.0 </span></span>
 <span><span class="co">##  [4] AnnotationDbi_1.68.0    Biobase_2.66.0          GenomicRanges_1.58.0   </span></span>
 <span><span class="co">##  [7] GenomeInfoDb_1.42.3     IRanges_2.40.1          S4Vectors_0.44.0       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.12       BiocStyle_2.34.0       </span></span>
+<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.14       BiocStyle_2.34.0       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##   [1] splines_4.4.0               later_1.4.4                </span></span>

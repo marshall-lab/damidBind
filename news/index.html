@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,11 @@
       <small>Source: <a href="https://github.com/marshall-lab/damidBind/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.99.14" id="damidbind-09914">damidBind 0.99.14<a class="anchor" aria-label="anchor" href="#damidbind-09914"></a></h2>
+<ul><li>NEW: Added <code>average_tracks</code> option to <code><a href="../reference/browse_igv_regions.html">browse_igv_regions()</a></code>. When <code>TRUE</code>, this feature displays averaged binding tracks per condition rather than replicates.</li>
+<li>NEW: Added <code>export_data_archive</code> option to <code><a href="../reference/browse_igv_regions.html">browse_igv_regions()</a></code>. When set to a valid file path, this parameter will export the tracks that would be displayed in the Shiny IGV window as bedGraph or BED files in a zip archive, instead of launching the Shiny app. These files can be used to render final publication figures via external utilities such as <code>pyGenomeTracks</code> if desired. This option can of course be combined with <code>average_tracks</code> above.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.12" id="damidbind-09912">damidBind 0.99.12<a class="anchor" aria-label="anchor" href="#damidbind-09912"></a></h2>
 <ul><li>CHANGED: major rewrite of the occupancy FDR logic for gene expression status. Briefly:

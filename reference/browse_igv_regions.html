@@ -13,7 +13,7 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.'></
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.12</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,6 +56,8 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <span>  <span class="va">diff_results</span>,</span>
 <span>  samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  use_unique_ids <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  average_tracks <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  export_data_archive <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  colour_cond1 <span class="op">=</span> <span class="st">"#ff6600"</span>,</span>
 <span>  colour_cond2 <span class="op">=</span> <span class="st">"#2288dd"</span>,</span>
 <span>  use_genome <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -84,6 +86,17 @@ A dedicated "Save as SVG" button is provided to export the current IGV view.</p>
 <dt id="arg-use-unique-ids">use_unique_ids<a class="anchor" aria-label="anchor" href="#arg-use-unique-ids"></a></dt>
 <dd><p>Logical.  When `TRUE` (default), simplified unique sample names will be
 displayed.  Set as `FALSE` to use the full sample file names from loading.</p></dd>
+
+
+<dt id="arg-average-tracks">average_tracks<a class="anchor" aria-label="anchor" href="#arg-average-tracks"></a></dt>
+<dd><p>Logical. If `TRUE`, displays the average signal for each
+condition instead of individual replicate tracks. (Default: `FALSE`)</p></dd>
+
+
+<dt id="arg-export-data-archive">export_data_archive<a class="anchor" aria-label="anchor" href="#arg-export-data-archive"></a></dt>
+<dd><p>Character or NULL. If a filename is provided (e.g. "my_data"),
+the function exports all IGV tracks as a zip archive ("my_data.zip") and exits
+without launching the browser. (Default: NULL)</p></dd>
 
 
 <dt id="arg-colour-cond-colour-cond-">colour_cond1, colour_cond2<a class="anchor" aria-label="anchor" href="#arg-colour-cond-colour-cond-"></a></dt>
@@ -120,7 +133,13 @@ displayed.  Set as `FALSE` to use the full sample file names from loading.</p></
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Invisibly returns the Shiny app object created by `shinyApp()`.</p>
+    <p>Invisibly returns the Shiny app object if launching the browser, or the path
+  to the zip archive if exporting data.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Alternatively, if `export_data_archive` is provided, the function will bypass the browser and
+save all tracks (including averaged tracks) as a zip archive of bedGraph and BED files.</p>
     </div>
 
     <div class="section level2">
@@ -157,6 +176,9 @@ displayed.  Set as `FALSE` to use the full sample file names from loading.</p></
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Launch the interactive browser</span></span></span>
 <span class="r-in"><span><span class="fu">browse_igv_regions</span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Export data instead of launching browser</span></span></span>
+<span class="r-in"><span><span class="fu">browse_igv_regions</span><span class="op">(</span><span class="va">diff_results</span>, export_data_archive <span class="op">=</span> <span class="st">"L4_vs_L5_tracks"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
