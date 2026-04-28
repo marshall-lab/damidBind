@@ -1,7 +1,7 @@
 Package: damidBind
 Type: Package
 Title: Differential Binding and Expression Analysis for DamID-seq Data
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: 
     person("Owen", "Marshall", 
     email = "owen.marshall@utas.edu.au", 
