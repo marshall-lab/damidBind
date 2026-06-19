@@ -6,7 +6,9 @@
 \usage{
 plot_volcano(
   diff_results,
+  labels = "all",
   fdr_filter_threshold = NULL,
+  highlight_by = c("auto", "gene_name", "id"),
   plot_config = list(),
   label_config = list(),
   highlight = NULL,
@@ -19,6 +21,19 @@ plot_volcano(
 \item{diff_results}{A `DamIDResults` object, as returned by
 `differential_binding()` or `differential_accessibility()`.}
 
+\item{labels}{Character; one of `"all"`, `"highlight"`, or a character vector
+containing one or more group names from the `highlight` list.
+\itemize{
+  \item \code{"all"} (default): Labels both the general significant loci
+    (based on \code{label_config}) and any highlight groups where
+    \code{label = TRUE} is set in \code{highlight_config}.
+  \item \code{"highlight"}: Labels all loci in the \code{highlight} list,
+    ignoring \code{label_config} and the \code{label} toggle in
+    \code{highlight_config}.
+  \item \code{vector of group names}: Labels only the specified groups
+    from the \code{highlight} list.
+}}
+
 \item{fdr_filter_threshold}{Numeric or NULL. If a value (e.g., 0.05) is provided,
 the volcano plot will only include loci that have an FDR value less than or
 equal to this threshold in at least one replicate of the two conditions
@@ -26,6 +41,12 @@ being plotted. This requires that the data was loaded using
 `load_data_genes` with `calculate_occupancy_pvals = TRUE`, which generates the
 necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
 performed.}
+
+\item{highlight_by}{Character; either `"auto"`, `"gene_name"`, or `"id"`.
+Determines whether to use gene names (`"gene_name"`) or locus (`"id"`) for
+the highlight search. In `"auto"` mode (default), the function checks for
+matches in both columns and selects the one with the best coverage for each
+highlight group.}
 
 \item{plot_config}{List. Names to override plot details (title, axes, size,
 colours, etc); see details.
@@ -105,7 +126,7 @@ NULL.
 
 \item{save}{List or `NULL`. Controls saving the plot to a file.
 If `NULL`, `FALSE`, or `0`, the plot is not saved.
-If a `list`, it specifies saving parameters:
+If a \code{list}, it specifies saving parameters:
 \itemize{
   \item \code{filename} (character): The path and base name for the output file
     (e.g., "my_volcano_plot"). If not specified, a default is used.
@@ -154,5 +175,13 @@ diff_results <- .generate_example_results()
 
 # Generate a default volcano plot
 plot_volcano(diff_results)
+
+# Explicitly highlight a specific locus coordinate
+plot_volcano(diff_results, highlight = list("My Peak" = "2L:1000-1500"))
+
+# Label only specific highlight groups
+plot_volcano(diff_results,
+             highlight = list("Set A" = c("ap", "side"), "Set B" = "mav"),
+             labels = "Set A")
 
 }

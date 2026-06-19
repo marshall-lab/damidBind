@@ -35,6 +35,8 @@ List with:
   \item{genome_build}{Character. Genome build identifier.}
   \item{species}{Character. Latin binomial species name.}
   \item{common_name}{Character. Species common name.}
+  \item{ah_id}{Character. The unique AnnotationHub identifier (e.g., "AH113672").}
+  \item{ah_snapshot}{Date. The snapshot date of the AnnotationHub instance.}
 }
 \description{
 Retrieves gene information for a given organism from the most appropriate

@@ -43,7 +43,7 @@ Invisibly returns `NULL`. This function is called to
 }
 \description{
 This diagnostic function is a wrapper around the internal
-`._plot_limma_diagnostics_internal()` funtion, to help assess whether the
+`._plot_limma_diagnostics_internal()` function, to help assess whether the
 assumptions of the `limma` empirical Bayes framework hold for a given dataset.
 It generates a series of plots to check for normality of residuals, homoscedasticity,
 and the mean-variance relationship, illustrating in particular the effect of

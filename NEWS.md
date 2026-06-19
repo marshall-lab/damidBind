@@ -1,3 +1,16 @@
+# damidBind 1.1.1
+* NEW: Added additional diagnostic plots (mostly used to generate supplementary figures in the damidBind manuscript): `plot_catada_mean_variance()` and `test_weighting_vs_bias_artifact()`
+* NEW: `load_data_peaks()` and `load_data_genes()` now support multiple normalisation options: quantile normalisation ("quantile"), cyclic LOESS norm ("loess"), and RPM (reads per million) norm ("rpm".  The default is "none" (no normalisation).
+* NEW: a `pre_scale` option has been added to both `load_data_peaks()` and `load_data_genes()`, which will perform zero-preserving (uncentred) scaling (via base R `scale(center=FALSE, scale=TRUE)`) prior to normalisation.  The default is FALSE.
+* NEW: all input metadata and genome annotation metadata are saved in the `DamIDResults` S4 object.  Basic metadata are displayed with the default `show()` method, and all are accessible via the `metadata()` accessor.
+* NEW: `plot_volcano()` now takes a new `labels` option, values of `"all"`, `"highlight"`, or a character vector containing one or more group names from the `highlight` list.  Only this group will be labelled on the plot.  The original label configuration options still remain.
+* NEW: `plot_volcano()` supports highlight groups of either loci or gene names, including different categories in the same plot.  The default "auto" behaviour matches a highlight group against whichever definition has the most matches, but use the new `highlight_by` option to enforce matching by either "gene_name" or "id" (i.e. locus).
+* CHANGED: deprecated the `quantile_norm` option for `load_data_peaks()` and `load_data_genes()`.
+* Added a citation to the current bioRxiv preprint on damidBind
+
+# damidBind 1.0.0
+* damidBind was automatically bumped to version 1.0.0 via Biocondutor release 3.23.
+
 # damidBind 0.99.14
 * NEW: Added `average_tracks` option to `browse_igv_regions()`.  When `TRUE`, this feature displays averaged binding tracks per condition rather than replicates.
 * NEW: Added `export_data_archive` option to `browse_igv_regions()`.  When set to a valid file path, this parameter will export the tracks that would be displayed in the Shiny IGV window as bedGraph or BED files in a zip archive, instead of launching the Shiny app.  These files can be used to render final publication figures via external utilities such as `pyGenomeTracks` if desired.  This option can of course be combined with `average_tracks` above.
