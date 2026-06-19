@@ -2,7 +2,7 @@
 #'
 #' @description
 #' This diagnostic function is a wrapper around the internal
-#' `._plot_limma_diagnostics_internal()` funtion, to help assess whether the
+#' `._plot_limma_diagnostics_internal()` function, to help assess whether the
 #' assumptions of the `limma` empirical Bayes framework hold for a given dataset.
 #' It generates a series of plots to check for normality of residuals, homoscedasticity,
 #' and the mean-variance relationship, illustrating in particular the effect of
@@ -161,8 +161,8 @@ plot_limma_diagnostics <- function(data_list,
         ggplot2::geom_point(alpha = 0.05, shape = 20) +
         ggplot2::geom_hline(yintercept = 0, colour = "red", linetype = "dashed") +
         ggplot2::labs(
-            title = "Homoscedasticity",
-            x = "Fitted Values (Average Occupancy)",
+            title = "Residuals vs Fitted",
+            x = "Fitted values (average occupancy)",
             y = "Residuals"
         ) +
         ggplot2::theme_bw()
@@ -225,7 +225,7 @@ plot_limma_diagnostics <- function(data_list,
 ggPlotSA <- function(
         fit,
         main = "Mean-variance trend (SA plot)",
-        xlab = "Average log-expression",
+        xlab = "Average log2 occupancy",
         ylab = expression(sqrt(sigma)), # Use expression for nice sigma symbol
         point_size = 0.5,
         point_alpha = 0.2,
@@ -287,7 +287,7 @@ ggPlotSA <- function(
 
     # Add trend Line
     if (length(fit$s2.prior) == 1L) {
-        # trend=FALSE -- add a horizontal line for the common prior
+        # trend=FALSE: add a horizontal line for the common prior
         # The s2.prior is the prior variance, so sqrt(sigma) is sqrt(sqrt())
         p <- p + geom_hline(yintercept = sqrt(sqrt(fit$s2.prior)), color = trend_col, linewidth = 1)
 
@@ -745,8 +745,7 @@ plot_occupancy_diagnostics <- function(model_params_df, fdr_models, fdr_matrix=N
         ) +
         ggplot2::theme_bw()
 
-    # Layout using a 2x2 grid for better legibility
-    final_plot <- (p_slope + p_int + p_mse) + # + p_wls) +
+    final_plot <- (p_slope + p_int + p_mse) +
         patchwork::plot_annotation(
             title = "Occupancy model diagnostics",
             subtitle = sample_name,
@@ -757,151 +756,515 @@ plot_occupancy_diagnostics <- function(model_params_df, fdr_models, fdr_matrix=N
     invisible(NULL)
 }
 
-
-
-#' @title Plot Occupancy model diagnostics (detailed)
+#' Plot mean-variance relationship for CATaDa results
 #'
 #' @description
-#' Generates diagnostic plots for the non-linear regression models used in occupancy
-#' estimation to assess model fit and the appropriateness of the WLS approach.
-#' This verison includes Tier 1 fits showing the log-linear regression of empirical
-#' probabilities against occupancy thresholds for each fragment count.
+#' This diagnostic function assesses whether CATaDa occupancy signal follows
+#' the theoretical mean-variance relationship assumed by Negative Binomial
+#' models. It is only applicable to objects generated via the
+#' `differential_accessibility()` function.
 #'
-#' @param model_params_df Dataframe. The parameters extracted from first-level simulations.
-#' @param fdr_models List. The WLS models for slope, intercept, and MSE.
-#' @param fdr_matrix Matrix. The empirical probabilities from the first level.
-#' @param threshold_samples Numeric vector. The occupancy thresholds used in simulations.
-#' @param sample_name Character. The name of the sample being visualised.
+#' @param diff_results A DamIDResults object.
 #'
-#' @return Invisibly returns NULL.
+#' @return A ggplot object.
 #'
-#' @noRd
-plot_occupancy_diagnostics_detailed <- function(model_params_df, fdr_models, fdr_matrix, threshold_samples, sample_name) {
+#' @export
+plot_catada_mean_variance <- function(diff_results) {
+    # Validate input class
+    if (!is(diff_results, "DamIDResults")) {
+        stop("Input 'diff_results' must be a DamIDResults S4 object.")
+    }
 
-    # Create a sequence of fragment counts for smooth trend lines for Tier 2
-    frag_seq <- seq(
-        min(model_params_df$fragment_count),
-        max(model_params_df$fragment_count),
-        length.out = 200
-    )
+    # Extract metadata
+    cond_map <- conditionNames(diff_results)
+    data_list <- inputData(diff_results)
+    category <- data_list$test_category
 
-    # Prepare Tier 2 prediction data frame
-    trend_df <- data.frame(fragment_count = frag_seq)
-    trend_df$log_f <- log(trend_df$fragment_count)
+    # Only allow execution for CATaDa data (not valid for log2 ratio data)
+    if (is.null(category) || category != "accessible") {
+        stop(sprintf(
+            "This plot is only relevant for CATaDa accessibility data (test_category: 'accessible'). Current category is '%s'.",
+            if (is.null(category)) "NULL" else category
+        ))
+    }
 
-    trend_df$slope_pred <- stats::predict(fdr_models$slope_model, newdata = trend_df)
-    trend_df$int_pred <- stats::predict(fdr_models$intercept_model, newdata = trend_df)
-    trend_df$mse_pred <- stats::predict(fdr_models$mse_model, newdata = trend_df)
+    # Extract coordinates and columns
+    occ_df <- data_list$occupancy
+    matched_list <- data_list$matched_samples
+    analysis_loci <- rownames(analysisTable(diff_results))
 
-    # Tier 2: Slope fit plot
-    p_slope <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$slope)) +
-        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_slope), alpha = 0.5, colour = "#333399") +
-        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$slope_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
-        ggplot2::labs(title = "Slope (Tier 2)", x = "Fragment Count", y = "Slope") +
-        ggplot2::theme_bw() +
-        ggplot2::theme(legend.position = "none")
+    if (is.null(occ_df)) {
+        stop("The results object does not contain the required occupancy data.")
+    }
 
-    # Tier 2: Intercept fit plot
-    p_int <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$intercept)) +
-        ggplot2::geom_point(ggplot2::aes(size = 1 / .data$se_int), alpha = 0.5, colour = "#226622") +
-        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$int_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
-        ggplot2::labs(title = "Intercept (Tier 2)", x = "Fragment Count", y = "Intercept") +
-        ggplot2::theme_bw() +
-        ggplot2::theme(legend.position = "none")
+    # Restrict to the set of loci used in the final analysis
+    occ_df <- occ_df[analysis_loci, , drop = FALSE]
 
-    # Tier 2: MSE fit plot
-    p_mse <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$mse)) +
-        ggplot2::geom_point(alpha = 0.5, colour = "#996633") +
-        ggplot2::geom_line(data = trend_df, ggplot2::aes(y = .data$mse_pred), colour = "#CC0000", linewidth = 0.8, alpha = 0.6) +
-        ggplot2::labs(title = "MSE (Tier 2)", x = "Fragment Count", y = "Residual Var.") +
-        ggplot2::theme_bw()
+    # Map display names to internal sample list keys
+    cond_display <- names(cond_map)
+    cond_internal <- as.character(cond_map)
 
-    # Tier 2: Heteroscedasticity plot
-    p_wls <- ggplot2::ggplot(model_params_df, ggplot2::aes(x = .data$fragment_count, y = .data$se_slope)) +
-        ggplot2::geom_point(colour = "#663399", alpha = 0.6) +
-        ggplot2::geom_smooth(
-            method = "lm",
-            formula = y ~ splines::ns(x, df = 3),
-            colour = "#663399",
-            linetype = "dashed",
-            linewidth = 0.5,
-            alpha = 0.4,
-            se = FALSE
-        ) +
-        ggplot2::labs(title = "Heteroscedasticity", x = "Fragment Count", y = "SE (Slope)") +
-        ggplot2::theme_bw()
+    # Determine empirical mean and variance per condition
+    stats_list <- lapply(seq_along(cond_display), function(i) {
+        display_name <- cond_display[i]
+        internal_id <- cond_internal[i]
 
-    # Tier 1 fits: prepare data for faceted plot
-    frag_counts <- unique(model_params_df$fragment_count)
+        # Get replicates identified during the differential prep stage
+        samples <- matched_list[[internal_id]]
 
-    tier1_list <- lapply(frag_counts, function(f) {
-        # Identify probabilities for this fragment count
-        probs <- fdr_matrix[, as.character(f)]
-        # Filter to only finite log values
-        valid_idx <- probs > 0
+        if (length(samples) < 2) {
+            warning(sprintf("Condition '%s' has fewer than 2 replicates; skipping variance calculation", display_name))
+            return(NULL)
+        }
 
-        if (sum(valid_idx) < 3) return(NULL)
-
-        params <- model_params_df[model_params_df$fragment_count == f, ]
-
+        # Calculate mean and variance
+        cond_mat <- as.matrix(occ_df[, samples, drop = FALSE])
         data.frame(
-            fragment_count = f,
-            threshold = threshold_samples[valid_idx],
-            log_p_obs = log(probs[valid_idx]),
-            log_p_fit = params$intercept + (params$slope * threshold_samples[valid_idx])
+            mean_val = rowMeans(cond_mat, na.rm = TRUE),
+            var_val = apply(cond_mat, 1, stats::var, na.rm = TRUE),
+            condition = display_name
         )
     })
 
-    tier1_df <- do.call(rbind, tier1_list)
+    plot_df <- do.call(rbind, stats_list)
 
-    if (!is.null(tier1_df) && nrow(tier1_df) > 0) {
-        tier1_df$fragment_count <- factor(tier1_df$fragment_count, levels = sort(unique(tier1_df$fragment_count)))
+    # Keep condition display names
+    plot_df$condition <- factor(plot_df$condition, levels = cond_display)
 
-        p_tier1 <- ggplot2::ggplot(tier1_df, ggplot2::aes(x = .data$threshold, y = .data$log_p_obs)) +
-            ggplot2::geom_point(size = 0.6, alpha = 0.4, colour = "grey30") +
-            ggplot2::geom_line(ggplot2::aes(y = .data$log_p_fit), colour = "firebrick", linewidth = 0.5) +
-            ggplot2::facet_wrap(~fragment_count, scales = "free_y") +
-            ggplot2::labs(
-                title = "Empirical Regression (Tier 1)",
-                subtitle = "log(p) ~ occupancy",
-                x = "Occupancy Threshold",
-                y = "log(Probability)"
-            ) +
-            ggplot2::theme_bw(base_size = 9) +
-            ggplot2::theme(strip.background = ggplot2::element_blank())
+    # Filter non-positive values to prevent log transformation errors
+    plot_df <- plot_df[plot_df$mean_val > 0 & plot_df$var_val > 0, ]
 
-        # Define an explicit 3-section layout:
-        # 1. Slope (A) & Intercept (B)
-        # 2. MSE (C) & WLS (D)
-        # 3. Tier 1 Facets (E) occupying the bottom
-        design <- "
-            AB
-            CD
-            EE
-            EE
-        "
-
-        # We wrap E in wrap_elements to prevent its facets from interfering with the parent grid
-        final_plot <- patchwork::wrap_plots(
-            A = p_slope, B = p_int,
-            C = p_mse, D = p_wls,
-            E = patchwork::wrap_elements(p_tier1),
-            design = design
-        )
-    } else {
-        # Fallback if no Tier 1 data is viable
-        final_plot <- (p_slope + p_int) / (p_mse + p_wls)
+    if (nrow(plot_df) == 0) {
+        stop("No data with positive mean and variance found for plotting.")
     }
 
-    final_plot <- final_plot +
-        patchwork::plot_annotation(
-            title = "Occupancy model diagnostics",
-            subtitle = sample_name,
-            theme = ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", size = 16))
+    # Create theoretical reference lines
+    # Var = mean + alpha * mean^2
+    mean_seq <- exp(seq(log(min(plot_df$mean_val)), log(max(plot_df$mean_val)), length.out = 100))
+    theo_df <- do.call(rbind, lapply(c(0.01, 0.1, 0.5), function(a) {
+        data.frame(
+            mean_val = mean_seq,
+            var_val = mean_seq + a * (mean_seq^2),
+            type = paste0("NB (alpha=", a, ")")
+        )
+    }))
+
+    # Add the Poisson line (var = mean)
+    poisson_df <- data.frame(
+        mean_val = mean_seq,
+        var_val = mean_seq,
+        type = "Poisson"
+    )
+    theo_df <- rbind(theo_df, poisson_df)
+
+    # Plot
+    ggplot2::ggplot(plot_df, aes(x = .data$mean_val, y = .data$var_val)) +
+        ggplot2::geom_point(alpha = 0.2, size = 0.5, colour = "grey30", shape = 20) +
+        ggplot2::geom_line(data = theo_df, aes(colour = .data$type), linewidth = 1) +
+        ggplot2::scale_x_log10(labels = scales::label_log()) +
+        ggplot2::scale_y_log10(labels = scales::label_log()) +
+        ggplot2::facet_wrap(~condition) +
+        ggplot2::labs(
+            title = "CATaDa mean-variance relationship",
+            subtitle = "Empirical variance vs parametric model assumptions",
+            x = "Mean Intensity (log scale)",
+            y = "Variance (log scale)",
+            colour = "Model assumption"
+        ) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+            panel.grid.minor = ggplot2::element_blank()
+        )
+}
+
+#' @title Internal helper to fit a robust fragment-length bias model
+#' @description Fits a GAM to GATC fragment signals against log10-transformed widths.
+#' @param widths Numeric vector of fragment widths.
+#' @param signals Numeric vector of fragment signals.
+#' @return An mgcv::gam object.
+#' @noRd
+._fit_bias_gam <- function(widths, signals) {
+    # Filter for valid data
+    valid <- is.finite(signals) & widths > 0
+
+    training_df <- data.frame(
+        signal = signals[valid],
+        width = widths[valid]
+    )
+
+    # Fit GAM with cubic regression spline.
+    model <- mgcv::gam(signal ~ s(log10(width), bs = "cr"), data = training_df)
+    return(model)
+}
+
+
+#' @title Internal helper to fit a robust fragment-length bias model using medians
+#' @description Bins fragments by length and fits a GAM to the median signal per bin.
+#'   Handles empty bins by mapping midpoints to observed bin indices.
+#' @param widths Numeric vector of fragment widths.
+#' @param signals Numeric vector of fragment signals.
+#' @param n_bins Integer. Number of bins for the median calculation.
+#' @return An mgcv::gam object representing the technical floor.
+#' @noRd
+._fit_bias_median_gam <- function(widths, signals, n_bins = 100) {
+    # Ensure we only work with finite signal and positive widths
+    valid <- is.finite(signals) & widths > 0
+    if (sum(valid) < n_bins) {
+        # Fallback if data is extremely sparse
+        n_bins <- max(5, floor(sum(valid) / 10))
+    }
+
+    df <- data.frame(w = log10(widths[valid]), s = signals[valid])
+
+    # Define the binning breaks and midpoints
+    w_min <- min(df$w)
+    w_max <- max(df$w)
+
+    # Add a tiny epsilon to handle the max value correctly in cut()
+    breaks <- seq(w_min, w_max, length.out = n_bins + 1)
+    midpoints <- breaks[-1] - (diff(breaks) / 2)
+
+    # Assign fragments to bin indices (labels=FALSE returns 1, 2, ..., n_bins)
+    df$bin_idx <- cut(df$w, breaks = breaks, labels = FALSE, include.lowest = TRUE)
+
+    # Calculate median signal per bin index
+    # aggregate() will drop empty bins, returning only bin_idxs that have data
+    bin_stats <- stats::aggregate(s ~ bin_idx, data = df, FUN = stats::median)
+
+    # Correctly map the corresponding midpoints to the non-empty bins
+    bin_stats$w_mid <- midpoints[bin_stats$bin_idx]
+
+    # Fit GAM to the binned medians
+    model <- mgcv::gam(s ~ s(w_mid, bs = "cr"), data = bin_stats)
+    return(model)
+}
+
+
+#' Test weighting discrepancy against systematic length bias
+#'
+#' @description
+#' Tests whether the discrepancy between weighted and simple means is driven by
+#' a systematic fragment-length score bias or by underlying biological/stochastic
+#' variance. It models any length-based bias by fitting a Generalized
+#' Additive Model (GAM) to all non-peak fragments, predicts the expected bias
+#' discrepancy per region, and compares it to the observed discrepancy.
+#'
+#' @param diff_results A `DamIDResults` object
+#' @param sample_name Character string of the sample to analyse
+#' @param plot Logical. Whether to print the summary plots (Default: TRUE)
+#'
+#' @return A list containing the discrepancy data, the summary statistics,
+#'   and a two-panel patchwork plot for verification and results.
+#' @export
+test_weighting_vs_bias_artifact <- function(diff_results, sample_name, plot=TRUE) {
+
+    if (!is(diff_results, "DamIDResults")) {
+        stop("Input 'diff_results' must be a DamIDResults S4 object.")
+    }
+
+    data_list <- inputData(diff_results)
+    binding_gr <- data_list$binding_profiles_data
+    occ_df <- data_list$occupancy
+    category <- data_list$test_category
+
+    # Restrict to loci that were actually tested for differential analysis
+    analysis_loci <- rownames(analysisTable(diff_results))
+    foreground_occ_df <- occ_df[analysis_loci, , drop = FALSE]
+
+    # Convert test region IDs back to GRanges for overlap analysis
+    matches <- stringr::str_match(rownames(foreground_occ_df), "^(.*?):(\\d+)-(\\d+)")
+    foreground_gr <- GenomicRanges::GRanges(
+        seqnames = matches[, 2],
+        ranges = IRanges::IRanges(as.integer(matches[, 3]), as.integer(matches[, 4])),
+        name = rownames(foreground_occ_df)
+    )
+
+    message("Defining signal-free background...")
+    signal_gr <- NULL
+
+    if (category == "bound") {
+        # Try to find per-sample peaks
+        peaks_list <- data_list$peaks
+        # Match using simplified IDs to account for normalisation suffixes
+        sample_id_clean <- extract_unique_sample_ids(sample_name)
+        peak_match_idx <- grep(sample_id_clean, names(peaks_list))
+
+        if (length(peak_match_idx) > 0) {
+            message(sprintf(" - Excluding fragments overlapping peaks from: %s", names(peaks_list)[peak_match_idx[1]]))
+            signal_gr <- peaks_list[[peak_match_idx[1]]]
+        } else {
+            message(" - No specific peaks found for sample; falling back to reduced union peaks (pr)")
+            signal_gr <- data_list$pr
+        }
+    } else if (category == "expressed") {
+        # Find genes with FDR < 0.05 in this specific sample to exclude
+        fdr_col <- paste0(sample_name, "_FDR")
+        if (!fdr_col %in% colnames(occ_df)) {
+            # Fallback to pval if FDR is missing (unadjusted)
+            fdr_col <- paste0(sample_name, "_pval")
+        }
+
+        if (fdr_col %in% colnames(occ_df)) {
+            sig_expr_indices <- which(occ_df[[fdr_col]] < 0.05)
+            if (length(sig_expr_indices) > 0) {
+                message(sprintf(" - Excluding fragments overlapping %d expressed genes (FDR < 0.05)", length(sig_expr_indices)))
+                # Extract coordinates from names (chr:start-end)
+                expr_names <- rownames(occ_df)[sig_expr_indices]
+                expr_matches <- stringr::str_match(expr_names, "^(.*?):(\\d+)-(\\d+)")
+                signal_gr <- GenomicRanges::GRanges(
+                    seqnames = expr_matches[, 2],
+                    ranges = IRanges::IRanges(as.integer(expr_matches[, 3]), as.integer(expr_matches[, 4]))
+                )
+            }
+        }
+    }
+
+    # Identify background fragments (no overlap with signal regions)
+    all_widths <- GenomicRanges::width(binding_gr)
+    all_signals <- S4Vectors::mcols(binding_gr)[[sample_name]]
+
+    bg_mask <- rep(TRUE, length(binding_gr))
+    if (!is.null(signal_gr)) {
+        signal_overlaps <- GenomicRanges::findOverlaps(binding_gr, signal_gr)
+        bg_mask[S4Vectors::queryHits(signal_overlaps)] <- FALSE
+    }
+
+    if (sum(bg_mask) < 100) {
+        warning("Insufficient background fragments found; using all fragments for bias model.")
+        bg_mask <- rep(TRUE, length(binding_gr))
+    }
+
+    # Model the purified technical bias using the background fragments
+    message("Fitting purified bias models...")
+    bias_model_null <- ._fit_bias_gam(all_widths[bg_mask], all_signals[bg_mask])
+
+    # Global median illustrates any zero bias on plot (not used otherwise)
+    bias_model_median <- ._fit_bias_median_gam(all_widths, all_signals)
+
+    # Predict expected bias for all fragments
+    expected_bias_signals <- stats::predict(bias_model_null,
+                                            newdata = data.frame(width = all_widths))
+
+    # Identify overlapping fragments within tested foreground regions
+    overlaps <- GenomicRanges::findOverlaps(foreground_gr, binding_gr)
+    q_hits <- S4Vectors::queryHits(overlaps)
+    s_hits <- S4Vectors::subjectHits(overlaps)
+
+    # Partition variance per genomic region
+    message("Calculating observed vs. predicted bias discrepancy per region...")
+    w_list <- split(all_widths[s_hits], q_hits)
+    s_list <- split(all_signals[s_hits], q_hits)
+    b_list <- split(expected_bias_signals[s_hits], q_hits)
+
+    eval_results <- lapply(names(w_list), function(i) {
+        w <- w_list[[i]]
+        s <- s_list[[i]]
+        b <- b_list[[i]]
+
+        if (length(w) < 2 || any(is.na(s))) return(NULL)
+
+        width_cv <- stats::sd(w) / mean(w)
+        D_obs <- abs(stats::weighted.mean(s, w) - mean(s))
+        D_bias <- abs(stats::weighted.mean(b, w) - mean(b))
+
+        data.frame(width_cv = width_cv, D_obs = D_obs, D_bias = D_bias)
+    })
+
+    eval_df <- do.call(rbind, eval_results)
+
+    # Global Summary Statistics
+    obs_median  <- stats::median(eval_df$D_obs)
+    bias_median <- stats::median(eval_df$D_bias)
+
+    wilcox_res <- stats::wilcox.test(
+        eval_df$D_obs,
+        eval_df$D_bias,
+        paired = TRUE,
+        alternative = "greater"
+    )
+
+    boot_ratios <- vapply(seq_len(1000), function(i) {
+        idx <- sample(nrow(eval_df), replace = TRUE)
+        stats::median(eval_df$D_obs[idx]) / max(stats::median(eval_df$D_bias[idx]), 1e-6)
+    }, numeric(1))
+
+    final_ratio <- stats::median(boot_ratios)
+    ratio_ci    <- stats::quantile(boot_ratios, probs = c(0.025, 0.975))
+
+    summary_stats <- list(
+        median_obs_discrepancy = obs_median,
+        median_bias_induced    = bias_median,
+        ratio                  = final_ratio,
+        ratio_ci               = ratio_ci,
+        p_value                = wilcox_res$p.value
+    )
+
+    message("\n# Weighted bias test (signal-free baseline)")
+    message(sprintf("Median Observed Discrepancy:     %0.4f", obs_median))
+    message(sprintf("Median Bias-Induced Discrepancy: %0.4f", bias_median))
+    message(sprintf("The weighting corrects %0.1fx more variance than can be explained by any systematic length bias.", final_ratio))
+    message(sprintf("Wilcoxon p-value (D_obs > D_bias): %e", wilcox_res$p.value))
+    message(sprintf("95%% CI for Adjustment Ratio: [%.2f - %.2f]", ratio_ci[1], ratio_ci[2]))
+
+    # Visualisation
+    plot_verify_df <- data.frame(width = all_widths, signal = all_signals)
+    plot_verify_df <- plot_verify_df[is.finite(plot_verify_df$signal), ]
+
+    fit_range <- seq(min(log10(all_widths[all_widths > 0])), max(log10(all_widths)), length.out = 300)
+    fit_line_df <- data.frame(
+        width = 10^fit_range,
+        null_sig = stats::predict(bias_model_null, newdata = data.frame(width = 10^fit_range)),
+        floor_sig = stats::predict(bias_model_median, newdata = data.frame(w_mid = fit_range))
+    )
+
+    p1 <- ggplot2::ggplot(plot_verify_df, ggplot2::aes(x = .data$width, y = .data$signal)) +
+        ggplot2::geom_point(alpha = 0.01, size = 0.2, colour = "grey30") +
+        ggplot2::geom_line(data = fit_line_df, ggplot2::aes(y = .data$null_sig, colour = "Bias model"), linewidth = 1) +
+        ggplot2::geom_line(data = fit_line_df, ggplot2::aes(y = .data$floor_sig, colour = "Median"), linewidth = 1, linetype = "dashed") +
+        ggplot2::scale_x_log10() +
+        ggplot2::scale_colour_manual(values = c("Bias model" = "firebrick", "Median" = "royalblue")) +
+        ggplot2::labs(
+            title = "DamID-seq fragment distribution by length",
+            subtitle = sprintf("Sample: %s", sample_name),
+            x = "Fragment length",
+            y = "Log2 ratio signal",
+            colour = "GAM Model"
+        ) +
+        ggplot2::theme_bw()+
+        ggplot2::theme(
+            legend.position = "inside",
+            legend.position.inside = c(0.05, 0.95),
+            legend.justification = c(0, 1)
         )
 
-    print(final_plot)
-    invisible(NULL)
+    plot_discrep_df <- data.frame(
+        cv = rep(eval_df$width_cv, 2),
+        val = c(eval_df$D_obs, eval_df$D_bias),
+        type = factor(rep(c("Observed Discrepancy", "Bias-Only Prediction"), each = nrow(eval_df)),
+                      levels = c("Observed Discrepancy", "Bias-Only Prediction"))
+    )
+
+    p2 <- ggplot2::ggplot(plot_discrep_df, ggplot2::aes(x = .data$cv, y = .data$val, colour = .data$type)) +
+        ggplot2::geom_point(alpha = 0.1, size = 1, shape = 16) +
+        ggplot2::geom_smooth(method = "gam", formula = y ~ s(x, bs = "cs"), linewidth = 1.2) +
+        ggplot2::scale_colour_manual(
+            values = c(
+                "Observed Discrepancy" = "black",
+                "Bias-Only Prediction" = "firebrick"
+            ),
+            breaks = c(
+                "Observed Discrepancy",
+                "Bias-Only Prediction"
+            ),
+            labels = c(
+                "Observed",
+                "Bias-only predicted"
+            )
+        ) +
+        ggplot2::labs(
+            title = "Effect of fragment-length-weighted mean",
+            subtitle = "Observed vs bias-only discrepancies from the simple mean",
+            x = "Fragment width heterogeneity (CV)",
+            y = "|Weighted mean - Simple mean|",
+            colour = "Source"
+        ) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(
+            legend.position = "inside",
+            legend.position.inside = c(0.05, 0.95),
+            legend.justification = c(0, 1)
+        )
+
+    if (isTRUE(plot)) {
+        combined_plot <- (p1 + p2) +
+            patchwork::plot_annotation(tag_levels = "A") &
+            theme(
+                plot.tag = element_text(face = "bold", size = 14)
+            )
+
+        print(combined_plot)
+    }
+
+    return(invisible(list(
+        data = eval_df,
+        stats = summary_stats,
+        plot = if (isTRUE(plot)) combined_plot else NULL
+    )))
 }
+
+
+#' Test weighting discrepancy against systematic length bias (batch analysis)
+#'
+#' @description
+#' A wrapper for \code{\link{test_weighting_vs_bias_artifact}} that iterates through
+#' all samples present in a \code{DamIDResults} object and returns a summary
+#' table of the results.
+#'
+#' @param diff_results A \code{DamIDResults} object.
+#' @param plot_all Logical. Whether to print summary plots for every sample in the batch.
+#'   (Default: FALSE)
+#'
+#' @return A \code{data.frame} summarising the bias test for each sample,
+#'   including the median discrepancies, adjustment ratios, and individual p-values.
+#' @export
+test_weighting_vs_bias_batch <- function(diff_results, plot_all = FALSE) {
+
+    if (!is(diff_results, "DamIDResults")) {
+        stop("'diff_results' must be a DamIDResults object.")
+    }
+
+    # Extract sample names
+    binding_gr <- inputData(diff_results)$binding_profiles_data
+    sample_names <- colnames(S4Vectors::mcols(binding_gr))
+
+    if (length(sample_names) == 0) {
+        stop("No sample columns found in the results object metadata.")
+    }
+
+    message(sprintf("Running batch weighting-bias test for %d samples...", length(sample_names)))
+
+    results_list <- lapply(sample_names, function(sn) {
+        res <- test_weighting_vs_bias_artifact(diff_results, sample_name = sn, plot = plot_all)
+
+        data.frame(
+            sample = sn,
+            median_obs = res$stats$median_obs_discrepancy,
+            median_bias = res$stats$median_bias_induced,
+            ratio = res$stats$ratio,
+            p_value = res$stats$p_value,
+            ci_lower = res$stats$ratio_ci[1],
+            ci_upper = res$stats$ratio_ci[2]
+        )
+    })
+
+    summary_df <- do.call(rbind, results_list)
+    rownames(summary_df) <- NULL
+
+    # Calculate aggregate stats
+    ratios <- summary_df$ratio
+    n <- length(ratios)
+
+    if (n > 1) {
+        log_ratios <- log(ratios)
+        mean_log <- mean(log_ratios)
+        se_log <- stats::sd(log_ratios) / sqrt(n)
+
+        # Two-tailed critical t-value
+        t_crit <- stats::qt(0.975, df = n - 1)
+
+        # Geometric mean and CI
+        geom_mean <- exp(mean_log)
+        ci_lower  <- exp(mean_log - (t_crit * se_log))
+        ci_upper  <- exp(mean_log + (t_crit * se_log))
+
+        message("\n## Batch Summary (Log-Normal Model)")
+        message(sprintf("Samples tested: %d", n))
+        message(sprintf("Geometric Mean Adjustment Ratio: %0.2fx", geom_mean))
+        message(sprintf("95%% Population CI: [%.2f - %.2f]", ci_lower, ci_upper))
+    }
+
+    return(summary_df)
+}
+
 
 
