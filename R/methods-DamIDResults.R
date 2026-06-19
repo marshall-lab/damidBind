@@ -206,3 +206,15 @@ setMethod("expressed", "DamIDResults",
                                   which = which)
           }
 )
+
+
+#' @title Access analysis metadata
+#' @description This method returns the provenance and annotation metadata for the
+#'   analysis. It overrides the default \code{metadata} method for
+#'   \code{DamIDResults} objects.
+#' @param x A \code{DamIDResults} object.
+#' @param ... Additional arguments (ignored).
+#' @return A nested \code{list} of metadata.
+#' @importFrom ensembldb metadata
+#' @export
+setMethod("metadata", "DamIDResults", function(x, ...) x@data$metadata)

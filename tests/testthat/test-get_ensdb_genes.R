@@ -72,7 +72,7 @@ test_that("get_ensdb_genes can retrieve Drosophila EnsDb and filter biotypes", {
     })
 
     expect_type(result, "list")
-    expect_named(result, c("genes", "ensembl_version", "genome_build", "species", "common_name"))
+    expect_named(result, c("genes", "ensembl_version", "genome_build", "species", "common_name", "ah_id", "ah_snapshot"))
     expect_s4_class(result$genes, "GRanges")
 
     # Check that the biotype was correctly excluded

@@ -1,0 +1,12 @@
+bibentry(
+  bibtype = "Article",
+  title = "damidBind: an R/Bioconductor package for differential DamID analysis and data exploration",
+  author = c(
+    person(given = "Owen J.", family = "Marshall")
+  ),
+  journal = "bioRxiv",
+  year = "2026",
+  doi = "10.64898/2026.01.06.698059",
+  url = "https://www.biorxiv.org/content/early/2026/01/10/2026.01.06.698059",
+  note = "Preprint"
+)

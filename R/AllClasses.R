@@ -82,6 +82,7 @@ setClass("DamIDResults",
              data = "list"
          )
 )
+
 setMethod(
     "show", "DamIDResults",
     function(object) {
@@ -92,6 +93,33 @@ setMethod(
         cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond1), cond_display[1]))
         cat(sprintf("- %d regions enriched in %s\n", nrow(object@upCond2), cond_display[2]))
         cat(sprintf("- %d total regions tested\n", nrow(object@analysis)))
+
+        # Display metadata if available
+        if (!is.null(object@data$metadata)) {
+            meta <- object@data$metadata
+            cat("\nData provenance:\n")
+            if (!is.null(meta$annotation) && meta$annotation$source != "Manual (GRanges)") {
+                cat(sprintf(" - Annotation: %s (%s, %s, Ensembl %s)\n",
+                            meta$annotation$species,
+                            meta$annotation$genome_build,
+                            meta$annotation$ah_id,
+                            meta$annotation$ensembl_version))
+            } else {
+                cat(" - Annotation: Manual (GRanges)\n")
+            }
+
+            b_files <- nrow(meta$files$binding_profiles)
+            p_files <- if (!is.null(meta$files$peaks)) nrow(meta$files$peaks) else 0
+
+            cat(sprintf(" - Data: %d binding profile(s)", b_files))
+            if (p_files > 0) cat(sprintf(", %d peak file(s)", p_files))
+            cat("\n")
+
+            if (isTRUE(meta$provenance$drop_samples_applied)) {
+                cat(sprintf(" - Note: 'drop_samples' was applied. %d samples retained for analysis.\n",
+                            length(meta$provenance$samples_kept)))
+            }
+        }
         invisible(object)
     }
 )

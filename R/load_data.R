@@ -1,12 +1,97 @@
-#' Process binding profile inputs
+#' @title Get metadata for a set of files
+#' @description Internal helper that captures the absolute path, modification
+#'   timestamp, and size for a vector of file paths.
+#' @param files A character vector of file paths.
+#' @return A data.frame with metadata for each file. If input is NULL or empty,
+#'   returns a data.frame indicating user-supplied data.
+#' @noRd
+._get_file_metadata <- function(files) {
+    if (is.null(files) || length(files) == 0) {
+        return(data.frame(
+            file = "User-supplied GRanges",
+            path = "N/A",
+            modified = NA,
+            size_bytes = NA,
+            stringsAsFactors = FALSE
+        ))
+    }
+
+    # Resolve absolute paths and capture file system information
+    abs_paths <- normalizePath(files, mustWork = FALSE, winslash = "/")
+    info <- file.info(files)
+
+    data.frame(
+        file = basename(files),
+        path = abs_paths,
+        modified = info$mtime,
+        size_bytes = info$size,
+        stringsAsFactors = FALSE
+    )
+}
+
+#' @title Assemble analysis metadata
+#' @description Internal function that aggregates package, annotation, and
+#'   file metadata into a single nested list for the DamIDResults object.
+#' @param test_category Character. The type of analysis (bound, expressed, etc).
+#' @param annotation_info List or NULL. The output from get_ensdb_genes().
+#' @param binding_files Character vector. Paths to binding profile files.
+#' @param peak_files Character vector or NULL. Paths to peak files.
+#' @return A nested list of metadata.
+#' @noRd
+._get_analysis_metadata <- function(test_category, annotation_info,
+                                    binding_files, peak_files = NULL,
+                                    samples_kept = NULL,
+                                    drop_samples_input = NULL) {
+    # Package version and analysis timestamp
+    meta <- list(
+        package_version = as.character(utils::packageVersion("damidBind")),
+        analysis_date = Sys.time(),
+        test_category = test_category
+    )
+
+    # Record annotation metadata
+    if (is.null(annotation_info)) {
+        # User provided a custom GRanges object
+        meta$annotation <- list(source = "Manual (GRanges)")
+    } else {
+        meta$annotation <- list(
+            source = "AnnotationHub",
+            ah_id = annotation_info$ah_id,
+            ah_snapshot = annotation_info$ah_snapshot,
+            ensembl_version = annotation_info$ensembl_version,
+            genome_build = annotation_info$genome_build,
+            species = annotation_info$species
+        )
+    }
+
+    # Record datafiles
+    meta$files <- list(
+        binding_profiles = ._get_file_metadata(binding_files),
+        peaks = if (!is.null(peak_files)) ._get_file_metadata(peak_files) else NULL
+    )
+
+    # Record filter provenance
+    meta$provenance <- list(
+        samples_kept = samples_kept,
+        drop_samples_applied = !is.null(drop_samples_input),
+        drop_samples_filter = drop_samples_input
+    )
+
+    return(meta)
+}
+
+
+#' @title Process binding profile inputs
 #'
+#' @description
 #' This internal function encapsulates the logic for loading binding profiles,
-#' whether from file paths or from a list of GRanges objects. It performs
-#' validation and returns a unified data.frame.
+#' whether from file paths, a list of GRanges objects, or a single merged
+#' GRanges object. It performs validation and returns a unified list
+#' containing the data and file manifest.
 #'
 #' @param binding_profiles_path Character vector. Path(s) to directories or file globs.
-#' @param binding_profiles List of GRanges objects.
-#' @return A dataframe containing the merged binding profiles.
+#' @param binding_profiles List of GRanges objects or a single GRanges object.
+#' @return A list containing the merged binding profiles (GRanges) and the file paths (character).
 #' @noRd
 process_binding_profiles <- function(binding_profiles_path = NULL, binding_profiles = NULL) {
     # Validate that one and only one input type is provided
@@ -17,6 +102,8 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
         stop("Provide only one of binding_profiles_path or binding_profiles, not both")
     }
 
+    binding_files <- NULL
+
     if (!is.null(binding_profiles_path)) {
         # Load from file paths
         message("Locating binding profile files")
@@ -25,52 +112,119 @@ process_binding_profiles <- function(binding_profiles_path = NULL, binding_profi
             stop("No binding profile files (.bedgraph) found in the specified path(s).")
         }
         binding_profiles_data <- build_dataframes(binding_files)
-    } else {
-        # Load from a list of GRanges objects
-        if (!is.list(binding_profiles) || is.null(names(binding_profiles))) {
-            stop("binding_profiles must be a named list of GRanges objects")
+
+        # Convert back to GRanges post-merge
+        binding_profiles_gr <- GenomicRanges::GRanges(
+            seqnames = S4Vectors::Rle(binding_profiles_data$chr),
+            ranges = IRanges::IRanges(start = binding_profiles_data$start, end = binding_profiles_data$end)
+        )
+        # Add the sample data to the metadata columns
+        mcols(binding_profiles_gr) <- binding_profiles_data[, !(names(binding_profiles_data) %in% c("chr", "start", "end")), drop = FALSE]
+
+    } else if (is(binding_profiles, "GRanges")) {
+        # Input is a single GRanges object -- assume metadata columns are samples
+        message("Using supplied binding profile GRanges object ...")
+
+        # Basic validation: ensure it has numeric metadata columns
+        mcols_gr <- mcols(binding_profiles)
+        numeric_cols <- vapply(mcols_gr, is.numeric, FUN.VALUE = logical(1))
+
+        if (!any(numeric_cols)) {
+            stop("The supplied binding_profiles GRanges must have at least one numeric metadata column representing signal.")
+        }
+
+        binding_profiles_gr <- binding_profiles
+
+    } else if (is.list(binding_profiles)) {
+        # Input is a list of GRanges objects (one per sample)
+        if (is.null(names(binding_profiles))) {
+            stop("binding_profiles list must be named (names are used as sample IDs)")
         }
         if (!all(vapply(binding_profiles, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
             stop("All binding_profiles list elements must be GRanges objects")
         }
-        message("Building binding profile dataframe from supplied GRanges objects ...")
+        message("Building binding profile dataframe from supplied GRanges list ...")
         binding_profiles_data <- build_dataframes_from_granges(binding_profiles)
+
+        # Convert to GRanges
+        binding_profiles_gr <- GenomicRanges::GRanges(
+            seqnames = S4Vectors::Rle(binding_profiles_data$chr),
+            ranges = IRanges::IRanges(start = binding_profiles_data$start, end = binding_profiles_data$end)
+        )
+        mcols(binding_profiles_gr) <- binding_profiles_data[, !(names(binding_profiles_data) %in% c("chr", "start", "end")), drop = FALSE]
+
+    } else {
+        stop("binding_profiles must be a list of GRanges objects or a single GRanges object")
     }
 
-    # Convert back to GRanges post-merge
-    binding_profiles_gr <- GenomicRanges::GRanges(
-        seqnames = S4Vectors::Rle(binding_profiles_data$chr),
-        ranges = IRanges::IRanges(start = binding_profiles_data$start, end = binding_profiles_data$end)
-    )
-    # Add the sample data to the metadata columns
-    mcols(binding_profiles_gr) <- binding_profiles_data[, !(names(binding_profiles_data) %in% c("chr", "start", "end")), drop = FALSE]
-    return(binding_profiles_gr)
+    return(list(
+        data = binding_profiles_gr,
+        files = binding_files
+    ))
 }
 
-#' Apply quantile normalisation
+#' Apply genome-wide data normalisation
 #'
-#' This internal function applies quantile normalisation to a binding profile
-#' data.frame if the user requests it.
+#' This internal function applies one of several potential normalisation methods
+#' to a genome-wide binding profile dataset prior to peak subsetting/occupancy calculation.
 #'
-#' @param binding_profiles_data The data.frame of binding profiles.
-#' @param quantile_norm Logical. If TRUE, normalisation is applied.
-#' @return A data.frame, which is quantile-normalised if requested.
+#' @param binding_profiles_data The GRanges object of binding profiles.
+#' @param norm_method Character. The method to apply ("none", "scale", "quantile", "rpm").
+#' @param pre_scale Logical.  Whether to apply scaling prior to normalisation.
+#' @return A GRanges object, normalised if requested.
 #' @noRd
-apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
-    if (isTRUE(quantile_norm)) {
-        message("Applying quantile normalisation")
-        signal_mat <- as.matrix(mcols(binding_profiles_data))
+apply_normalisation <- function(binding_profiles_data, norm_method = c("none", "quantile", "loess", "rpm"), pre_scale = TRUE) {
+    norm_method <- match.arg(norm_method)
 
-        if (ncol(signal_mat) == 0) {
-            warning("No signal columns found for quantile normalisation. Returning original data.")
-            return(binding_profiles_data)
-        }
+    if (norm_method == "none") return(binding_profiles_data)
 
-        qnorm_mat <- quantile_normalisation(signal_mat)
-        colnames(qnorm_mat) <- paste0(colnames(signal_mat), "_qnorm")
+    message(sprintf("Applying '%s' normalisation to binding profiles", norm_method))
 
-        mcols(binding_profiles_data) <- as.data.frame(qnorm_mat)
+    # Extract matrix
+    signal_mat <- as.matrix(mcols(binding_profiles_data))
+
+    # Apply basic scaling
+    if (isTRUE(pre_scale)) {
+        signal_mat <- scale(signal_mat, center=FALSE, scale=TRUE)
     }
+
+    if (ncol(signal_mat) == 0) {
+        warning("No signal columns found for normalisation. Returning original data.")
+        return(binding_profiles_data)
+    }
+
+    norm_mat <- switch(norm_method,
+                       "quantile" = {
+                           quantile_normalisation(signal_mat)
+                       },
+                       "loess" = {
+                           # Cyclic Loess
+                           limma::normalizeBetweenArrays(signal_mat, method = "cyclicloess")
+                       },
+                       "rpm" = {
+                           apply(signal_mat, 2, function(x) {
+                               total <- sum(abs(x), na.rm = TRUE)
+                               if (!is.na(total) && total > 0) (x / total) * 1e6 else x
+                           })
+                       }
+    )
+
+    # Final safety check for NaNs produced by non-finite inputs
+    if (any(is.nan(norm_mat))) {
+        warning("Normalisation produced NaNs. Check for non-finite values in input data. Returning un-normalised data.")
+        return(binding_profiles_data)
+    }
+
+    # Append suffix to indicate normalisation method used
+    suffix <- switch(norm_method,
+                     "quantile" = "_qnorm",
+                     "loess" = "_loess",
+                     "rpm" = "_rpm"
+    )
+
+    colnames(norm_mat) <- paste0(colnames(signal_mat), suffix)
+    mcols(binding_profiles_data) <- as.data.frame(norm_mat)
+
     return(binding_profiles_data)
 }
 
@@ -86,25 +240,44 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' One of `binding_profiles_path` or `binding_profiles` must be provided.
 #' Similarly, one of `peaks_path` or `peaks` must be provided.
 #'
-#' When supplying GRanges lists, each GRanges should contain exactly one numeric
-#' metadata column representing the binding signal, and all GRanges should be supplied
-#' as a named list, with element names used as sample names.
+#' When supplying GRanges lists for `binding_profiles`, each GRanges should
+#' contain exactly one numeric metadata column representing the binding signal,
+#' and all GRanges should be supplied as a named list, with element names used
+#' as sample names. Alternatively, a single GRanges object already containing
+#' multiple sample columns may be provided.
 #'
 #' @param binding_profiles_path Character vector. Path(s) to directories or file
 #'   globs containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') supported.
 #' @param peaks_path Character vector. Path(s) to directories or file globs containing
 #'   the peak calls in GFF or BED format.
-#' @param binding_profiles List of GRanges objects with binding profiles, one
-#'   per sample.
-#' @param peaks List of GRanges objects representing peak regions.
+#' @param binding_profiles A list of GRanges objects (one per sample) or a
+#'   single GRanges object containing multiple sample metadata columns.
+#' @param peaks A list of GRanges objects (one per sample) or a single GRanges
+#'   object representing the union of peaks.
 #' @param drop_samples A character vector of sample names or patterns to remove.
 #'   Matching samples are removed from the analysis before normalisation and
 #'   occupancy calculation. This can be useful for excluding samples that fail
 #'   initial quality checks. Default: `NULL` (no samples are dropped).
 #' @param maxgap_loci Integer, the maximum bp distance between a peak boundary
 #'   and a gene to associate that peak with the gene. Default: 1000.
-#' @param quantile_norm Logical (default: FALSE). If TRUE, quantile-normalise
-#'   the signal columns across all datasets.
+#' @param norm_method Character. Determines how raw genome-wide signal is normalised
+#'   prior to establishing peak specific occupancy. Options are:
+#'   \itemize{
+#'     \item \code{"none"} (default): Use original data. Recommended if loading CATaDa
+#'       count data pre-processed via \code{damidseq_pipeline --catada} (which is natively
+#'       RPM-normalised).
+#'     \item \code{"loess"}: Uses the `cyclicloess` method from `limma`.
+#'     \item \code{"quantile"}: Quantile normalisation. Forces identical target distributions.
+#'     \item \code{"rpm"}: Reads Per Million scaling. A simple global scaling for raw
+#'       un-normalised count data.  Use with caution: do not use for log2 ratio data, and avoid
+#'       if CATaDa data has already been RPM normalised (the default behaviour
+#'       with `damidseq_pipeline`)
+#'   }
+#' @param pre_scale Logical.  If TRUE, samples will be scaled without centering
+#'   via base R `scale(center=FALSE, scale=TRUE)`, prior to normalisation being applied.
+#'   default is FALSE; generally useful for DamID log-ratio data, but not recommended
+#'   for CATaDa data.
+#' @param quantile_norm \bold{Deprecated}. Please use `norm_method = "quantile"` instead.
 #' @param organism Organism string (lower case) to obtain genome annotation from
 #'   (if not providing a custom `ensdb_genes` object)
 #'   Default: "drosophila melanogaster".
@@ -116,11 +289,12 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #'   displayed for both the raw binding data and the summarised occupancy data.
 #'
 #' @return A list with components:
-#'   \item{binding_profiles_data}{data.frame: Signal matrix for all regions, with columns chr, start, end, sample columns.}
-#'   \item{peaks}{list(GRanges): All loaded peak regions from input files or directly supplied.}
+#'   \item{binding_profiles_data}{GRanges: Signal matrix for all regions, with genomic coordinates and sample metadata columns.}
+#'   \item{peaks}{list(GRanges): All loaded peak regions.}
 #'   \item{pr}{GRanges: Reduced (union) peak regions across samples.}
 #'   \item{occupancy}{data.frame: Binding values summarised over reduced peaks, with overlap annotations.}
 #'   \item{test_category}{Character scalar; will be "bound".}
+#'   \item{metadata}{List: Data provenance and analysis metadata.}
 #'
 #'
 #' @examples
@@ -142,11 +316,13 @@ apply_quantile_normalisation <- function(binding_profiles_data, quantile_norm) {
 #' data_dir <- system.file("extdata", package = "damidBind")
 #'
 #' # Run loading function using sample files and mock gene annotations
+#' # Normalising with either 'quantile' or 'loess' is generally recommended
+#' # for DamID log2 ratios
 #' loaded_data <- load_data_peaks(
 #'     binding_profiles_path = data_dir,
 #'     peaks_path = data_dir,
 #'     ensdb_genes = mock_genes_gr,
-#'     quantile_norm = TRUE
+#'     norm_method = "quantile"
 #' )
 #'
 #' # View the structure of the output
@@ -160,19 +336,38 @@ load_data_peaks <- function(
         peaks = NULL,
         drop_samples = NULL,
         maxgap_loci = 1000,
-        quantile_norm = FALSE,
+        norm_method = c("none", "loess", "quantile", "rpm"),
+        pre_scale = FALSE,
+        quantile_norm = NULL,
         organism = "drosophila melanogaster",
         ensdb_genes = NULL,
         BPPARAM = BiocParallel::bpparam(),
         plot_diagnostics = interactive()) {
+
+    # Handle deprecated quantile_norm argument carefully
+    if (!is.null(quantile_norm)) {
+        warning("The 'quantile_norm' argument is deprecated. Please use 'norm_method' instead.", call. = FALSE)
+        if (isTRUE(quantile_norm)) {
+            norm_method <- "quantile"
+        }
+    }
+
+    norm_method <- match.arg(norm_method)
+
+    # Get annotation and metadata
+    anno_info <- NULL
     if (is.null(ensdb_genes)) {
-        ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
+        anno_info <- get_ensdb_genes(organism_keyword = organism)
+        ensdb_genes <- anno_info$genes
     }
     if (!is(ensdb_genes, "GRanges")) {
         stop("ensdb_genes must be supplied as a GRanges object.")
     }
 
-    binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    # Load binding profiles
+    binding_info <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    binding_profiles_data <- binding_info$data
+    binding_files <- binding_info$files
 
     # Validate and load peaks
     if (is.null(peaks_path) && is.null(peaks)) {
@@ -182,6 +377,7 @@ load_data_peaks <- function(
         stop("Provide only one of peaks_path or peaks, not both")
     }
 
+    peaks_files <- NULL
     if (!is.null(peaks_path)) {
         message("Locating peak files")
         peaks_files <- locate_files(peaks_path, pattern = "\\.(gff|bed)(\\.gz)?$")
@@ -200,9 +396,13 @@ load_data_peaks <- function(
         # Name the files so the resulting list is named.
         names(peaks_files) <- vapply(peaks_files, function(p) basename(strip_all_exts_recursive(p)), character(1))
         peaks <- lapply(peaks_files, import_peaks)
+    } else if (is(peaks, "GRanges")) {
+        # Wrap single GRanges in a list for reduce_regions compatibility
+        message("Using supplied peak GRanges object.")
+        peaks <- list("User_supplied" = peaks)
     } else {
         if (!is.list(peaks) || is.null(names(peaks))) {
-            stop("peaks must be a named list of GRanges objects")
+            stop("peaks must be a named list of GRanges objects or a single GRanges object")
         }
         if (!all(vapply(peaks, function(x) is(x, "GRanges"), FUN.VALUE = logical(1)))) {
             stop("All peaks list elements must be GRanges objects")
@@ -210,21 +410,19 @@ load_data_peaks <- function(
         message("Using supplied peaks GRanges list.")
     }
 
-    # Consolidate loaded data for potential dropping
-    temp_data_list <- list(
-        binding_profiles_data = binding_profiles_data,
-        peaks = peaks
-    )
-
-    # Drop samples if requested by the user.
-    # This must happen before normalisation or peak reduction.
+    # Drop samples if requested by the user
     if (!is.null(drop_samples)) {
+        temp_data_list <- list(
+            binding_profiles_data = binding_profiles_data,
+            peaks = peaks
+        )
         filtered_data <- ._drop_input_samples(temp_data_list, drop_samples)
         binding_profiles_data <- filtered_data$binding_profiles_data
         peaks <- filtered_data$peaks
     }
 
-    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
+    # Apply normalisation
+    binding_profiles_data <- apply_normalisation(binding_profiles_data, norm_method, pre_scale)
 
     # Process peaks and calculate occupancy
     pr <- reduce_regions(peaks)
@@ -237,13 +435,25 @@ load_data_peaks <- function(
         occupancy$gene_id <- gene_overlaps$ids
     }
 
+    # Record metadata
+    metadata <- ._get_analysis_metadata(
+        test_category = "bound",
+        annotation_info = anno_info,
+        binding_files = binding_files,
+        peak_files = peaks_files,
+        samples_kept = colnames(mcols(binding_profiles_data)),
+        drop_samples_input = drop_samples
+    )
+
     result_list <- list(
         binding_profiles_data = binding_profiles_data,
         peaks = peaks,
         pr = pr,
         occupancy = occupancy,
-        test_category = "bound"
+        test_category = "bound",
+        metadata = metadata
     )
+
     if (isTRUE(plot_diagnostics)) {
         plot_input_diagnostics(result_list)
     }
@@ -254,24 +464,42 @@ load_data_peaks <- function(
 #' Load genome-wide binding data for gene expression (RNA polymerase occupancy)
 #'
 #' Reads RNA Polymerase DamID binding profiles either from bedGraph files or
-#' directly from a named list of GRanges objects. Calculates binding occupancy
+#' directly from a list of GRanges objects. Calculates binding occupancy
 #' summarised over genes.
 #'
 #' One of `binding_profiles_path` or `binding_profiles` must be provided.
 #'
-#' When supplying GRanges lists, each GRanges should contain exactly one numeric
-#' metadata column representing the signal, and `binding_profiles` must be a
-#' named list, with element names used as sample names.
+#' When supplying GRanges lists for `binding_profiles`, each GRanges should
+#' contain exactly one numeric metadata column representing the binding signal,
+#' and `binding_profiles` must be a named list, with element names used as
+#' sample names. Alternatively, a single GRanges object already containing
+#' multiple sample columns may be provided.
 #'
 #' @param binding_profiles_path Character vector of directories or file globs
 #'   containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') supported.
-#' @param binding_profiles Named list of GRanges objects representing binding profiles.
+#' @param binding_profiles A list of GRanges objects (one per sample) or a
+#'   single GRanges object containing multiple sample metadata columns.
 #' @param drop_samples A character vector of sample names or patterns to remove.
 #'   Matching samples are removed from the analysis before normalisation and
 #'   occupancy calculation. This can be useful for excluding samples that fail
 #'   initial quality checks. Default: `NULL` (no samples are dropped).
-#' @param quantile_norm Logical (default: FALSE) quantile-normalise across all
-#'   signal columns if TRUE.
+#' @param norm_method Character. Determines how raw genome-wide signal is normalised
+#'   prior to establishing peak specific occupancy. Options are:
+#'   \itemize{
+#'     \item \code{"none"} (default): Use original data. Recommended if loading CATaDa
+#'       count data pre-processed via \code{damidseq_pipeline --catada} (which is natively
+#'       RPM-normalised).
+#'     \item \code{"loess"}: Uses the `cyclicloess` method from `limma`.
+#'     \item \code{"quantile"}: Quantile normalisation. Forces identical target distributions.
+#'     \item \code{"rpm"}: Reads Per Million scaling. A simple global scaling for raw
+#'       un-normalised count data.  Use with caution: do not use for log2 ratio data, and avoid
+#'       if CATaDa data has already been RPM normalised (the default behaviour
+#'       with `damidseq_pipeline`)
+#'   }
+#' @param pre_scale Logical.  If TRUE, samples will be scaled without centering
+#'   via base R `scale(center=FALSE, scale=TRUE)`, prior to normalisation being applied.
+#'   Default is FALSE.
+#' @param quantile_norm \bold{Deprecated}. Please use `norm_method = "quantile"` instead.
 #' @param organism Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 #'   Defautls to "drosophila melanogaster".
 #' @param calculate_occupancy_pvals Calculate occupancy p-values as a proxy for gene expression status (see details).  Not used for differential expression analysis, but used when present for downstream analysis and plotting. (default: TRUE)
@@ -291,23 +519,14 @@ load_data_peaks <- function(
 #'   diagnostic plots for the gene expression null model will be displayed.
 #'
 #' @return List with elements:
-#'   \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns, and _pval columns if `calculate_occupancy_pvals=TRUE`}
-#'   \item{occupancy}{data.frame of occupancy values summarised over genes.}
+#'   \item{binding_profiles_data}{GRanges: Merged binding profiles, with genomic coordinates and sample metadata columns.}
+#'   \item{occupancy}{data.frame: Occupancy values summarised over genes.}
 #'   \item{test_category}{Character scalar; will be "expressed".}
-#'
-#' @details
-#' The algorithm for determining gene occupancy FDR (as a proxy for gene expression)
-#' is based on `polii.gene.call`, which in turn was based on that described in
-#' Southall et al. (2013). Dev Cell, 26(1), 101–12. doi:10.1016/j.devcel.2013.05.020.
-#' Briefly, the algorithm establishes a null model by simulating the distribution of mean occupancy scores
-#' from random fragments.  It fits a two-tiered regression to predict the False Discovery Rate (FDR), based
-#' on fragment count and score. For each gene, the true weighted mean occupancy and fragment count are
-#' calculated from the provided binding profile. Finally, the pre-computed regression models are used
-#' to assign a specific FDR to each gene based on its observed occupancy and fragment count.
+#'   \item{metadata}{List: Data provenance and analysis metadata.}
 #'
 #' @examples
 #' # Create a mock GRanges object for gene annotations
-#' # This object, based on the package's unit tests, avoids network access
+#' # This object avoids network access
 #' # and includes a very long gene to ensure overlaps with sample data.
 #' mock_genes_gr <- GenomicRanges::GRanges(
 #'     seqnames = S4Vectors::Rle("2L", 7),
@@ -328,7 +547,7 @@ load_data_peaks <- function(
 #' loaded_data_genes <- load_data_genes(
 #'     binding_profiles_path = data_dir,
 #'     ensdb_genes = mock_genes_gr,
-#'     quantile_norm = FALSE,
+#'     norm_method = "none",
 #'     calculate_occupancy_pvals = FALSE
 #' )
 #'
@@ -340,7 +559,9 @@ load_data_genes <- function(
         binding_profiles_path = NULL,
         binding_profiles = NULL,
         drop_samples = NULL,
-        quantile_norm = FALSE,
+        norm_method = c("none", "loess", "quantile", "rpm"),
+        pre_scale = FALSE,
+        quantile_norm = NULL,
         organism = "drosophila melanogaster",
         calculate_occupancy_pvals = TRUE,
         return_per_replicate_fdr = FALSE,
@@ -349,14 +570,31 @@ load_data_genes <- function(
         ensdb_genes = NULL,
         BPPARAM = BiocParallel::bpparam(),
         plot_diagnostics = interactive()) {
+
+    # Handle deprecated quantile_norm argument
+    if (!is.null(quantile_norm)) {
+        warning("The 'quantile_norm' argument is deprecated. Please use 'norm_method' instead.", call. = FALSE)
+        if (isTRUE(quantile_norm)) {
+            norm_method <- "quantile"
+        }
+    }
+
+    norm_method <- match.arg(norm_method)
+
+    # Resolve annotation
+    anno_info <- NULL
     if (is.null(ensdb_genes)) {
-        ensdb_genes <- get_ensdb_genes(organism_keyword = organism)$genes
+        anno_info <- get_ensdb_genes(organism_keyword = organism)
+        ensdb_genes <- anno_info$genes
     }
     if (!is(ensdb_genes, "GRanges")) {
         stop("ensdb_genes must be supplied as a GRanges object.")
     }
 
-    binding_profiles_data <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    # Load binding profiles
+    binding_info <- process_binding_profiles(binding_profiles_path, binding_profiles)
+    binding_profiles_data <- binding_info$data
+    binding_files <- binding_info$files
 
     # Drop samples if requested by the user.
     if (!is.null(drop_samples)) {
@@ -365,7 +603,8 @@ load_data_genes <- function(
         binding_profiles_data <- filtered_data$binding_profiles_data
     }
 
-    binding_profiles_data <- apply_quantile_normalisation(binding_profiles_data, quantile_norm)
+    # Apply normalisation
+    binding_profiles_data <- apply_normalisation(binding_profiles_data, norm_method, pre_scale)
 
     # Calculate occupancy over genes
     occupancy <- calculate_occupancy(binding_profiles_data, ensdb_genes, BPPARAM = BPPARAM)
@@ -382,10 +621,21 @@ load_data_genes <- function(
         )
     }
 
+    # Record metadata
+    metadata <- ._get_analysis_metadata(
+        test_category = "expressed",
+        annotation_info = anno_info,
+        binding_files = binding_files,
+        peak_files = NULL,
+        samples_kept = colnames(mcols(binding_profiles_data)),
+        drop_samples_input = drop_samples
+    )
+
     result_list <- list(
         binding_profiles_data = binding_profiles_data,
         occupancy = occupancy,
-        test_category = "expressed"
+        test_category = "expressed",
+        metadata = metadata
     )
     if (isTRUE(plot_diagnostics)) {
         plot_input_diagnostics(result_list)
@@ -512,7 +762,7 @@ locate_files <- function(paths, pattern = NULL) {
 }
 
 #' Import a GFF file as a GRanges object
-#' @param path File path (GFF/GTF)
+#' @param path File path (GFF/GTF/BED)
 #' @return GRanges
 #' @noRd
 import_peaks <- function(path) {

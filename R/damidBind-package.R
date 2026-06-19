@@ -72,6 +72,7 @@
 ## From AnnotationHub: for fetching genomic annotations
 #' @importFrom AnnotationHub AnnotationHub
 #' @importFrom AnnotationHub query
+#' @importFrom AnnotationHub snapshotDate
 #'
 ## From ensembldb: for working with Ensembl databases
 #' @importFrom ensembldb genes

@@ -8,7 +8,9 @@ load_data_genes(
   binding_profiles_path = NULL,
   binding_profiles = NULL,
   drop_samples = NULL,
-  quantile_norm = FALSE,
+  norm_method = c("none", "loess", "quantile", "rpm"),
+  pre_scale = FALSE,
+  quantile_norm = NULL,
   organism = "drosophila melanogaster",
   calculate_occupancy_pvals = TRUE,
   return_per_replicate_fdr = FALSE,
@@ -23,15 +25,33 @@ load_data_genes(
 \item{binding_profiles_path}{Character vector of directories or file globs
 containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') supported.}
 
-\item{binding_profiles}{Named list of GRanges objects representing binding profiles.}
+\item{binding_profiles}{A list of GRanges objects (one per sample) or a
+single GRanges object containing multiple sample metadata columns.}
 
 \item{drop_samples}{A character vector of sample names or patterns to remove.
 Matching samples are removed from the analysis before normalisation and
 occupancy calculation. This can be useful for excluding samples that fail
 initial quality checks. Default: `NULL` (no samples are dropped).}
 
-\item{quantile_norm}{Logical (default: FALSE) quantile-normalise across all
-signal columns if TRUE.}
+\item{norm_method}{Character. Determines how raw genome-wide signal is normalised
+prior to establishing peak specific occupancy. Options are:
+\itemize{
+  \item \code{"none"} (default): Use original data. Recommended if loading CATaDa
+    count data pre-processed via \code{damidseq_pipeline --catada} (which is natively
+    RPM-normalised).
+  \item \code{"loess"}: Uses the `cyclicloess` method from `limma`.
+  \item \code{"quantile"}: Quantile normalisation. Forces identical target distributions.
+  \item \code{"rpm"}: Reads Per Million scaling. A simple global scaling for raw
+    un-normalised count data.  Use with caution: do not use for log2 ratio data, and avoid
+    if CATaDa data has already been RPM normalised (the default behaviour
+    with `damidseq_pipeline`)
+}}
+
+\item{pre_scale}{Logical.  If TRUE, samples will be scaled without centering
+via base R `scale(center=FALSE, scale=TRUE)`, prior to normalisation being applied.
+Default is FALSE.}
+
+\item{quantile_norm}{\bold{Deprecated}. Please use `norm_method = "quantile"` instead.}
 
 \item{organism}{Organism string (lower case) to obtain genome annotation from (if not providing a custom `ensdb_genes` object)
 Defautls to "drosophila melanogaster".}
@@ -60,35 +80,28 @@ displayed for both the raw binding data and the summarised occupancy data.}
 }
 \value{
 List with elements:
-  \item{binding_profiles_data}{data.frame of merged binding profiles, with chr, start, end, sample columns, and _pval columns if `calculate_occupancy_pvals=TRUE`}
-  \item{occupancy}{data.frame of occupancy values summarised over genes.}
+  \item{binding_profiles_data}{GRanges: Merged binding profiles, with genomic coordinates and sample metadata columns.}
+  \item{occupancy}{data.frame: Occupancy values summarised over genes.}
   \item{test_category}{Character scalar; will be "expressed".}
+  \item{metadata}{List: Data provenance and analysis metadata.}
 }
 \description{
 Reads RNA Polymerase DamID binding profiles either from bedGraph files or
-directly from a named list of GRanges objects. Calculates binding occupancy
+directly from a list of GRanges objects. Calculates binding occupancy
 summarised over genes.
 }
 \details{
 One of `binding_profiles_path` or `binding_profiles` must be provided.
 
-When supplying GRanges lists, each GRanges should contain exactly one numeric
-metadata column representing the signal, and `binding_profiles` must be a
-named list, with element names used as sample names.
-
-
-The algorithm for determining gene occupancy FDR (as a proxy for gene expression)
-is based on `polii.gene.call`, which in turn was based on that described in
-Southall et al. (2013). Dev Cell, 26(1), 101–12. doi:10.1016/j.devcel.2013.05.020.
-Briefly, the algorithm establishes a null model by simulating the distribution of mean occupancy scores
-from random fragments.  It fits a two-tiered regression to predict the False Discovery Rate (FDR), based
-on fragment count and score. For each gene, the true weighted mean occupancy and fragment count are
-calculated from the provided binding profile. Finally, the pre-computed regression models are used
-to assign a specific FDR to each gene based on its observed occupancy and fragment count.
+When supplying GRanges lists for `binding_profiles`, each GRanges should
+contain exactly one numeric metadata column representing the binding signal,
+and `binding_profiles` must be a named list, with element names used as
+sample names. Alternatively, a single GRanges object already containing
+multiple sample columns may be provided.
 }
 \examples{
 # Create a mock GRanges object for gene annotations
-# This object, based on the package's unit tests, avoids network access
+# This object avoids network access
 # and includes a very long gene to ensure overlaps with sample data.
 mock_genes_gr <- GenomicRanges::GRanges(
     seqnames = S4Vectors::Rle("2L", 7),
@@ -109,7 +122,7 @@ data_dir <- system.file("extdata", package = "damidBind")
 loaded_data_genes <- load_data_genes(
     binding_profiles_path = data_dir,
     ensdb_genes = mock_genes_gr,
-    quantile_norm = FALSE,
+    norm_method = "none",
     calculate_occupancy_pvals = FALSE
 )
 

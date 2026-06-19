@@ -21,13 +21,13 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
     dl <- load_data_peaks(
         binding_profiles_path = binding_profiles_path,
         peaks_path = peaks_path,
-        quantile_norm = FALSE,
+        norm_method = "none",
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Check overall structure of the returned list
     expect_type(dl, "list")
-    expect_named(dl, c("binding_profiles_data", "peaks", "pr", "occupancy", "test_category"))
+    expect_named(dl, c("binding_profiles_data", "peaks", "pr", "occupancy", "test_category", "metadata"))
 
     # Check binding_profiles_data
     expect_s4_class(dl$binding_profiles_data, "GRanges")
@@ -73,7 +73,7 @@ test_that("load_data_peaks loads and processes extdata files correctly", {
     expect_true(any(dl$occupancy$gene_id != ""))
 })
 
-test_that("load_data_peaks works with quantile_norm = TRUE", {
+test_that("load_data_peaks works with norm_method='quantile'", {
     data_dir <- system.file("extdata", package = "damidBind")
     binding_profiles_path <- data_dir
     peaks_path <- data_dir
@@ -81,7 +81,7 @@ test_that("load_data_peaks works with quantile_norm = TRUE", {
     dl_qnorm <- load_data_peaks(
         binding_profiles_path = binding_profiles_path,
         peaks_path = peaks_path,
-        quantile_norm = TRUE,
+        norm_method = "quantile",
         BPPARAM = BiocParallel::SerialParam()
     )
 
@@ -131,14 +131,14 @@ test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files co
     dl <- load_data_genes(
         binding_profiles_path = binding_profiles_path,
         ensdb_genes = dummy_ensdb,
-        quantile_norm = FALSE,
+        norm_method = "none",
         calculate_occupancy_pvals = FALSE,
         BPPARAM = BiocParallel::SerialParam()
     )
 
     # Check overall structure
     expect_type(dl, "list")
-    expect_named(dl, c("binding_profiles_data", "occupancy", "test_category"))
+    expect_named(dl, c("binding_profiles_data", "occupancy", "test_category", "metadata"))
 
     # Check binding_profiles_data
     expect_s4_class(dl$binding_profiles_data, "GRanges")
@@ -172,14 +172,14 @@ test_that("load_data_genes loads and processes Bsh extdata (log2 ratio) files co
     expect_equal(dl$test_category, "expressed")
 })
 
-test_that("load_data_genes works with quantile_norm = TRUE", {
+test_that("load_data_genes works with norm_method = 'quantile'", {
     data_dir <- system.file("extdata", package = "damidBind")
     binding_profiles_path <- data_dir
 
     dl_qnorm <- load_data_genes(
         binding_profiles_path = binding_profiles_path,
         ensdb_genes = make_dummy_ensdb_genes()$genes,
-        quantile_norm = TRUE,
+        norm_method = "quantile",
         calculate_occupancy_pvals = FALSE,
         BPPARAM = BiocParallel::SerialParam()
     )

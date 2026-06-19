@@ -11,7 +11,9 @@ load_data_peaks(
   peaks = NULL,
   drop_samples = NULL,
   maxgap_loci = 1000,
-  quantile_norm = FALSE,
+  norm_method = c("none", "loess", "quantile", "rpm"),
+  pre_scale = FALSE,
+  quantile_norm = NULL,
   organism = "drosophila melanogaster",
   ensdb_genes = NULL,
   BPPARAM = BiocParallel::bpparam(),
@@ -25,10 +27,11 @@ globs containing log2 ratio binding tracks in bedGraph format. Wildcards ('*') s
 \item{peaks_path}{Character vector. Path(s) to directories or file globs containing
 the peak calls in GFF or BED format.}
 
-\item{binding_profiles}{List of GRanges objects with binding profiles, one
-per sample.}
+\item{binding_profiles}{A list of GRanges objects (one per sample) or a
+single GRanges object containing multiple sample metadata columns.}
 
-\item{peaks}{List of GRanges objects representing peak regions.}
+\item{peaks}{A list of GRanges objects (one per sample) or a single GRanges
+object representing the union of peaks.}
 
 \item{drop_samples}{A character vector of sample names or patterns to remove.
 Matching samples are removed from the analysis before normalisation and
@@ -38,8 +41,26 @@ initial quality checks. Default: `NULL` (no samples are dropped).}
 \item{maxgap_loci}{Integer, the maximum bp distance between a peak boundary
 and a gene to associate that peak with the gene. Default: 1000.}
 
-\item{quantile_norm}{Logical (default: FALSE). If TRUE, quantile-normalise
-the signal columns across all datasets.}
+\item{norm_method}{Character. Determines how raw genome-wide signal is normalised
+prior to establishing peak specific occupancy. Options are:
+\itemize{
+  \item \code{"none"} (default): Use original data. Recommended if loading CATaDa
+    count data pre-processed via \code{damidseq_pipeline --catada} (which is natively
+    RPM-normalised).
+  \item \code{"loess"}: Uses the `cyclicloess` method from `limma`.
+  \item \code{"quantile"}: Quantile normalisation. Forces identical target distributions.
+  \item \code{"rpm"}: Reads Per Million scaling. A simple global scaling for raw
+    un-normalised count data.  Use with caution: do not use for log2 ratio data, and avoid
+    if CATaDa data has already been RPM normalised (the default behaviour
+    with `damidseq_pipeline`)
+}}
+
+\item{pre_scale}{Logical.  If TRUE, samples will be scaled without centering
+via base R `scale(center=FALSE, scale=TRUE)`, prior to normalisation being applied.
+default is FALSE; generally useful for DamID log-ratio data, but not recommended
+for CATaDa data.}
+
+\item{quantile_norm}{\bold{Deprecated}. Please use `norm_method = "quantile"` instead.}
 
 \item{organism}{Organism string (lower case) to obtain genome annotation from
 (if not providing a custom `ensdb_genes` object)
@@ -56,11 +77,12 @@ displayed for both the raw binding data and the summarised occupancy data.}
 }
 \value{
 A list with components:
-  \item{binding_profiles_data}{data.frame: Signal matrix for all regions, with columns chr, start, end, sample columns.}
-  \item{peaks}{list(GRanges): All loaded peak regions from input files or directly supplied.}
+  \item{binding_profiles_data}{GRanges: Signal matrix for all regions, with genomic coordinates and sample metadata columns.}
+  \item{peaks}{list(GRanges): All loaded peak regions.}
   \item{pr}{GRanges: Reduced (union) peak regions across samples.}
   \item{occupancy}{data.frame: Binding values summarised over reduced peaks, with overlap annotations.}
   \item{test_category}{Character scalar; will be "bound".}
+  \item{metadata}{List: Data provenance and analysis metadata.}
 }
 \description{
 Reads DamID-seq log2 ratio binding data either from bedGraph files or
@@ -73,9 +95,11 @@ For peak discovery, use an external peak caller (e.g. 'find_peaks').
 One of `binding_profiles_path` or `binding_profiles` must be provided.
 Similarly, one of `peaks_path` or `peaks` must be provided.
 
-When supplying GRanges lists, each GRanges should contain exactly one numeric
-metadata column representing the binding signal, and all GRanges should be supplied
-as a named list, with element names used as sample names.
+When supplying GRanges lists for `binding_profiles`, each GRanges should
+contain exactly one numeric metadata column representing the binding signal,
+and all GRanges should be supplied as a named list, with element names used
+as sample names. Alternatively, a single GRanges object already containing
+multiple sample columns may be provided.
 }
 \examples{
 # Create a mock GRanges object for gene annotation
@@ -96,11 +120,13 @@ mock_genes_gr <- GenomicRanges::GRanges(
 data_dir <- system.file("extdata", package = "damidBind")
 
 # Run loading function using sample files and mock gene annotations
+# Normalising with either 'quantile' or 'loess' is generally recommended
+# for DamID log2 ratios
 loaded_data <- load_data_peaks(
     binding_profiles_path = data_dir,
     peaks_path = data_dir,
     ensdb_genes = mock_genes_gr,
-    quantile_norm = TRUE
+    norm_method = "quantile"
 )
 
 # View the structure of the output

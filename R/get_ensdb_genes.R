@@ -20,6 +20,8 @@
 #'   \item{genome_build}{Character. Genome build identifier.}
 #'   \item{species}{Character. Latin binomial species name.}
 #'   \item{common_name}{Character. Species common name.}
+#'   \item{ah_id}{Character. The unique AnnotationHub identifier (e.g., "AH113672").}
+#'   \item{ah_snapshot}{Date. The snapshot date of the AnnotationHub instance.}
 #'
 #' @details
 #' This function queries AnnotationHub for EnsDb objects matching a supplied
@@ -41,14 +43,16 @@
 #'
 #' @export
 get_ensdb_genes <- function(
-    organism_keyword = "drosophila melanogaster",
-    genome_build = NULL,
-    ensembl_version = NULL,
-    exclude_biotypes = c("transposable_element", "pseudogene"),
-    include_gene_metadata = c("gene_id", "gene_name")) {
+        organism_keyword = "drosophila melanogaster",
+        genome_build = NULL,
+        ensembl_version = NULL,
+        exclude_biotypes = c("transposable_element", "pseudogene"),
+        include_gene_metadata = c("gene_id", "gene_name")) {
     message("Finding genome versions ...")
 
     ah <- AnnotationHub()
+    # Capture snapshot date for metadata
+    ah_snapshot <- AnnotationHub::snapshotDate(ah)
 
     # Query EnsDb databases matching the organism keyword (case-insensitive)
     query_res <- query(ah, c("EnsDb", organism_keyword))
@@ -92,7 +96,11 @@ get_ensdb_genes <- function(
     } else {
         index <- which.max(ens_versions)
     }
-    message(sprintf("Loading Ensembl genome version '%s'", filtered_query_res$title[[index]]))
+
+    # Capture the specific AnnotationHub ID
+    ah_id <- names(filtered_query_res)[index]
+
+    message(sprintf("Loading Ensembl genome version '%s' (%s)", filtered_query_res$title[[index]], ah_id))
     ensdb <- filtered_query_res[[index]]
 
     # Extract genes object and filter
@@ -125,6 +133,8 @@ get_ensdb_genes <- function(
         ensembl_version = ensembl_version,
         genome_build = genome_build,
         species = species,
-        common_name = common_name
+        common_name = common_name,
+        ah_id = ah_id,
+        ah_snapshot = ah_snapshot
     ))
 }
