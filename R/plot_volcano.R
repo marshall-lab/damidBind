@@ -323,10 +323,15 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 
 #' @title Prepare data for highlight and label layers
 #' @description Generates dataframes for ggplot highlight and label layers.
+#' @param plot_df Main analysis dataframe.
+#' @param highlight User highlight configuration list.
+#' @param configs Merged configuration list.
+#' @param highlight_by Character; matching mode ("auto", "gene_name", or "id").
+#' @param labels_instruction The character vector instruction for which labels to include.
 #' @return A list with `highlight_df` (for geom_point), `label_df` (for ggrepel),
 #'   and `highlight_colours` (named vector).
 #' @noRd
-.prepare_highlight_and_label_data <- function(plot_df, gene_labels_all, highlight, configs) {
+.prepare_highlight_and_label_data <- function(plot_df, highlight, configs, highlight_by, labels_instruction) {
     highlight_dfs <- list()
     label_dfs <- list()
     highlighted_ids <- character(0)
@@ -334,8 +339,27 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
     label_config <- configs$label
     sig_indices <- which(plot_df$sig)
 
+    # Pre-extract vectors for performance and clarity
+    id_vec <- plot_df$id
+    name_vec <- if ("gene_name" %in% names(plot_df)) plot_df$gene_name else NULL
+    display_vec <- if (!is.null(name_vec)) name_vec else id_vec
+
     highlight_colours <- NULL
     highlight_text_colours <- NULL
+
+    # Internal helper to resolve "auto" mode for a set of search terms
+    .resolve_mode <- function(terms, current_mode) {
+        if (current_mode != "auto") return(current_mode)
+        if (is.null(name_vec)) return("id")
+
+        # Count matches in IDs
+        id_m <- length(intersect(terms, id_vec))
+        # Count matches in names (handling comma-separated names)
+        name_m <- length(.find_element_indices(name_vec, terms))
+
+        # Prioritise gene_name on tie or if both are 0
+        if (name_m >= id_m) "gene_name" else "id"
+    }
 
     if (!is.null(highlight) && length(highlight) > 0) {
         num_groups <- length(highlight)
@@ -357,29 +381,44 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 
         for (i in seq_along(highlight)) {
             group_name <- names(highlight)[i]
-            indices <- .find_element_indices(gene_labels_all, highlight[[i]])
+            search_terms <- highlight[[i]]
 
-            indices_remove_labels <- NULL
-            if (isTRUE(highlight_config$sig_labels_only)) {
-                indices_remove_labels <- setdiff(indices, sig_indices)
-            }
+            # Resolve match mode for this specific group
+            resolved_mode <- .resolve_mode(search_terms, highlight_by)
+            search_vec <- if (resolved_mode == "gene_name") name_vec else id_vec
+
+            indices <- .find_element_indices(search_vec, search_terms)
 
             if (length(indices) > 0) {
-                group_df <- plot_df
+                group_df <- plot_df[indices, , drop = FALSE]
                 group_df$highlight_group_name <- group_name
-                split_labels <- strsplit(gene_labels_all, split = ",")
-                group_df$label_to_display <- vapply(split_labels, function(vec) {
-                    matched <- intersect(trimws(vec), highlight[[i]])
-                    stringr::str_c(if (length(matched) == 0) vec else matched, collapse = ",")
-                }, FUN.VALUE = character(1L))
 
-                # Remove unwanted label
-                group_df$label_to_display[indices_remove_labels] <- ""
+                # Display logic: perform label intersection only for gene_name mode
+                if (resolved_mode == "gene_name") {
+                    split_labels <- strsplit(display_vec[indices], split = ",")
+                    group_df$label_to_display <- vapply(split_labels, function(vec) {
+                        matched <- intersect(trimws(vec), search_terms)
+                        # If for some reason word match failed, show full original string
+                        stringr::str_c(if (length(matched) == 0) vec else matched, collapse = ",")
+                    }, FUN.VALUE = character(1L))
+                } else {
+                    group_df$label_to_display <- display_vec[indices]
+                }
 
-                # Now filter on highlight indices
-                group_df <- group_df[indices, , drop = FALSE]
+                # Apply significance filtering to labels if requested
+                if (isTRUE(highlight_config$sig_labels_only)) {
+                    sig_ids <- id_vec[sig_indices]
+                    group_df$label_to_display[!group_df$id %in% sig_ids] <- ""
+                }
+
                 highlight_dfs[[group_name]] <- group_df
-                if (isTRUE(highlight_config$label)) {
+
+                # Determine if this group should be labelled based on the instruction
+                should_label <- (labels_instruction == "all" && isTRUE(highlight_config$label)) ||
+                    (labels_instruction == "highlight") ||
+                    (group_name %in% labels_instruction)
+
+                if (should_label) {
                     label_dfs[[group_name]] <- group_df
                     highlighted_ids <- c(highlighted_ids, group_df$id)
                 }
@@ -387,18 +426,30 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
         }
     }
 
-    # Process general labels, avoid overlap with highlight labels
-    if (!is.null(label_config)) {
-        candidate_indices <- if (!is.null(label_config$genes)) {
-            intersect(sig_indices, .find_element_indices(gene_labels_all, label_config$genes))
+    # Process general labels, avoiding overlap with highlight labels
+    # General labels are only processed if labels instruction is "all"
+    if (!is.null(label_config) && labels_instruction == "all") {
+        search_terms <- label_config$genes
+
+        # Decide search vector for general labels
+        resolved_mode <- if (is.null(search_terms)) {
+            if (!is.null(name_vec)) "gene_name" else "id"
+        } else {
+            .resolve_mode(search_terms, highlight_by)
+        }
+
+        search_vec <- if (resolved_mode == "gene_name") name_vec else id_vec
+
+        candidate_indices <- if (!is.null(search_terms)) {
+            intersect(sig_indices, .find_element_indices(search_vec, search_terms))
         } else {
             sig_indices
         }
 
-        final_indices <- setdiff(candidate_indices, which(plot_df$id %in% unique(highlighted_ids)))
+        final_indices <- setdiff(candidate_indices, which(id_vec %in% unique(highlighted_ids)))
         if (length(final_indices) > 0) {
             general_label_df <- plot_df[final_indices, , drop = FALSE]
-            general_label_df$label_to_display <- gene_labels_all[final_indices]
+            general_label_df$label_to_display <- display_vec[final_indices]
             general_label_df$highlight_group_name <- NA_character_
 
             if (isTRUE(label_config$clean_names)) {
@@ -422,7 +473,6 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
     )
 }
 
-
 #' Volcano plot of differentially bound/expressed loci
 #'
 #' @description
@@ -433,6 +483,18 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'
 #' @param diff_results A `DamIDResults` object, as returned by
 #'   `differential_binding()` or `differential_accessibility()`.
+#' @param labels Character; one of `"all"`, `"highlight"`, or a character vector
+#'   containing one or more group names from the `highlight` list.
+#'   \itemize{
+#'     \item \code{"all"} (default): Labels both the general significant loci
+#'       (based on \code{label_config}) and any highlight groups where
+#'       \code{label = TRUE} is set in \code{highlight_config}.
+#'     \item \code{"highlight"}: Labels all loci in the \code{highlight} list,
+#'       ignoring \code{label_config} and the \code{label} toggle in
+#'       \code{highlight_config}.
+#'     \item \code{vector of group names}: Labels only the specified groups
+#'       from the \code{highlight} list.
+#'   }
 #' @param fdr_filter_threshold Numeric or NULL. If a value (e.g., 0.05) is provided,
 #'   the volcano plot will only include loci that have an FDR value less than or
 #'   equal to this threshold in at least one replicate of the two conditions
@@ -440,6 +502,11 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'   `load_data_genes` with `calculate_occupancy_pvals = TRUE`, which generates the
 #'   necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
 #'   performed.
+#' @param highlight_by Character; either `"auto"`, `"gene_name"`, or `"id"`.
+#'   Determines whether to use gene names (`"gene_name"`) or locus (`"id"`) for
+#'   the highlight search. In `"auto"` mode (default), the function checks for
+#'   matches in both columns and selects the one with the best coverage for each
+#'   highlight group.
 #' @param plot_config List. Names to override plot details (title, axes, size,
 #'   colours, etc); see details.
 #'   \itemize{
@@ -513,7 +580,7 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #'   }
 #' @param save List or `NULL`. Controls saving the plot to a file.
 #'   If `NULL`, `FALSE`, or `0`, the plot is not saved.
-#'   If a `list`, it specifies saving parameters:
+#'   If a \code{list}, it specifies saving parameters:
 #'   \itemize{
 #'     \item \code{filename} (character): The path and base name for the output file
 #'       (e.g., "my_volcano_plot"). If not specified, a default is used.
@@ -556,17 +623,53 @@ sample_labels_by_isolation <- function(df, x_col, y_col, r, k_priority = 30, sca
 #' # Generate a default volcano plot
 #' plot_volcano(diff_results)
 #'
+#' # Explicitly highlight a specific locus coordinate
+#' plot_volcano(diff_results, highlight = list("My Peak" = "2L:1000-1500"))
+#'
+#' # Label only specific highlight groups
+#' plot_volcano(diff_results,
+#'              highlight = list("Set A" = c("ap", "side"), "Set B" = "mav"),
+#'              labels = "Set A")
+#'
 #' @export
 plot_volcano <- function(
         diff_results,
+        labels = "all",
         fdr_filter_threshold = NULL,
+        highlight_by = c("auto", "gene_name", "id"),
         plot_config = list(),
         label_config = list(),
         highlight = NULL,
         highlight_config = list(),
         label_display = list(),
         save = NULL) {
+
     stopifnot(is(diff_results, "DamIDResults"))
+    highlight_by <- match.arg(highlight_by)
+
+    # Validate the labels parameter
+    valid_keywords <- c("all", "highlight")
+    highlight_group_names <- names(highlight)
+
+    # Check for name collisions between keywords and highlight groups
+    if (any(highlight_group_names %in% valid_keywords)) {
+        colliding <- intersect(highlight_group_names, valid_keywords)
+        warning(
+            "The following highlight group names are keywords ('", paste(colliding, collapse = "', '"),
+            "'). These will be treated as keywords by the 'labels' parameter. ",
+            "To label these specific groups individually, please rename them."
+        )
+    }
+
+    # Ensure labels input is valid (keyword or group names)
+    if (!all(labels %in% c(valid_keywords, highlight_group_names))) {
+        invalid <- setdiff(labels, c(valid_keywords, highlight_group_names))
+        warning(
+            "The following values in 'labels' are neither keywords nor valid highlight group names: '",
+            paste(invalid, collapse = "', '"), "'. Defaulting to 'all'."
+        )
+        labels <- "all"
+    }
 
     # Prepare data and configurations
     analysis_table <- analysisTable(diff_results)
@@ -583,6 +686,7 @@ plot_volcano <- function(
     configs <- .manage_volcano_configs(diff_results, plot_config, label_config,
                                        highlight_config, label_display, save)
     plot_cfg <- configs$plot
+
     if (!plot_cfg$ystat %in% names(analysis_table)) {
         stop(sprintf(
             "ystat ('%s') is not a valid column name. Valid columns are: %s",
@@ -593,8 +697,15 @@ plot_volcano <- function(
     plot_df <- analysis_table
     plot_df$id <- rownames(plot_df)
     plot_df$sig <- plot_df$id %in% c(rownames(enrichedCond1(diff_results)), rownames(enrichedCond2(diff_results)))
-    gene_labels_all <- if ("gene_name" %in% names(plot_df)) plot_df$gene_name else plot_df$id
-    layer_data <- .prepare_highlight_and_label_data(plot_df, gene_labels_all, highlight, configs)
+
+    # Delegate highlight and label data preparation to internal helper
+    layer_data <- .prepare_highlight_and_label_data(
+        plot_df = plot_df,
+        highlight = highlight,
+        configs = configs,
+        highlight_by = highlight_by,
+        labels_instruction = labels
+    )
 
     if (!is.null(layer_data$label_df) && nrow(layer_data$label_df) > 0 && !is.null(configs$label_display)) {
         kept_mask <- sample_labels_by_isolation(
@@ -606,7 +717,6 @@ plot_volcano <- function(
             k_for_r = configs$label_display$k_for_r,
             k_search = configs$label_display$k_search
         )
-
         layer_data$label_df <- layer_data$label_df[kept_mask, ]
     }
 
@@ -629,7 +739,7 @@ plot_volcano <- function(
         !is.null(layer_data$highlight_df) &&
         isTRUE(configs$highlight$legend) &&
         isTRUE(configs$highlight$legend_inside)
-        ) {
+    ) {
         # This awkward kludge exists because of issues with ggnewscale
         p <- p + guides(colour = guide_legend(override.aes = list(alpha = 1, size = 3), position = "inside"))
     }
@@ -650,7 +760,10 @@ plot_volcano <- function(
                     data = layer_data$label_df,
                     aes(label = .data$label_to_display, colour = .data$highlight_group_name),
                     size = label_size, max.overlaps = max_overlaps,
-                    min.segment.length = 0, box.padding = 0.1, point.padding = 0.1
+                    min.segment.length = 0,
+                    box.padding = 0.1,
+                    point.padding = 0.1,
+                    segment.alpha = 0.5
                 ) +
                 scale_colour_manual(
                     name = NULL,
@@ -658,7 +771,16 @@ plot_volcano <- function(
                     guide = "none"
                 )
         } else {
-            p <- p + ggrepel::geom_text_repel(data = layer_data$label_df, aes(label = .data$label_to_display), size = label_size, max.overlaps = max_overlaps, min.segment.length = 0, box.padding = 0.1, point.padding = 0.1)
+            p <- p + ggrepel::geom_text_repel(
+                data = layer_data$label_df,
+                aes(label = .data$label_to_display),
+                size = label_size,
+                max.overlaps = max_overlaps,
+                min.segment.length = 0,
+                box.padding = 0.1,
+                point.padding = 0.1,
+                segment.alpha = 0.5
+                )
         }
     }
 
