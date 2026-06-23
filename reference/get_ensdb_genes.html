@@ -9,7 +9,7 @@ Ensembl database hosted via Bioconductor's AnnotationHub and ensembldb."></head>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -102,6 +102,12 @@ each gene (default: c("gene_id", "gene_name")).</p></dd>
   <dt>common_name</dt>
 <dd><p>Character. Species common name.</p></dd>
 
+  <dt>ah_id</dt>
+<dd><p>Character. The unique AnnotationHub identifier (e.g., "AH113672").</p></dd>
+
+  <dt>ah_snapshot</dt>
+<dd><p>Date. The snapshot date of the AnnotationHub instance.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -125,7 +131,7 @@ metadata fields are retained in the genes output.</p>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Finding genome versions ...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> snapshotDate(): 2024-10-28</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading Ensembl genome version 'Ensembl 110 EnsDb for Drosophila melanogaster'</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Loading Ensembl genome version 'Ensembl 110 EnsDb for Drosophila melanogaster' (AH113629)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> loading from cache</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> GRanges object with 18040 ranges and 2 metadata columns:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                             seqnames      ranges strand |            gene_id</span>

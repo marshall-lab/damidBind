@@ -11,7 +11,7 @@ prepares an experiment matrix, fits linear models, and returns DE loci."></head>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -176,6 +176,7 @@ must be &gt; 0. Set to `FALSE` to include all statistically significant changes.
 <span class="r-in"><span>    ensdb_genes <span class="op">=</span> <span class="va">mock_genes_gr</span>,</span></span>
 <span class="r-in"><span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The 'quantile_norm' argument is deprecated. Please use 'norm_method' instead.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating binding profile files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Building binding profile dataframe from input files ...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
@@ -183,7 +184,7 @@ must be &gt; 0. Set to `FALSE` to include all statistically significant changes.
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying 'quantile' normalisation to binding profiles</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
@@ -232,6 +233,10 @@ must be &gt; 0. Set to `FALSE` to include all statistically significant changes.
 <span class="r-out co"><span class="r-pr">#&gt;</span> - 316 regions enriched in L4 Neurons</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - 166 regions enriched in L5 Neurons</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> - 1196 total regions tested</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Data provenance:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Annotation: Manual (GRanges)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  - Data: 4 binding profile(s), 4 peak file(s)</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

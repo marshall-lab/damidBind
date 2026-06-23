@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,22 @@
       <small>Source: <a href="https://github.com/marshall-lab/damidBind/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.1" id="damidbind-111">damidBind 1.1.1<a class="anchor" aria-label="anchor" href="#damidbind-111"></a></h2>
+<ul><li>NEW: Added additional diagnostic plots (mostly used to generate supplementary figures in the damidBind manuscript): <code><a href="../reference/plot_catada_mean_variance.html">plot_catada_mean_variance()</a></code> and <code><a href="../reference/test_weighting_vs_bias_artifact.html">test_weighting_vs_bias_artifact()</a></code>
+</li>
+<li>NEW: <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code> and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code> now support multiple normalisation options: quantile normalisation (“quantile”), cyclic LOESS norm (“loess”), and RPM (reads per million) norm (“rpm”. The default is “none” (no normalisation).</li>
+<li>NEW: a <code>pre_scale</code> option has been added to both <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code> and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>, which will perform zero-preserving (uncentred) scaling (via base R <code>scale(center=FALSE, scale=TRUE)</code>) prior to normalisation. The default is FALSE.</li>
+<li>NEW: all input metadata and genome annotation metadata are saved in the <code>DamIDResults</code> S4 object. Basic metadata are displayed with the default <code>show()</code> method, and all are accessible via the <code>metadata()</code> accessor.</li>
+<li>NEW: <code><a href="../reference/plot_volcano.html">plot_volcano()</a></code> now takes a new <code>labels</code> option, values of <code>"all"</code>, <code>"highlight"</code>, or a character vector containing one or more group names from the <code>highlight</code> list. Only this group will be labelled on the plot. The original label configuration options still remain.</li>
+<li>NEW: <code><a href="../reference/plot_volcano.html">plot_volcano()</a></code> supports highlight groups of either loci or gene names, including different categories in the same plot. The default “auto” behaviour matches a highlight group against whichever definition has the most matches, but use the new <code>highlight_by</code> option to enforce matching by either “gene_name” or “id” (i.e. locus).</li>
+<li>CHANGED: deprecated the <code>quantile_norm</code> option for <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code> and <code><a href="../reference/load_data_genes.html">load_data_genes()</a></code>.</li>
+<li>Added a citation to the current bioRxiv preprint on damidBind</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="damidbind-100">damidBind 1.0.0<a class="anchor" aria-label="anchor" href="#damidbind-100"></a></h2>
+<ul><li>damidBind was automatically bumped to version 1.0.0 via Biocondutor release 3.23.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.99.14" id="damidbind-09914">damidBind 0.99.14<a class="anchor" aria-label="anchor" href="#damidbind-09914"></a></h2>
 <ul><li>NEW: Added <code>average_tracks</code> option to <code><a href="../reference/browse_igv_regions.html">browse_igv_regions()</a></code>. When <code>TRUE</code>, this feature displays averaged binding tracks per condition rather than replicates.</li>

@@ -15,7 +15,7 @@ For peak discovery, use an external peak caller (e.g. 'find_peaks')."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,9 @@ For peak discovery, use an external peak caller (e.g. 'find_peaks').</p>
 <span>  peaks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  drop_samples <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maxgap_loci <span class="op">=</span> <span class="fl">1000</span>,</span>
-<span>  quantile_norm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  norm_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"loess"</span>, <span class="st">"quantile"</span>, <span class="st">"rpm"</span><span class="op">)</span>,</span>
+<span>  pre_scale <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  quantile_norm <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  organism <span class="op">=</span> <span class="st">"drosophila melanogaster"</span>,</span>
 <span>  ensdb_genes <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  BPPARAM <span class="op">=</span> <span class="fu">BiocParallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">bpparam</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -85,12 +87,13 @@ the peak calls in GFF or BED format.</p></dd>
 
 
 <dt id="arg-binding-profiles">binding_profiles<a class="anchor" aria-label="anchor" href="#arg-binding-profiles"></a></dt>
-<dd><p>List of GRanges objects with binding profiles, one
-per sample.</p></dd>
+<dd><p>A list of GRanges objects (one per sample) or a
+single GRanges object containing multiple sample metadata columns.</p></dd>
 
 
 <dt id="arg-peaks">peaks<a class="anchor" aria-label="anchor" href="#arg-peaks"></a></dt>
-<dd><p>List of GRanges objects representing peak regions.</p></dd>
+<dd><p>A list of GRanges objects (one per sample) or a single GRanges
+object representing the union of peaks.</p></dd>
 
 
 <dt id="arg-drop-samples">drop_samples<a class="anchor" aria-label="anchor" href="#arg-drop-samples"></a></dt>
@@ -105,9 +108,29 @@ initial quality checks. Default: `NULL` (no samples are dropped).</p></dd>
 and a gene to associate that peak with the gene. Default: 1000.</p></dd>
 
 
+<dt id="arg-norm-method">norm_method<a class="anchor" aria-label="anchor" href="#arg-norm-method"></a></dt>
+<dd><p>Character. Determines how raw genome-wide signal is normalised
+prior to establishing peak specific occupancy. Options are:</p><ul><li><p><code>"none"</code> (default): Use original data. Recommended if loading CATaDa
+    count data pre-processed via <code>damidseq_pipeline --catada</code> (which is natively
+    RPM-normalised).</p></li>
+<li><p><code>"loess"</code>: Uses the `cyclicloess` method from `limma`.</p></li>
+<li><p><code>"quantile"</code>: Quantile normalisation. Forces identical target distributions.</p></li>
+<li><p><code>"rpm"</code>: Reads Per Million scaling. A simple global scaling for raw
+    un-normalised count data.  Use with caution: do not use for log2 ratio data, and avoid
+    if CATaDa data has already been RPM normalised (the default behaviour
+    with `damidseq_pipeline`)</p></li>
+</ul></dd>
+
+
+<dt id="arg-pre-scale">pre_scale<a class="anchor" aria-label="anchor" href="#arg-pre-scale"></a></dt>
+<dd><p>Logical.  If TRUE, samples will be scaled without centering
+via base R `scale(center=FALSE, scale=TRUE)`, prior to normalisation being applied.
+default is FALSE; generally useful for DamID log-ratio data, but not recommended
+for CATaDa data.</p></dd>
+
+
 <dt id="arg-quantile-norm">quantile_norm<a class="anchor" aria-label="anchor" href="#arg-quantile-norm"></a></dt>
-<dd><p>Logical (default: FALSE). If TRUE, quantile-normalise
-the signal columns across all datasets.</p></dd>
+<dd><p><b>Deprecated</b>. Please use `norm_method = "quantile"` instead.</p></dd>
 
 
 <dt id="arg-organism">organism<a class="anchor" aria-label="anchor" href="#arg-organism"></a></dt>
@@ -135,10 +158,10 @@ displayed for both the raw binding data and the summarised occupancy data.</p></
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with components:</p>
 <dl><dt>binding_profiles_data</dt>
-<dd><p>data.frame: Signal matrix for all regions, with columns chr, start, end, sample columns.</p></dd>
+<dd><p>GRanges: Signal matrix for all regions, with genomic coordinates and sample metadata columns.</p></dd>
 
   <dt>peaks</dt>
-<dd><p>list(GRanges): All loaded peak regions from input files or directly supplied.</p></dd>
+<dd><p>list(GRanges): All loaded peak regions.</p></dd>
 
   <dt>pr</dt>
 <dd><p>GRanges: Reduced (union) peak regions across samples.</p></dd>
@@ -149,14 +172,19 @@ displayed for both the raw binding data and the summarised occupancy data.</p></
   <dt>test_category</dt>
 <dd><p>Character scalar; will be "bound".</p></dd>
 
+  <dt>metadata</dt>
+<dd><p>List: Data provenance and analysis metadata.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>One of `binding_profiles_path` or `binding_profiles` must be provided.
 Similarly, one of `peaks_path` or `peaks` must be provided.</p>
-<p>When supplying GRanges lists, each GRanges should contain exactly one numeric
-metadata column representing the binding signal, and all GRanges should be supplied
-as a named list, with element names used as sample names.</p>
+<p>When supplying GRanges lists for `binding_profiles`, each GRanges should
+contain exactly one numeric metadata column representing the binding signal,
+and all GRanges should be supplied as a named list, with element names used
+as sample names. Alternatively, a single GRanges object already containing
+multiple sample columns may be provided.</p>
     </div>
 
     <div class="section level2">
@@ -179,11 +207,13 @@ as a named list, with element names used as sample names.</p>
 <span class="r-in"><span><span class="va">data_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, package <span class="op">=</span> <span class="st">"damidBind"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Run loading function using sample files and mock gene annotations</span></span></span>
+<span class="r-in"><span><span class="co"># Normalising with either 'quantile' or 'loess' is generally recommended</span></span></span>
+<span class="r-in"><span><span class="co"># for DamID log2 ratios</span></span></span>
 <span class="r-in"><span><span class="va">loaded_data</span> <span class="op">&lt;-</span> <span class="fu">load_data_peaks</span><span class="op">(</span></span></span>
 <span class="r-in"><span>    binding_profiles_path <span class="op">=</span> <span class="va">data_dir</span>,</span></span>
 <span class="r-in"><span>    peaks_path <span class="op">=</span> <span class="va">data_dir</span>,</span></span>
 <span class="r-in"><span>    ensdb_genes <span class="op">=</span> <span class="va">mock_genes_gr</span>,</span></span>
-<span class="r-in"><span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>    norm_method <span class="op">=</span> <span class="st">"quantile"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating binding profile files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Building binding profile dataframe from input files ...</span>
@@ -192,7 +222,7 @@ as a named list, with element names used as sample names.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying 'quantile' normalisation to binding profiles</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
@@ -201,12 +231,13 @@ as a named list, with element names used as sample names.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># View the structure of the output</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">loaded_data</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> List of 5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 6</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ binding_profiles_data:Formal class 'GRanges' [package "GenomicRanges"] with 7 slots</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ peaks                :List of 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ pr                   :Formal class 'GRanges' [package "GenomicRanges"] with 7 slots</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ occupancy            :'data.frame':	1208 obs. of  9 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ test_category        : chr "bound"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ metadata             :List of 6</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

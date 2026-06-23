@@ -26,6 +26,8 @@
 <url><loc>https://marshall-lab/damidBind/reference/inputData.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/load_data_genes.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/load_data_peaks.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/metadata-DamIDResults-method.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/plot_catada_mean_variance.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/plot_input_diagnostics.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/plot_limma_diagnostics.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/plot_venn.html</loc></url>
@@ -33,5 +35,7 @@
 <url><loc>https://marshall-lab/damidBind/reference/quantile_normalisation.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/reduce_regions.html</loc></url>
 <url><loc>https://marshall-lab/damidBind/reference/sample_labels_by_isolation.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/test_weighting_vs_bias_artifact.html</loc></url>
+<url><loc>https://marshall-lab/damidBind/reference/test_weighting_vs_bias_batch.html</loc></url>
 </urlset>
 

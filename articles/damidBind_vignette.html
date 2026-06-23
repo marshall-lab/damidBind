@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -105,7 +105,7 @@
 <h2 id="quick-start-guide">
 <span class="header-section-number">3</span> Quick start guide<a class="anchor" aria-label="anchor" href="#quick-start-guide"></a>
 </h2>
-<p>Using <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>, in eight easy steps:</p>
+<p>Using <em><a href="https://bioconductor.org/packages/3.20/damidBind" class="external-link">damidBind</a></em>, in nine easy steps:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Example code only, not run:</span></span>
 <span></span>
@@ -114,12 +114,12 @@
 <span><span class="va">input</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles_path <span class="op">=</span> <span class="st">"path/to/binding_profile_bedgraphs"</span>,</span>
 <span>    peaks_path <span class="op">=</span> <span class="st">"path/to/peak_gffs_or_beds"</span></span>
-<span>    <span class="co"># add quantile_norm = TRUE if appropriate</span></span>
+<span>    <span class="co"># add a normalisation step via norm_method if appropriate</span></span>
 <span><span class="op">)</span> </span>
 <span></span>
 <span><span class="co"># Determine differential binding </span></span>
 <span><span class="co"># (use differential_accessibility() for CATaDa chromatin accessibility data)</span></span>
-<span><span class="va">input.diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
+<span><span class="va">input_diff</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/differential_binding.html">differential_binding</a></span><span class="op">(</span></span>
 <span>    <span class="va">input</span>,</span>
 <span>    cond <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>        <span class="st">"Display name 1"</span> <span class="op">=</span> <span class="st">"Condition 1 identifying string in filenames"</span>,</span>
@@ -129,26 +129,29 @@
 <span></span>
 <span><span class="co"># The result 'input.diff' is a formal S4 object.</span></span>
 <span><span class="co"># You can see a summary by typing its name:</span></span>
-<span><span class="va">input.diff</span></span>
+<span><span class="va">input_diff</span></span>
 <span></span>
 <span><span class="co"># View the proportion of differentially bound loci</span></span>
-<span><span class="fu"><a href="../reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_venn.html">plot_venn</a></span><span class="op">(</span><span class="va">input_diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot the differential binding, labelling associated genes with outliers</span></span>
-<span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_volcano.html">plot_volcano</a></span><span class="op">(</span><span class="va">input_diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Analyse GO enrichment in peaks associated with one condition</span></span>
 <span><span class="fu"><a href="../reference/analyse_go_enrichment.html">analyse_go_enrichment</a></span><span class="op">(</span></span>
-<span>    <span class="va">input.diff</span>,</span>
+<span>    <span class="va">input_diff</span>,</span>
 <span>    direction <span class="op">=</span> <span class="st">"Condition 1 identifier set with differential_binding() above"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># View the differentially bound loci in an Shiny/IGV browser web app, </span></span>
 <span><span class="co"># with an interactive, searchable, sortable table of bound regions</span></span>
-<span><span class="fu"><a href="../reference/browse_igv_regions.html">browse_igv_regions</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/browse_igv_regions.html">browse_igv_regions</a></span><span class="op">(</span><span class="va">input_diff</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Apply additional functions on the differential binding results</span></span>
-<span><span class="fu">my_custom_function</span><span class="op">(</span><span class="fu"><a href="../reference/analysisTable.html">analysisTable</a></span><span class="op">(</span><span class="va">input.diff</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">my_custom_function</span><span class="op">(</span><span class="fu"><a href="../reference/analysisTable.html">analysisTable</a></span><span class="op">(</span><span class="va">input_diff</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># View all analysis metadata, including genome annotation version, input files and modication times:</span></span>
+<span><span class="fu">metadata</span><span class="op">(</span><span class="va">input_diff</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2" number="4">
 <h2 id="sample-data-examples">
@@ -265,17 +268,17 @@
 <p>Used to load RNA Polymerase occupancy DamID data (as a proxy for gene expression, as per <span class="citation">Marshall &amp; Brand (2015)</span>). For these data, no peak files are required (as occupancy is calculated over the gene bodies).</p>
 </dd>
 </dl>
-<p>In this case, we’re dealing with the binding of the transcription factor Bsh, so we’ll use the <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code>. As this is the same transcription factor being profiled in two different cell types, and we’d expect the binding distribution to be similar, we’ll use quantile normalisation on the datasets.</p>
+<p>In this case, we’re dealing with the binding of the transcription factor Bsh, so we’ll use the <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code>. As this is the same transcription factor being profiled in two different cell types, and we’d expect the binding distribution to be similar, we’ll use quantile normalisation on the datasets. Other normalisation options are “loess” for <code>limma</code>’s cyclic LOESS normalisation; RPM (reads per million – do not use with log2 ratio data); or “none” (the default).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input.bsh</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
 <span>    peaks_path <span class="op">=</span> <span class="va">data_dir</span>,</span>
-<span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    norm_method <span class="op">=</span> <span class="st">"quantile"</span>,</span>
 <span>    plot_diagnostics <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># No need to call this in an in interactive Rstudio session:</span></span>
 <span>                            <span class="co"># diagnostics are shown in interactive sessions by default</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
-<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
+<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster' (AH119285)</span></span></code></pre>
 <pre><code><span><span class="co">## loading from cache</span></span></code></pre>
 <pre><code><span><span class="co">## require("ensembldb")</span></span></code></pre>
 <pre><code><span><span class="co">## Locating binding profile files</span></span></code></pre>
@@ -285,7 +288,7 @@
 <pre><code><span><span class="co">##  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span></span></code></pre>
 <pre><code><span><span class="co">##  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span></span></code></pre>
 <pre><code><span><span class="co">## Locating peak files</span></span></code></pre>
-<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
+<pre><code><span><span class="co">## Applying 'quantile' normalisation to binding profiles</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
 <pre><code><span><span class="co">## Generating diagnostic plots...</span></span></code></pre>
@@ -317,15 +320,15 @@
 <span><span class="co"># Now, call load_data_peaks() using the GRanges lists instead of file paths</span></span>
 <span><span class="va">input.bsh_from_gr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_data_peaks.html">load_data_peaks</a></span><span class="op">(</span></span>
 <span>    binding_profiles <span class="op">=</span> <span class="va">binding_gr_list</span>,</span>
-<span>    peaks <span class="op">=</span> <span class="va">peak_gr_list</span>,</span>
-<span>    quantile_norm <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    peaks <span class="op">=</span> <span class="va">peak_gr_list</span>, </span>
+<span>    norm_method <span class="op">=</span> <span class="st">"quantile"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Finding genome versions ...</span></span></code></pre>
-<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster'</span></span></code></pre>
+<pre><code><span><span class="co">## Loading Ensembl genome version 'Ensembl 113 EnsDb for Drosophila melanogaster' (AH119285)</span></span></code></pre>
 <pre><code><span><span class="co">## loading from cache</span></span></code></pre>
-<pre><code><span><span class="co">## Building binding profile dataframe from supplied GRanges objects ...</span></span></code></pre>
+<pre><code><span><span class="co">## Building binding profile dataframe from supplied GRanges list ...</span></span></code></pre>
 <pre><code><span><span class="co">## Using supplied peaks GRanges list.</span></span></code></pre>
-<pre><code><span><span class="co">## Applying quantile normalisation</span></span></code></pre>
+<pre><code><span><span class="co">## Applying 'quantile' normalisation to binding profiles</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating occupancy over peaks</span></span></code></pre>
 <pre><code><span><span class="co">## Calculating average occupancy for 1208 regions...</span></span></code></pre>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
@@ -337,6 +340,12 @@
 <span class="header-section-number">6.1.2</span> Gene locus assignment to peaks<a class="anchor" aria-label="anchor" href="#gene-locus-assignment-to-peaks"></a>
 </h4>
 <p><code>damidBind</code> automatically assigns peaks to genes within 1kb of the peak boundary. This value (in bp) can be changed using the <code>maxgap_loci</code> parameter of <code><a href="../reference/load_data_peaks.html">load_data_peaks()</a></code>. Note that more than one gene locus can be assigned to a peak (especially within the gene-dense <em>Drosophila</em> genome).</p>
+</div>
+<div class="section level4" number="6.1.3">
+<h4 id="a-brief-word-on-normalisation">
+<span class="header-section-number">6.1.3</span> A brief word on normalisation<a class="anchor" aria-label="anchor" href="#a-brief-word-on-normalisation"></a>
+</h4>
+<p>Data normalisation for these experiments is complex, and there is no automatic solution that will work with all datasets. Avoiding normalisation with DamID-seq ratio data is often inappropriate, but incorrect normalisation can also cause issues. See the <code>damdidBind</code> preprint (<a href="https://doi.org/10.64898/2026.01.06.698059" class="external-link uri">https://doi.org/10.64898/2026.01.06.698059</a>) for more details and a case study with the Bsh binding data. The diagnostic plots generated by <code>damidBind</code> should help assess normalisation outcomes, but users are also advised to carefully consider biological priors when assessing normalisation, and in particular, whether there may be asymmetry in the binding targets.</p>
 </div>
 </div>
 <div class="section level3" number="6.2">
@@ -406,7 +415,11 @@
 <span><span class="co">## Comparison: 'L4 neurons' vs 'L5 neurons'</span></span>
 <span><span class="co">## - 316 regions enriched in L4 neurons</span></span>
 <span><span class="co">## - 166 regions enriched in L5 neurons</span></span>
-<span><span class="co">## - 1196 total regions tested</span></span></code></pre>
+<span><span class="co">## - 1196 total regions tested</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## Data provenance:</span></span>
+<span><span class="co">##  - Annotation: drosophila_melanogaster (BDGP6.46, AH119285, Ensembl 113)</span></span>
+<span><span class="co">##  - Data: 4 binding profile(s), 4 peak file(s)</span></span></code></pre>
 <p>To fully explore the differentially bound loci, use one of the visualisation functions below.</p>
 </div>
 <div class="section level3" number="6.3">
@@ -618,6 +631,8 @@ Figure 6.8: Enriched GO terms for genes associated with differential Bsh binding
 <code>inputData(object)</code>: Returns a list containing the original input data used for the analysis.</li>
 <li>
 <code>expressed(object, condition, fdr = 0.05, which = "any")</code>: Returns a <code>data.frame</code> of genes considered expressed in ‘condition’, based on an FDR threshold of significantly enriched occupancy. Only available for analyses with FDR calculations, generated via <code>load_data_genes(calculate_occupancy_pvals = TRUE)</code>.</li>
+<li>
+<code>metadata(object)</code>: Returns all input file and genome annotation metadata.</li>
 </ul>
 </div>
 </div>
@@ -683,7 +698,7 @@ Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554
 <span><span class="co">##  [1] ensembldb_2.30.0        AnnotationFilter_1.30.0 GenomicFeatures_1.58.0 </span></span>
 <span><span class="co">##  [4] AnnotationDbi_1.68.0    Biobase_2.66.0          GenomicRanges_1.58.0   </span></span>
 <span><span class="co">##  [7] GenomeInfoDb_1.42.3     IRanges_2.40.1          S4Vectors_0.44.0       </span></span>
-<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_0.99.14       BiocStyle_2.34.0       </span></span>
+<span><span class="co">## [10] BiocGenerics_0.52.0     damidBind_1.1.1         BiocStyle_2.34.0       </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##   [1] splines_4.4.0               later_1.4.4                </span></span>
@@ -721,57 +736,57 @@ Xu C, Ramos TB, Marshall OJ &amp; Doe CQ (2024) <a href="https://doi.org/10.7554
 <span><span class="co">##  [65] tools_4.4.0                 ggnewscale_0.5.2           </span></span>
 <span><span class="co">##  [67] progress_1.2.3              treeio_1.30.0              </span></span>
 <span><span class="co">##  [69] Rcpp_1.1.0                  glue_1.8.0                 </span></span>
-<span><span class="co">##  [71] SparseArray_1.6.2           xfun_0.54                  </span></span>
-<span><span class="co">##  [73] qvalue_2.38.0               MatrixGenerics_1.18.1      </span></span>
-<span><span class="co">##  [75] dplyr_1.1.4                 withr_3.0.2                </span></span>
-<span><span class="co">##  [77] formatR_1.14                BiocManager_1.30.26        </span></span>
-<span><span class="co">##  [79] fastmap_1.2.0               digest_0.6.37              </span></span>
-<span><span class="co">##  [81] BioVenn_1.1.3               mime_0.13                  </span></span>
-<span><span class="co">##  [83] R6_2.6.1                    gridGraphics_0.5-1         </span></span>
-<span><span class="co">##  [85] textshaping_1.0.4           colorspace_2.1-2           </span></span>
-<span><span class="co">##  [87] GO.db_3.20.0                biomaRt_2.62.1             </span></span>
-<span><span class="co">##  [89] RSQLite_2.4.3               R.methodsS3_1.8.2          </span></span>
-<span><span class="co">##  [91] tidyr_1.3.1                 generics_0.1.4             </span></span>
-<span><span class="co">##  [93] data.table_1.17.8           rtracklayer_1.66.0         </span></span>
-<span><span class="co">##  [95] prettyunits_1.2.0           httr_1.4.7                 </span></span>
-<span><span class="co">##  [97] htmlwidgets_1.6.4           S4Arrays_1.6.0             </span></span>
-<span><span class="co">##  [99] pkgconfig_2.0.3             gtable_0.3.6               </span></span>
-<span><span class="co">## [101] blob_1.2.4                  ComplexHeatmap_2.22.0      </span></span>
-<span><span class="co">## [103] S7_0.2.0                    XVector_0.46.0             </span></span>
-<span><span class="co">## [105] clusterProfiler_4.14.6      htmltools_0.5.8.1          </span></span>
-<span><span class="co">## [107] bookdown_0.45               fgsea_1.32.4               </span></span>
-<span><span class="co">## [109] clue_0.3-66                 ProtGenerics_1.38.0        </span></span>
-<span><span class="co">## [111] scales_1.4.0                png_0.1-8                  </span></span>
-<span><span class="co">## [113] ggfun_0.2.0                 lambda.r_1.2.4             </span></span>
-<span><span class="co">## [115] knitr_1.50                  rstudioapi_0.17.1          </span></span>
-<span><span class="co">## [117] reshape2_1.4.4              rjson_0.2.23               </span></span>
-<span><span class="co">## [119] checkmate_2.3.3             nlme_3.1-168               </span></span>
-<span><span class="co">## [121] curl_7.0.0                  GlobalOptions_0.1.2        </span></span>
-<span><span class="co">## [123] cachem_1.1.0                stringr_1.5.2              </span></span>
-<span><span class="co">## [125] BiocVersion_3.20.0          parallel_4.4.0             </span></span>
-<span><span class="co">## [127] restfulr_0.0.16             pillar_1.11.1              </span></span>
-<span><span class="co">## [129] grid_4.4.0                  vctrs_0.6.5                </span></span>
-<span><span class="co">## [131] promises_1.5.0              dbplyr_2.5.1               </span></span>
-<span><span class="co">## [133] cluster_2.1.8.1             xtable_1.8-4               </span></span>
-<span><span class="co">## [135] evaluate_1.0.5              magick_2.9.0               </span></span>
-<span><span class="co">## [137] futile.options_1.0.1        cli_3.6.5                  </span></span>
-<span><span class="co">## [139] compiler_4.4.0              Rsamtools_2.22.0           </span></span>
-<span><span class="co">## [141] rlang_1.1.6                 crayon_1.5.3               </span></span>
-<span><span class="co">## [143] igvShiny_1.2.0              labeling_0.4.3             </span></span>
-<span><span class="co">## [145] plyr_1.8.9                  forcats_1.0.1              </span></span>
-<span><span class="co">## [147] fs_1.6.6                    stringi_1.8.7              </span></span>
-<span><span class="co">## [149] BiocParallel_1.40.2         Biostrings_2.74.1          </span></span>
-<span><span class="co">## [151] lazyeval_0.2.2              V8_8.0.1                   </span></span>
-<span><span class="co">## [153] GOSemSim_2.32.0             Matrix_1.7-4               </span></span>
-<span><span class="co">## [155] hms_1.1.4                   patchwork_1.3.2            </span></span>
-<span><span class="co">## [157] bit64_4.6.0-1               ggplot2_4.0.0              </span></span>
-<span><span class="co">## [159] KEGGREST_1.46.0             statmod_1.5.1              </span></span>
-<span><span class="co">## [161] shiny_1.11.1                SummarizedExperiment_1.36.0</span></span>
-<span><span class="co">## [163] AnnotationHub_3.14.0        igraph_2.2.1               </span></span>
-<span><span class="co">## [165] memoise_2.0.1               bslib_0.9.0                </span></span>
-<span><span class="co">## [167] ggtree_3.12.0               fastmatch_1.1-6            </span></span>
-<span><span class="co">## [169] bit_4.6.0                   ape_5.8-1                  </span></span>
-<span><span class="co">## [171] gson_0.1.0</span></span></code></pre>
+<span><span class="co">##  [71] SparseArray_1.6.2           mgcv_1.9-3                 </span></span>
+<span><span class="co">##  [73] xfun_0.54                   qvalue_2.38.0              </span></span>
+<span><span class="co">##  [75] MatrixGenerics_1.18.1       dplyr_1.1.4                </span></span>
+<span><span class="co">##  [77] withr_3.0.2                 formatR_1.14               </span></span>
+<span><span class="co">##  [79] BiocManager_1.30.26         fastmap_1.2.0              </span></span>
+<span><span class="co">##  [81] digest_0.6.37               BioVenn_1.1.3              </span></span>
+<span><span class="co">##  [83] mime_0.13                   R6_2.6.1                   </span></span>
+<span><span class="co">##  [85] gridGraphics_0.5-1          textshaping_1.0.4          </span></span>
+<span><span class="co">##  [87] colorspace_2.1-2            GO.db_3.20.0               </span></span>
+<span><span class="co">##  [89] biomaRt_2.62.1              RSQLite_2.4.3              </span></span>
+<span><span class="co">##  [91] R.methodsS3_1.8.2           tidyr_1.3.1                </span></span>
+<span><span class="co">##  [93] generics_0.1.4              data.table_1.17.8          </span></span>
+<span><span class="co">##  [95] rtracklayer_1.66.0          prettyunits_1.2.0          </span></span>
+<span><span class="co">##  [97] httr_1.4.7                  htmlwidgets_1.6.4          </span></span>
+<span><span class="co">##  [99] S4Arrays_1.6.0              pkgconfig_2.0.3            </span></span>
+<span><span class="co">## [101] gtable_0.3.6                blob_1.2.4                 </span></span>
+<span><span class="co">## [103] ComplexHeatmap_2.22.0       S7_0.2.0                   </span></span>
+<span><span class="co">## [105] XVector_0.46.0              clusterProfiler_4.14.6     </span></span>
+<span><span class="co">## [107] htmltools_0.5.8.1           bookdown_0.45              </span></span>
+<span><span class="co">## [109] fgsea_1.32.4                clue_0.3-66                </span></span>
+<span><span class="co">## [111] ProtGenerics_1.38.0         scales_1.4.0               </span></span>
+<span><span class="co">## [113] png_0.1-8                   ggfun_0.2.0                </span></span>
+<span><span class="co">## [115] lambda.r_1.2.4              knitr_1.50                 </span></span>
+<span><span class="co">## [117] rstudioapi_0.17.1           reshape2_1.4.4             </span></span>
+<span><span class="co">## [119] rjson_0.2.23                checkmate_2.3.3            </span></span>
+<span><span class="co">## [121] nlme_3.1-168                curl_7.0.0                 </span></span>
+<span><span class="co">## [123] GlobalOptions_0.1.2         cachem_1.1.0               </span></span>
+<span><span class="co">## [125] stringr_1.5.2               BiocVersion_3.20.0         </span></span>
+<span><span class="co">## [127] parallel_4.4.0              restfulr_0.0.16            </span></span>
+<span><span class="co">## [129] pillar_1.11.1               grid_4.4.0                 </span></span>
+<span><span class="co">## [131] vctrs_0.6.5                 promises_1.5.0             </span></span>
+<span><span class="co">## [133] dbplyr_2.5.1                cluster_2.1.8.1            </span></span>
+<span><span class="co">## [135] xtable_1.8-4                evaluate_1.0.5             </span></span>
+<span><span class="co">## [137] magick_2.9.0                futile.options_1.0.1       </span></span>
+<span><span class="co">## [139] cli_3.6.5                   compiler_4.4.0             </span></span>
+<span><span class="co">## [141] Rsamtools_2.22.0            rlang_1.1.6                </span></span>
+<span><span class="co">## [143] crayon_1.5.3                igvShiny_1.2.0             </span></span>
+<span><span class="co">## [145] labeling_0.4.3              plyr_1.8.9                 </span></span>
+<span><span class="co">## [147] forcats_1.0.1               fs_1.6.6                   </span></span>
+<span><span class="co">## [149] stringi_1.8.7               BiocParallel_1.40.2        </span></span>
+<span><span class="co">## [151] Biostrings_2.74.1           lazyeval_0.2.2             </span></span>
+<span><span class="co">## [153] V8_8.0.1                    GOSemSim_2.32.0            </span></span>
+<span><span class="co">## [155] Matrix_1.7-4                hms_1.1.4                  </span></span>
+<span><span class="co">## [157] patchwork_1.3.2             bit64_4.6.0-1              </span></span>
+<span><span class="co">## [159] ggplot2_4.0.0               KEGGREST_1.46.0            </span></span>
+<span><span class="co">## [161] statmod_1.5.1               shiny_1.11.1               </span></span>
+<span><span class="co">## [163] SummarizedExperiment_1.36.0 AnnotationHub_3.14.0       </span></span>
+<span><span class="co">## [165] igraph_2.2.1                memoise_2.0.1              </span></span>
+<span><span class="co">## [167] bslib_0.9.0                 ggtree_3.12.0              </span></span>
+<span><span class="co">## [169] fastmatch_1.1-6             bit_4.6.0                  </span></span>
+<span><span class="co">## [171] ape_5.8-1                   gson_0.1.0</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

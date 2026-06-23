@@ -13,7 +13,7 @@ labelling, and highlighting specific groups of loci."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,9 @@ labelling, and highlighting specific groups of loci.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_volcano</span><span class="op">(</span></span>
 <span>  <span class="va">diff_results</span>,</span>
+<span>  labels <span class="op">=</span> <span class="st">"all"</span>,</span>
 <span>  fdr_filter_threshold <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  highlight_by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"auto"</span>, <span class="st">"gene_name"</span>, <span class="st">"id"</span><span class="op">)</span>,</span>
 <span>  plot_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  label_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  highlight <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -73,6 +75,19 @@ labelling, and highlighting specific groups of loci.</p>
 `differential_binding()` or `differential_accessibility()`.</p></dd>
 
 
+<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
+<dd><p>Character; one of `"all"`, `"highlight"`, or a character vector
+containing one or more group names from the `highlight` list.</p><ul><li><p><code>"all"</code> (default): Labels both the general significant loci
+    (based on <code>label_config</code>) and any highlight groups where
+    <code>label = TRUE</code> is set in <code>highlight_config</code>.</p></li>
+<li><p><code>"highlight"</code>: Labels all loci in the <code>highlight</code> list,
+    ignoring <code>label_config</code> and the <code>label</code> toggle in
+    <code>highlight_config</code>.</p></li>
+<li><p><code>vector of group names</code>: Labels only the specified groups
+    from the <code>highlight</code> list.</p></li>
+</ul></dd>
+
+
 <dt id="arg-fdr-filter-threshold">fdr_filter_threshold<a class="anchor" aria-label="anchor" href="#arg-fdr-filter-threshold"></a></dt>
 <dd><p>Numeric or NULL. If a value (e.g., 0.05) is provided,
 the volcano plot will only include loci that have an FDR value less than or
@@ -81,6 +96,14 @@ being plotted. This requires that the data was loaded using
 `load_data_genes` with `calculate_occupancy_pvals = TRUE`, which generates the
 necessary `_FDR` columns. If `NULL` (default), no FDR-based filtering is
 performed.</p></dd>
+
+
+<dt id="arg-highlight-by">highlight_by<a class="anchor" aria-label="anchor" href="#arg-highlight-by"></a></dt>
+<dd><p>Character; either `"auto"`, `"gene_name"`, or `"id"`.
+Determines whether to use gene names (`"gene_name"`) or locus (`"id"`) for
+the highlight search. In `"auto"` mode (default), the function checks for
+matches in both columns and selects the one with the best coverage for each
+highlight group.</p></dd>
 
 
 <dt id="arg-plot-config">plot_config<a class="anchor" aria-label="anchor" href="#arg-plot-config"></a></dt>
@@ -164,7 +187,7 @@ NULL.</p><ul><li><p><code>scale</code>: Logical; if <code>TRUE</code>, labelled 
 <dt id="arg-save">save<a class="anchor" aria-label="anchor" href="#arg-save"></a></dt>
 <dd><p>List or `NULL`. Controls saving the plot to a file.
 If `NULL`, `FALSE`, or `0`, the plot is not saved.
-If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code> (character): The path and base name for the output file
+If a <code>list</code>, it specifies saving parameters:</p><ul><li><p><code>filename</code> (character): The path and base name for the output file
     (e.g., "my_volcano_plot"). If not specified, a default is used.</p></li>
 <li><p><code>format</code> (character): File format ("pdf", "svg", or "png").
     Default is "pdf".</p></li>
@@ -206,6 +229,7 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-in"><span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="va">diff_results</span> <span class="op">&lt;-</span> <span class="fu">.generate_example_results</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The 'quantile_norm' argument is deprecated. Please use 'norm_method' instead.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating binding profile files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Building binding profile dataframe from input files ...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
@@ -213,7 +237,7 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying 'quantile' normalisation to binding profiles</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
@@ -253,6 +277,18 @@ If a `list`, it specifies saving parameters:</p><ul><li><p><code>filename</code>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   Label sampling: coordinates have been centred and scaled.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ggrepel: 1 unlabeled data points (too many overlaps). Consider increasing max.overlaps</span>
 <span class="r-plt img"><img src="plot_volcano-4.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Explicitly highlight a specific locus coordinate</span></span></span>
+<span class="r-in"><span><span class="fu">plot_volcano</span><span class="op">(</span><span class="va">diff_results</span>, highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"My Peak"</span> <span class="op">=</span> <span class="st">"2L:1000-1500"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   Label sampling: coordinates have been centred and scaled.</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>ggrepel: 1 unlabeled data points (too many overlaps). Consider increasing max.overlaps</span>
+<span class="r-plt img"><img src="plot_volcano-5.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Label only specific highlight groups</span></span></span>
+<span class="r-in"><span><span class="fu">plot_volcano</span><span class="op">(</span><span class="va">diff_results</span>,</span></span>
+<span class="r-in"><span>             highlight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"Set A"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ap"</span>, <span class="st">"side"</span><span class="op">)</span>, <span class="st">"Set B"</span> <span class="op">=</span> <span class="st">"mav"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>             labels <span class="op">=</span> <span class="st">"Set A"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_volcano-6.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -21,7 +21,7 @@ expressed, as is typically expected for DEG representations."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">damidBind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.99.14</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -153,6 +153,7 @@ at least one sample.  Used for illustrating DEGs with RNA Pol TaDa. If NULL (def
 <span class="r-in"><span>    <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">diff_results</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-in"><span><span class="va">diff_results</span> <span class="op">&lt;-</span> <span class="fu">.generate_example_results</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>The 'quantile_norm' argument is deprecated. Please use 'norm_method' instead.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating binding profile files</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Building binding profile dataframe from input files ...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L4_r1-ext300-vs-Dam.kde-norm</span>
@@ -160,7 +161,7 @@ at least one sample.  Used for illustrating DEGs with RNA Pol TaDa. If NULL (def
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r1-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>  - Loaded: Bsh_Dam_L5_r2-ext300-vs-Dam.kde-norm</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Locating peak files</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying quantile normalisation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Applying 'quantile' normalisation to binding profiles</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating occupancy over peaks</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Calculating average occupancy for 1208 regions...</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Generating diagnostic plots...</span>
