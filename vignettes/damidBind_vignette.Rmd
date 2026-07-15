@@ -93,7 +93,7 @@ input_diff <- differential_binding(
     )
 )
 
-# The result 'input.diff' is a formal S4 object.
+# The result 'input_diff' is a formal S4 object.
 # You can see a summary by typing its name:
 input_diff
 
